@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Http\Requests\Timeslot;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+
+class StoreTimeslotRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        return $user && $user->isAdmin();
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after:start_time',
+            'operation_type' => 'required|in:load,unload,both',
+            'capacity' => 'required|integer|min:1',
+            'description' => 'nullable|string|max:255',
+            'status' => 'required|in:available,full,closed',
+            'dropoff_address_id' => 'nullable|exists:dropoff_addresses,id',
+            'client_ids' => 'nullable|array',
+            'client_ids.*' => 'exists:users,id',
+        ];
+    }
+
+    /**
+     * Get the error messages for validation failures.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'start_time.required' => 'A data/hora de início é obrigatória.',
+            'start_time.date' => 'A data/hora de início deve ser uma data válida.',
+            'end_time.required' => 'A data/hora de término é obrigatória.',
+            'end_time.date' => 'A data/hora de término deve ser uma data válida.',
+            'end_time.after' => 'A data/hora de término deve ser após a data/hora de início.',
+            'operation_type.required' => 'O tipo de operação é obrigatório.',
+            'operation_type.in' => 'O tipo de operação deve ser Carga, Descarga ou Ambos.',
+            'capacity.required' => 'A capacidade é obrigatória.',
+            'capacity.integer' => 'A capacidade deve ser um número inteiro.',
+            'capacity.min' => 'A capacidade deve ser de pelo menos 1.',
+            'status.required' => 'O status é obrigatório.',
+            'status.in' => 'O status deve ser Disponível, Lotado ou Fechado.',
+            'dropoff_address_id.exists' => 'O endereço de descarga selecionado não existe.',
+            'client_ids.array' => 'Os clientes devem ser um array.',
+            'client_ids.*.exists' => 'Um ou mais clientes selecionados não existem.',
+        ];
+    }
+}

@@ -1,0 +1,380 @@
+import React, { useMemo, useState } from 'react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
+
+const pad = (n) => String(n).padStart(2, '0');
+
+const dayKeyFromDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+// Retorna todas as chaves de dia que um slot "toca" (inclui virada de dia)
+const expandSlotDays = (startValue, endValue) => {
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
+  if (end < start) return [dayKeyFromDate(start)];
+
+  // normaliza para 00:00:00 para iterar dia a dia
+  const cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+  const keys = [];
+  while (cur <= endDay) {
+    keys.push(dayKeyFromDate(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return keys;
+};
+
+export default function Agenda({ timeslots }) {
+  const [monthCursor, setMonthCursor] = useState(() => new Date());
+  const [selectedDayKey, setSelectedDayKey] = useState(null);
+
+  const translateStatus = (status) => {
+    const map = {
+      available: 'Disponível',
+      full: 'Lotado',
+      closed: 'Fechado',
+      pending: 'Pendente',
+      approved: 'Aprovado',
+      completed: 'Concluído',
+      cancelled: 'Cancelado',
+    };
+    return map[status] || status;
+  };
+
+  const formatTime = (value) =>
+    new Date(value).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+  const formatDateShort = (value) =>
+    new Date(value).toLocaleDateString([], {
+      day: '2-digit',
+      month: '2-digit',
+    });
+
+  const monthLabel = (d) => d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+  const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  // Agrupa slots por dia considerando slots que atravessam a meia-noite (aparecem nos dois dias)
+  const slotsByDay = useMemo(() => {
+    const list = Array.isArray(timeslots) ? timeslots : [];
+    const map = new Map();
+
+    list.forEach((slot) => {
+      const keys = expandSlotDays(slot.start_time, slot.end_time);
+      keys.forEach((key) => {
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(slot);
+      });
+    });
+
+    // Ordena slots por start_time dentro do dia
+    for (const [key, arr] of map.entries()) {
+      arr.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+      map.set(key, arr);
+    }
+
+    return map;
+  }, [timeslots]);
+
+  // Monta grid do mês (6 semanas)
+  const monthGrid = useMemo(() => {
+    const year = monthCursor.getFullYear();
+    const month = monthCursor.getMonth();
+    const first = new Date(year, month, 1);
+    const start = new Date(first);
+    start.setDate(first.getDate() - first.getDay()); // domingo
+
+    const cells = [];
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const key = dayKeyFromDate(d);
+      cells.push({
+        date: d,
+        key,
+        inMonth: d.getMonth() === month,
+        isToday: dayKeyFromDate(new Date()) === key,
+      });
+    }
+    return cells;
+  }, [monthCursor]);
+
+  // Seleção inicial (preferir hoje se estiver no grid)
+  React.useEffect(() => {
+    if (selectedDayKey) return;
+    const todayKey = dayKeyFromDate(new Date());
+    const hasTodayInGrid = monthGrid.some((c) => c.key === todayKey);
+    setSelectedDayKey(hasTodayInGrid ? todayKey : monthGrid.find((c) => c.inMonth)?.key || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthGrid]);
+
+  const selectedSlots = useMemo(() => {
+    if (!selectedDayKey) return [];
+    return slotsByDay.get(selectedDayKey) || [];
+  }, [selectedDayKey, slotsByDay]);
+
+  const selectedDayLabel = useMemo(() => {
+    if (!selectedDayKey) return '';
+    const d = new Date(`${selectedDayKey}T00:00:00`);
+    return d.toLocaleDateString(undefined, {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+  }, [selectedDayKey]);
+
+  // Contagem do dia: como o mesmo slot pode aparecer em 2 dias, evita contar duplicado por ID
+  const dayCounts = (dayKey) => {
+    const slots = slotsByDay.get(dayKey) || [];
+    const uniq = new Map();
+    slots.forEach((s) => uniq.set(s.id, s));
+
+    let totalSlots = uniq.size;
+    let totalCapacity = 0;
+    let totalReservations = 0;
+
+    uniq.forEach((s) => {
+      totalCapacity += Number(s.capacity ?? 0);
+      totalReservations += Number(s.current_reservations ?? 0);
+    });
+
+    return { totalSlots, totalCapacity, totalReservations };
+  };
+
+  const statusPill = (status) => {
+    const base = 'inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold';
+    if (status === 'available') return `${base} bg-green-50 text-green-700`;
+    if (status === 'full') return `${base} bg-orange-50 text-orange-700`;
+    if (status === 'closed') return `${base} bg-red-50 text-red-700`;
+    if (status === 'approved') return `${base} bg-blue-50 text-blue-700`;
+    if (status === 'pending') return `${base} bg-yellow-50 text-yellow-800`;
+    if (status === 'completed') return `${base} bg-emerald-50 text-emerald-700`;
+    if (status === 'cancelled') return `${base} bg-gray-100 text-gray-700`;
+    return `${base} bg-gray-100 text-gray-700`;
+  };
+
+  const prevMonth = () => {
+    const d = new Date(monthCursor);
+    d.setMonth(d.getMonth() - 1);
+    setMonthCursor(d);
+    setSelectedDayKey(null);
+  };
+
+  const nextMonth = () => {
+    const d = new Date(monthCursor);
+    d.setMonth(d.getMonth() + 1);
+    setMonthCursor(d);
+    setSelectedDayKey(null);
+  };
+
+  // Exibe intervalo com indicação quando atravessa dia
+  const formatRange = (slot) => {
+    const start = new Date(slot.start_time);
+    const end = new Date(slot.end_time);
+    const crossesDay = dayKeyFromDate(start) !== dayKeyFromDate(end);
+
+    if (!crossesDay) return `${formatTime(slot.start_time)} – ${formatTime(slot.end_time)}`;
+
+    return `${formatDateShort(slot.start_time)} ${formatTime(slot.start_time)} → ${formatDateShort(slot.end_time)} ${formatTime(slot.end_time)}`;
+  };
+
+  return (
+    <AuthenticatedLayout
+      header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Agenda</h2>}
+    >
+      <Head title="Agenda" />
+
+      <div className="py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Header / navegação mês */}
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-500">Mês</p>
+              <h3 className="text-lg font-semibold text-gray-900 capitalize">
+                {monthLabel(monthCursor)}
+              </h3>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={prevMonth}
+                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+              >
+                ← Anterior
+              </button>
+              <button
+                type="button"
+                onClick={nextMonth}
+                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+              >
+                Próximo →
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {/* Calendário */}
+            <div className="lg:col-span-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+              <div className="grid grid-cols-7 gap-2 mb-2">
+                {weekDays.map((w) => (
+                  <div key={w} className="text-xs font-semibold text-gray-500 text-center py-2">
+                    {w}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-2">
+                {monthGrid.map((cell) => {
+                  const { totalSlots, totalCapacity, totalReservations } = dayCounts(cell.key);
+                  const isSelected = selectedDayKey === cell.key;
+
+                  return (
+                    <button
+                      key={cell.key}
+                      type="button"
+                      onClick={() => setSelectedDayKey(cell.key)}
+                      className={[
+                        'rounded-lg border p-2 text-left hover:bg-gray-50 transition',
+                        cell.inMonth ? 'bg-white' : 'bg-gray-50',
+                        isSelected ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200',
+                      ].join(' ')}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={[
+                            'text-sm font-semibold',
+                            cell.inMonth ? 'text-gray-900' : 'text-gray-400',
+                          ].join(' ')}
+                        >
+                          {cell.date.getDate()}
+                        </span>
+
+                        {cell.isToday && (
+                          <span className="text-[10px] font-semibold rounded-full bg-blue-50 text-blue-700 px-2 py-0.5">
+                            Hoje
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-2 space-y-1">
+                        {totalSlots > 0 ? (
+                          <>
+                            <div className="text-[11px] text-gray-600">{totalSlots} horário(s)</div>
+                            <div className="text-[11px] text-gray-600">
+                              Ocupação {totalReservations}/{totalCapacity}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-[11px] text-gray-400">Sem horários</div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Detalhe do dia */}
+            <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+              <div className="mb-3">
+                <p className="text-sm text-gray-500">Dia selecionado</p>
+                <h4 className="text-base font-semibold text-gray-900 capitalize">
+                  {selectedDayLabel || '-'}
+                </h4>
+              </div>
+
+              {selectedSlots.length === 0 ? (
+                <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-600">
+                  Nenhum horário para este dia.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {selectedSlots.map((slot) => {
+                    const reservations = (slot.freights || []).filter(
+                      (f) => f.status !== 'cancelled',
+                    );
+
+                    return (
+                      <div
+                        key={`${selectedDayKey}-${slot.id}`}
+                        className="rounded-lg border border-gray-200 p-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold text-gray-900">
+                                {formatRange(slot)}
+                              </p>
+                              <span className={statusPill(slot.status)}>
+                                {translateStatus(slot.status)}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-xs text-gray-500">
+                              Capacidade: {slot.current_reservations}/{slot.capacity}
+                            </p>
+                            <p className="mt-1 text-sm text-gray-600">
+                              {slot.description || 'Sem descrição'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 border-t border-gray-100 pt-3">
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Reservas
+                          </p>
+
+                          {reservations.length === 0 ? (
+                            <p className="text-sm text-gray-500">Ainda não reservado.</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {reservations.map((freight) => (
+                                <div key={freight.id} className="rounded-md bg-gray-50 p-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-sm font-semibold text-gray-900 truncate">
+                                      {freight.user?.name || 'Cliente não informado'}
+                                    </p>
+                                    <span className={statusPill(freight.status)}>
+                                      {translateStatus(freight.status)}
+                                    </span>
+                                  </div>
+
+                                  <div className="mt-2 space-y-1">
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-semibold">Motorista:</span>{' '}
+                                      {freight.driver_name}
+                                    </p>
+                                    <p className="text-sm text-gray-700">
+                                      <span className="font-semibold">Placa:</span>{' '}
+                                      {freight.truck_plate}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {(!Array.isArray(timeslots) || timeslots.length === 0) && (
+            <div className="mt-4 rounded-lg bg-white p-6 text-gray-500 shadow-sm">
+              Nenhum horário anunciado ainda.
+            </div>
+          )}
+        </div>
+      </div>
+    </AuthenticatedLayout>
+  );
+}
