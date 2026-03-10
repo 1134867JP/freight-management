@@ -1,14 +1,14 @@
 #!/usr/bin/env sh
 set -e
 
-cd /var/www
+cd /var/www/html
 
 if [ ! -f .env ]; then
   cp .env.example .env
 fi
 
 echo "Aguardando Postgres..."
-until pg_isready -h "${DB_HOST:-postgres}" -p "${DB_PORT:-5432}" -U "${DB_USERNAME:-freight}" >/dev/null 2>&1; do
+until pg_isready -h "${DB_HOST:-db}" -p "${DB_PORT:-5432}" -U "${DB_USERNAME:-outro_user}" >/dev/null 2>&1; do
   sleep 2
 done
 
