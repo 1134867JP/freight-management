@@ -2,11 +2,25 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Timeslot extends Model
 {
+    use BelongsToCompany;
+
+    public const STATUS_AVAILABLE = 'available';
+
+    public const STATUS_FULL = 'full';
+
+    public const STATUS_CLOSED = 'closed';
+
     protected $fillable = [
+        'company_id',
         'start_time',
         'end_time',
         'operation_type',
@@ -15,6 +29,7 @@ class Timeslot extends Model
         'status',
         'description',
         'dropoff_address_id',
+        'created_by',
     ];
 
     protected $casts = [
@@ -22,22 +37,28 @@ class Timeslot extends Model
         'end_time' => 'datetime',
     ];
 
-    public function dropoffAddress()
+    public function dropoffAddress(): BelongsTo
     {
         return $this->belongsTo(DropoffAddress::class);
     }
 
-    public function freights()
+    public function freights(): HasMany
     {
         return $this->hasMany(Freight::class);
     }
 
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     // Relacionamento many-to-many com clientes (visibilidade)
     // Se vazio = PÚBLICO, se tem clientes = RESTRITO a esses clientes
-    public function clients()
+    public function clients(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'client_timeslot', 'timeslot_id', 'user_id')
-            ->where('role', 'client');
+            ->where('role', User::ROLE_CLIENT)
+            ->withPivot('company_id');
     }
 
     public function clampReservations(): void
@@ -53,13 +74,20 @@ class Timeslot extends Model
         }
     }
 
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query
+            ->where('status', '!=', self::STATUS_CLOSED)
+            ->where('end_time', '>=', now());
+    }
+
     // Scope: Query de timeslots visíveis para um cliente
     // status != closed, current_reservations < capacity, (sem clientes OU tem cliente logado)
     public function scopeVisibleForClient($query, $userId)
     {
         return $query
             ->where('start_time', '>=', now())
-            ->where('status', '!=', 'closed')
+            ->where('status', '!=', self::STATUS_CLOSED)
             ->whereColumn('current_reservations', '<', 'capacity')
             ->where(function ($q) use ($userId) {
                 // Público: sem clientes vinculados
@@ -80,6 +108,6 @@ class Timeslot extends Model
         }
 
         // Se tem clientes = RESTRITO (só os listados veem)
-        return $this->clients()->where('user_id', $userId)->exists();
+        return $this->clients()->where('users.id', $userId)->exists();
     }
 }

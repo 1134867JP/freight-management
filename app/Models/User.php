@@ -3,14 +3,24 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\BelongsToCompany;
+use App\Support\WhatsAppPhone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use BelongsToCompany, HasFactory, Notifiable;
+
+    public const ROLE_PLATFORM_ADMIN = 'platform_admin';
+
+    public const ROLE_COMPANY_ADMIN = 'company_admin';
+
+    public const ROLE_CLIENT = 'client';
 
     /**
      * The attributes that are mass assignable.
@@ -18,8 +28,10 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'company_id',
         'name',
         'email',
+        'whatsapp_phone',
         'password',
         'role',
     ];
@@ -47,29 +59,51 @@ class User extends Authenticatable
         ];
     }
 
-    public function freights()
+    public function freights(): HasMany
     {
         return $this->hasMany(Freight::class);
     }
 
-    public function isAdmin()
+    public function isPlatformAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === self::ROLE_PLATFORM_ADMIN;
     }
 
-    public function isClient()
+    public function isCompanyAdmin(): bool
     {
-        return $this->role === 'client';
+        return $this->role === self::ROLE_COMPANY_ADMIN;
     }
 
-    public function trucks()
+    public function isAdmin(): bool
+    {
+        return $this->isCompanyAdmin();
+    }
+
+    public function isClient(): bool
+    {
+        return $this->role === self::ROLE_CLIENT;
+    }
+
+    public function trucks(): HasMany
     {
         return $this->hasMany(Truck::class);
     }
 
-    // Relacionamento many-to-many com timeslots (visibilidade)
-    public function visibleTimeslots()
+    public function createdTimeslots(): HasMany
     {
-        return $this->belongsToMany(Timeslot::class, 'client_timeslot', 'user_id', 'timeslot_id');
+        return $this->hasMany(Timeslot::class, 'created_by');
+    }
+
+    public function visibleTimeslots(): BelongsToMany
+    {
+        return $this->belongsToMany(Timeslot::class, 'client_timeslot', 'user_id', 'timeslot_id')
+            ->withPivot('company_id');
+    }
+
+    public function routeWhatsAppPhone(): ?string
+    {
+        $strPhone = WhatsAppPhone::normalize($this->whatsapp_phone);
+
+        return WhatsAppPhone::isValid($strPhone) ? $strPhone : null;
     }
 }

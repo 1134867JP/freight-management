@@ -3,6 +3,8 @@
 namespace App\Actions\Timeslot;
 
 use App\Models\Timeslot;
+use App\Models\User;
+use Illuminate\Validation\ValidationException;
 
 class SyncVisibilityClients
 {
@@ -13,12 +15,29 @@ class SyncVisibilityClients
      */
     public function execute(Timeslot $timeslot, ?array $clientIds = null): void
     {
-        if (is_null($clientIds) || empty($clientIds)) {
+        $arrClientIds = array_values(array_unique(array_map('intval', $clientIds ?? [])));
+
+        if ($arrClientIds === []) {
             // Remover todos os clientes (tornar público)
             $timeslot->clients()->detach();
-        } else {
-            // Vincular apenas os clientes fornecidos
-            $timeslot->clients()->sync($clientIds);
+
+            return;
         }
+
+        $qtValidClients = User::query()
+            ->where('role', User::ROLE_CLIENT)
+            ->where('company_id', $timeslot->company_id)
+            ->whereIn('id', $arrClientIds)
+            ->count();
+
+        if ($qtValidClients !== count($arrClientIds)) {
+            throw ValidationException::withMessages([
+                'client_ids' => 'Um ou mais clientes não pertencem a esta empresa.',
+            ]);
+        }
+
+        $timeslot->clients()->syncWithPivotValues($arrClientIds, [
+            'company_id' => $timeslot->company_id,
+        ]);
     }
 }

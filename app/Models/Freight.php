@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Freight extends Model
 {
+    use BelongsToCompany;
+
     public const STATUS_LOADING = 'loading';
 
     public const STATUS_UNLOADING = 'unloading';
@@ -15,7 +19,7 @@ class Freight extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'user_id', 'timeslot_id', 'operation_type', 'truck_plate', 'driver_name',
+        'company_id', 'user_id', 'timeslot_id', 'operation_type', 'truck_plate', 'driver_name',
         'cargo_description', 'weight', 'peso_bruto', 'peso_liquido',
         'nota_fiscal_path', 'attachment_path', 'status', 'admin_notes',
     ];
@@ -26,12 +30,12 @@ class Freight extends Model
         'peso_liquido' => 'decimal:2',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function timeslot()
+    public function timeslot(): BelongsTo
     {
         return $this->belongsTo(Timeslot::class);
     }

@@ -17,6 +17,7 @@ export default function Clients({ clients }) {
     name: '',
     email: '',
     password: '',
+    whatsapp_phone: '',
   });
 
   const isEditing = Boolean(editingClient?.id);
@@ -34,6 +35,7 @@ export default function Clients({ clients }) {
       name: client.name,
       email: client.email,
       password: '',
+      whatsapp_phone: client.whatsapp_phone ?? '',
     });
   };
 
@@ -98,6 +100,9 @@ export default function Clients({ clients }) {
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
                         Email
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                        WhatsApp
+                      </th>
                       <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500">
                         Ações
                       </th>
@@ -111,6 +116,9 @@ export default function Clients({ clients }) {
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                           {client.email}
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                          {client.whatsapp_phone || '-'}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium space-x-2">
                           <button
@@ -167,6 +175,22 @@ export default function Clients({ clients }) {
               required
             />
             {errors.email && <span className="text-sm text-red-500">{errors.email}</span>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">WhatsApp</label>
+            <input
+              type="tel"
+              inputMode="numeric"
+              placeholder="5511999999999"
+              className="mt-1 block w-full rounded-md border-gray-300"
+              value={data.whatsapp_phone}
+              onChange={(event) => setData('whatsapp_phone', event.target.value)}
+            />
+            <p className="mt-1 text-xs text-gray-500">Informe com DDI e apenas números.</p>
+            {errors.whatsapp_phone && (
+              <span className="text-sm text-red-500">{errors.whatsapp_phone}</span>
+            )}
           </div>
 
           <div>

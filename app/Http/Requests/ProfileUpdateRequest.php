@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Support\WhatsAppPhone;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,6 +26,23 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'whatsapp_phone' => ['nullable', 'regex:/^\d{10,15}$/'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'whatsapp_phone.regex' => 'Informe o WhatsApp com DDI e apenas números. Ex.: 5511999999999.',
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->exists('whatsapp_phone')) {
+            $this->merge([
+                'whatsapp_phone' => WhatsAppPhone::normalize($this->input('whatsapp_phone')),
+            ]);
+        }
     }
 }

@@ -11,6 +11,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
   const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
     name: user.name,
     email: user.email,
+    whatsapp_phone: user.whatsapp_phone ?? '',
   });
 
   const submit = (e) => {
@@ -60,6 +61,24 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
           />
 
           <InputError className="mt-2" message={errors.email} />
+        </div>
+
+        <div>
+          <InputLabel htmlFor="whatsapp_phone" value="WhatsApp" />
+
+          <TextInput
+            id="whatsapp_phone"
+            type="tel"
+            className="mt-1 block w-full"
+            value={data.whatsapp_phone}
+            onChange={(e) => setData('whatsapp_phone', e.target.value)}
+            autoComplete="tel"
+            inputMode="numeric"
+            placeholder="5511999999999"
+          />
+
+          <p className="mt-1 text-xs text-gray-500">Use o número com DDI e apenas números.</p>
+          <InputError className="mt-2" message={errors.whatsapp_phone} />
         </div>
 
         {mustVerifyEmail && user.email_verified_at === null && (

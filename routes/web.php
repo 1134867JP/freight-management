@@ -1,29 +1,32 @@
 <?php
 
 use App\Http\Controllers\ClientManagementController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DropoffAddressController;
 use App\Http\Controllers\FreightController;
+use App\Http\Controllers\PlatformCompanyController;
+use App\Http\Controllers\PlatformCompanyInstanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TimeslotController;
 use App\Http\Controllers\TruckController;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+Route::get('/', [DashboardController::class, 'root'])->name('home');
 
 Route::middleware('auth')->group(function () {
-    // Redirecionamento inteligente após o login
-    Route::get('/dashboard', function () {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
-        return $user->isAdmin()
-            ? redirect()->route('admin.dashboard')
-            : redirect()->route('client.dashboard');
-    })->name('dashboard');
+    Route::middleware('platform_admin')->prefix('platform')->group(function () {
+        Route::get('/', [PlatformCompanyController::class, 'index'])->name('platform.dashboard');
+        Route::get('/companies', [PlatformCompanyController::class, 'index'])->name('platform.companies.index');
+        Route::post('/companies', [PlatformCompanyController::class, 'store'])->name('platform.companies.store');
+        Route::patch('/companies/{company}', [PlatformCompanyController::class, 'update'])->name('platform.companies.update');
+        Route::delete('/companies/{company}', [PlatformCompanyController::class, 'destroy'])->name('platform.companies.destroy');
+        Route::get('/companies/{company}/instance', [PlatformCompanyInstanceController::class, 'edit'])->name('platform.companies.instance.edit');
+        Route::patch('/companies/{company}/instance', [PlatformCompanyInstanceController::class, 'update'])->name('platform.companies.instance.update');
+        Route::post('/companies/{company}/instance/sync', [PlatformCompanyInstanceController::class, 'sync'])->name('platform.companies.instance.sync');
+        Route::post('/companies/{company}/instance/refresh', [PlatformCompanyInstanceController::class, 'refresh'])->name('platform.companies.instance.refresh');
+    });
 
     // -------------------------
     // ROTAS DO ADMIN
@@ -58,25 +61,7 @@ Route::middleware('auth')->group(function () {
     // ROTAS DO CLIENTE
     // -------------------------
     Route::middleware('client')->prefix('client')->group(function () {
-        Route::get('/', function () {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-            $cdUserId = $user->id;
-
-            $arrStats = [
-                'total_my_freights' => \App\Models\Freight::where('user_id', $cdUserId)->count(),
-                'loading_my_freights' => \App\Models\Freight::where('user_id', $cdUserId)->where('status', 'loading')->count(),
-                'unloading_my_freights' => \App\Models\Freight::where('user_id', $cdUserId)->where('status', 'unloading')->count(),
-                'completed_my_freights' => \App\Models\Freight::where('user_id', $cdUserId)->where('status', 'completed')->count(),
-                'cancelled_my_freights' => \App\Models\Freight::where('user_id', $cdUserId)->where('status', 'cancelled')->count(),
-                'available_today' => \App\Models\Timeslot::whereDate('start_time', now()->toDateString())
-                    ->where('status', 'available')
-                    ->whereColumn('current_reservations', '<', 'capacity')
-                    ->count(),
-            ];
-
-            return Inertia::render('Client/Dashboard', ['stats' => $arrStats]);
-        })->name('client.dashboard');
+        Route::get('/', [DashboardController::class, 'clientDashboard'])->name('client.dashboard');
 
         Route::get('/available-slots', [TimeslotController::class, 'available'])->name('client.available');
         Route::get('/my-reservations', [FreightController::class, 'myReservations'])->name('client.reservations');

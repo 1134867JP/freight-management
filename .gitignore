@@ -3,6 +3,8 @@
 .env
 .env.backup
 .env.production
+/infra/production/certs/*
+!/infra/production/certs/.gitignore
 .phpactor.json
 .phpunit.result.cache
 /.fleet

@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DropoffAddress extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'name',        // nome/identificador (ex.: "Pátio A")
         'street',      // logradouro
         'number',      // número
@@ -22,7 +27,7 @@ class DropoffAddress extends Model
         'is_active' => 'boolean',
     ];
 
-    public function timeslots()
+    public function timeslots(): HasMany
     {
         return $this->hasMany(Timeslot::class);
     }

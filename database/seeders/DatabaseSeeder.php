@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Company;
 use App\Models\DropoffAddress;
 use App\Models\Timeslot;
 use App\Models\User;
@@ -17,17 +18,33 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $company = Company::ensureDefault();
+
+        User::query()->updateOrCreate(
+            ['email' => 'platform@example.com'],
+            [
+                'company_id' => null,
+                'name' => 'Platform Admin',
+                'role' => User::ROLE_PLATFORM_ADMIN,
+                'password' => bcrypt('password'),
+            ],
+        );
+
         // Criar admin
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'role' => 'admin',
-            'password' => bcrypt('password'),
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'company_id' => $company->id,
+                'name' => 'Admin User',
+                'role' => User::ROLE_COMPANY_ADMIN,
+                'password' => bcrypt('password'),
+            ],
+        );
 
         // Criar clientes
-        $clients = User::factory(3)->create([
-            'role' => 'client',
+        User::factory(3)->create([
+            'company_id' => $company->id,
+            'role' => User::ROLE_CLIENT,
             'password' => bcrypt('password'),
         ]);
 
@@ -56,12 +73,16 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($addresses as $addr) {
-            DropoffAddress::create($addr);
+            DropoffAddress::create([
+                'company_id' => $company->id,
+                ...$addr,
+            ]);
         }
 
         // Criar timeslots
         $now = now();
         Timeslot::create([
+            'company_id' => $company->id,
             'start_time' => $now->copy()->addHour(),
             'end_time' => $now->copy()->addHours(3),
             'capacity' => 5,
@@ -73,6 +94,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Timeslot::create([
+            'company_id' => $company->id,
             'start_time' => $now->copy()->addHours(4),
             'end_time' => $now->copy()->addHours(7),
             'capacity' => 3,
@@ -85,6 +107,7 @@ class DatabaseSeeder extends Seeder
 
         // Criar timeslot público (sem restrição de clientes)
         Timeslot::create([
+            'company_id' => $company->id,
             'start_time' => $now->copy()->addHours(8),
             'end_time' => $now->copy()->addHours(11),
             'capacity' => 10,

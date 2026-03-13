@@ -38,6 +38,14 @@ class CreateReservation
             $weight,
             $notaFiscalPath
         ) {
+            if ((int) $user->company_id !== (int) $timeslot->company_id) {
+                throw new \Exception('O horário selecionado não pertence à empresa do cliente.');
+            }
+
+            if (! $timeslot->isVisibleTo($user->id)) {
+                throw new \Exception('O horário selecionado não está disponível para este cliente.');
+            }
+
             // 1. Verificar se caminhão (placa) já está reservado neste timeslot
             $objFreightExists = Freight::query()
                 ->where('timeslot_id', $timeslot->id)
@@ -65,6 +73,7 @@ class CreateReservation
             $status = $operationType === 'load' ? 'loading' : 'unloading';
 
             $freight = Freight::create([
+                'company_id' => $timeslot->company_id,
                 'user_id' => $user->id,
                 'timeslot_id' => $timeslot->id,
                 'truck_plate' => strtoupper($truckPlate),

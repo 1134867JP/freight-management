@@ -49,6 +49,18 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        /** @var \App\Models\User|null $objUser */
+        $objUser = Auth::user();
+
+        if ($objUser && ! $objUser->isPlatformAdmin() && ! filled($objUser->company_id)) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Usuário sem empresa vinculada.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

@@ -13,7 +13,7 @@ class ClientManagementController extends Controller
     // ADMIN: Listar todos os clientes
     public function index()
     {
-        $clients = User::where('role', 'client')
+        $clients = User::where('role', User::ROLE_CLIENT)
             ->withCount('freights')
             ->orderBy('name')
             ->paginate(20);
@@ -29,10 +29,12 @@ class ClientManagementController extends Controller
         $validated = $request->validated();
 
         User::create([
+            'company_id' => $request->user()->company_id,
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'whatsapp_phone' => $validated['whatsapp_phone'] ?? null,
             'password' => Hash::make($validated['password']),
-            'role' => 'client',
+            'role' => User::ROLE_CLIENT,
         ]);
 
         return redirect()->back()->with('success', 'Cliente cadastrado com sucesso!');
@@ -41,13 +43,14 @@ class ClientManagementController extends Controller
     // ADMIN: Atualizar cliente e cota
     public function update(UpdateClientRequest $request, User $user)
     {
-        abort_unless($user->role === 'client', 403, 'Apenas clientes podem ser editados aqui.');
+        abort_unless($user->role === User::ROLE_CLIENT, 403, 'Apenas clientes podem ser editados aqui.');
 
         $validated = $request->validated();
 
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'whatsapp_phone' => $validated['whatsapp_phone'] ?? null,
         ]);
 
         if (! empty($validated['password'])) {
@@ -60,7 +63,7 @@ class ClientManagementController extends Controller
     // ADMIN: Deletar cliente
     public function destroy(User $user)
     {
-        abort_unless($user->role === 'client', 403, 'Apenas clientes podem ser removidos aqui.');
+        abort_unless($user->role === User::ROLE_CLIENT, 403, 'Apenas clientes podem ser removidos aqui.');
 
         $user->delete();
 

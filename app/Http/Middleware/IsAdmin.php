@@ -17,7 +17,7 @@ class IsAdmin
     {
         $objUser = $request->user();
 
-        if (! $objUser || ! $objUser->isAdmin()) {
+        if (! $objUser || ! $objUser->isCompanyAdmin() || ! filled($objUser->company_id)) {
             abort(403, 'Acesso permitido apenas para administradores.');
         }
 

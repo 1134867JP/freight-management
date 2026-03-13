@@ -11,6 +11,7 @@ use App\Actions\Freight\StartUnload;
 use App\Http\Requests\Freight\StoreFreightRequest;
 use App\Models\Freight;
 use App\Models\Timeslot;
+use App\Services\WhatsApp\FreightWhatsAppNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,10 @@ use Inertia\Inertia;
 
 class FreightController extends Controller
 {
+    public function __construct(
+        private readonly FreightWhatsAppNotifier $whatsAppNotifier,
+    ) {}
+
     // ADMIN: List freights for approval
     public function approvalList()
     {
@@ -34,7 +39,14 @@ class FreightController extends Controller
     public function reject(Request $request, Freight $freight)
     {
         try {
+            $blShouldNotify = $freight->status !== Freight::STATUS_CANCELLED;
+
             (new CancelReservation)->execute($freight, $request->input('notes', 'Rejeitado pelo admin.'));
+            $freight->refresh();
+
+            if ($blShouldNotify && $freight->status === Freight::STATUS_CANCELLED) {
+                $this->whatsAppNotifier->notifyClientReservationRejected($freight, $request->user());
+            }
 
             return redirect()->back()->with('success', 'Reserva rejeitada.');
         } catch (\Throwable $e) {
@@ -94,6 +106,7 @@ class FreightController extends Controller
             );
 
             Log::info('Reserva criada com sucesso', ['freight_id' => $freight->id]);
+            $this->whatsAppNotifier->notifyAdminReservationCreated($freight);
 
             return redirect()->route('client.reservations')->with('success', 'Reserva criada com sucesso!');
         } catch (\Throwable $e) {
@@ -129,6 +142,8 @@ class FreightController extends Controller
 
         try {
             (new CancelReservation)->execute($freight);
+            $freight->refresh();
+            $this->whatsAppNotifier->notifyAdminReservationCancelled($freight, $request->user());
 
             return redirect()->back()->with('success', 'Reserva cancelada com sucesso.');
         } catch (\Throwable $e) {
@@ -142,6 +157,8 @@ class FreightController extends Controller
 
         try {
             (new ReopenReservation)->execute($freight);
+            $freight->refresh();
+            $this->whatsAppNotifier->notifyAdminReservationReopened($freight, $request->user());
 
             return redirect()->back()->with('success', 'Reserva reaberta com sucesso.');
         } catch (\Throwable $e) {
@@ -176,6 +193,9 @@ class FreightController extends Controller
             ]);
         }
 
+        $freight->refresh();
+        $this->whatsAppNotifier->notifyAdminNotaFiscalUploaded($freight, $request->user());
+
         return redirect()->back()->with('success', 'Nota fiscal enviada com sucesso!');
     }
 
@@ -198,6 +218,9 @@ class FreightController extends Controller
             if ($validated['admin_notes']) {
                 $freight->update(['admin_notes' => $validated['admin_notes']]);
             }
+
+            $freight->refresh();
+            $this->whatsAppNotifier->notifyClientOperationFinished($freight, $request->user());
 
             return redirect()->back()->with('success', 'Operação finalizada com sucesso!');
         } catch (\Throwable $e) {
@@ -222,14 +245,24 @@ class FreightController extends Controller
             $freight->update(['attachment_path' => $path]);
         }
 
+        $freight->refresh();
+        $this->whatsAppNotifier->notifyClientAttachmentAdded($freight, $request->user());
+
         return redirect()->back()->with('success', 'Anexo adicionado com sucesso!');
     }
 
     // ADMIN: Iniciar carregamento
-    public function iniciarCarregamento(Freight $freight)
+    public function iniciarCarregamento(Request $request, Freight $freight)
     {
         try {
+            $blShouldNotify = $freight->status !== Freight::STATUS_LOADING;
+
             (new StartLoad)->execute($freight);
+            $freight->refresh();
+
+            if ($blShouldNotify && $freight->status === Freight::STATUS_LOADING) {
+                $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
+            }
 
             return redirect()->back()->with('success', 'Carregamento iniciado!');
         } catch (\Throwable $e) {
@@ -238,10 +271,17 @@ class FreightController extends Controller
     }
 
     // ADMIN: Iniciar descarga
-    public function iniciarDescarga(Freight $freight)
+    public function iniciarDescarga(Request $request, Freight $freight)
     {
         try {
+            $blShouldNotify = $freight->status !== Freight::STATUS_UNLOADING;
+
             (new StartUnload)->execute($freight);
+            $freight->refresh();
+
+            if ($blShouldNotify && $freight->status === Freight::STATUS_UNLOADING) {
+                $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
+            }
 
             return redirect()->back()->with('success', 'Descarga iniciada!');
         } catch (\Throwable $e) {

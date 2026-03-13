@@ -3,17 +3,37 @@ import { Link, usePage } from '@inertiajs/react';
 import { useMemo, useRef, useState, useEffect } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-  const user = usePage().props.auth.user;
+  const { auth } = usePage().props;
+  const user = auth.user;
+  const company = auth.company;
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // menu engrenagem
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountMenuRef = useRef(null);
 
-  const isAdmin = user?.role === 'admin';
+  const isPlatformAdmin = user?.role === 'platform_admin';
+  const isCompanyAdmin = user?.role === 'company_admin';
+  const logoUrl = company?.logo_url || '/storage/logo.png';
+  const roleLabel = isPlatformAdmin
+    ? 'Super Admin'
+    : isCompanyAdmin
+      ? 'Administrador da empresa'
+      : 'Cliente';
 
   const mainLinks = useMemo(() => {
-    if (isAdmin) {
+    if (isPlatformAdmin) {
+      return [
+        {
+          label: 'Empresas',
+          href: route('platform.dashboard'),
+          active: route().current('platform.*'),
+          icon: 'buildings',
+        },
+      ];
+    }
+
+    if (isCompanyAdmin) {
       return [
         {
           label: 'Painel',
@@ -80,7 +100,7 @@ export default function AuthenticatedLayout({ header, children }) {
         icon: 'truck',
       },
     ];
-  }, [isAdmin]);
+  }, [isCompanyAdmin, isPlatformAdmin]);
 
   const SideLink = ({ href, active, label, icon }) => (
     <Link
@@ -122,12 +142,17 @@ export default function AuthenticatedLayout({ header, children }) {
         {/* Header */}
         <div className="border-b border-gray-200 p-6">
           <Link href={route('dashboard')}>
-            <img src="/storage/logo.png" className="h-28 w-auto" alt="Logo" />
+            {company?.logo_url ? (
+              <img src={logoUrl} className="h-28 w-auto object-contain" alt={company.name || 'Logo'} />
+            ) : (
+              <ApplicationLogo className="h-14 w-auto fill-current text-gray-800" />
+            )}
           </Link>
 
           <div className="mt-4">
             <p className="text-base font-semibold text-gray-900">{user.name}</p>
-            <p className="text-sm text-gray-500">{isAdmin ? 'Administrador' : 'Cliente'}</p>
+            <p className="text-sm text-gray-500">{roleLabel}</p>
+            {company?.name && <p className="mt-1 text-sm text-gray-400">{company.name}</p>}
           </div>
         </div>
 
@@ -254,6 +279,8 @@ function MenuIcon({ name, className = '' }) {
   const objPaths = {
     dashboard:
       'M3 3h8v8H3V3Zm10 0h8v5h-8V3ZM13 10h8v11h-8V10ZM3 13h8v8H3v-8Z',
+    buildings:
+      'M4 21V7a2 2 0 0 1 2-2h5v16M14 21V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v18M8 9h2M8 13h2M8 17h2M16 7h2M16 11h2M16 15h2',
     calendar:
       'M7 2v3M17 2v3M3.5 8.5h17M6 5.5h12a2.5 2.5 0 0 1 2.5 2.5v10a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 18V8A2.5 2.5 0 0 1 6 5.5Z',
     schedule:

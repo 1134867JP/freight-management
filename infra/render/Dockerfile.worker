@@ -1,0 +1,49 @@
+FROM php:8.3-cli-alpine AS php-deps
+
+RUN apk add --no-cache git unzip icu-dev libzip-dev oniguruma-dev postgresql-dev \
+    && docker-php-ext-install bcmath intl mbstring pcntl pdo_pgsql zip
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts
+
+COPY . .
+
+RUN composer dump-autoload --optimize --no-dev
+
+FROM php:8.3-cli-alpine AS worker
+
+RUN apk add --no-cache icu-dev libzip-dev oniguruma-dev postgresql-client \
+    && docker-php-ext-install bcmath intl mbstring pcntl pdo_pgsql zip \
+    && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
+WORKDIR /var/www/html
+
+COPY . .
+COPY --from=php-deps /app/vendor ./vendor
+COPY infra/production/php/php.ini $PHP_INI_DIR/conf.d/99-app.ini
+COPY infra/render/worker-entrypoint.sh /usr/local/bin/render-worker-entrypoint
+
+RUN chmod +x /usr/local/bin/render-worker-entrypoint \
+    && rm -rf node_modules \
+    && mkdir -p \
+        /var/www/html/storage/app/public \
+        /var/www/html/storage/app/private \
+        /var/www/html/storage/framework/cache/data \
+        /var/www/html/storage/framework/sessions \
+        /var/www/html/storage/framework/views \
+        /var/www/html/storage/logs \
+        /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+ENTRYPOINT ["/usr/local/bin/render-worker-entrypoint"]
+CMD ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--timeout=120", "--max-time=3600"]

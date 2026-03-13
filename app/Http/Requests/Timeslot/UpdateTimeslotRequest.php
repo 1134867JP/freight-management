@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Timeslot;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UpdateTimeslotRequest extends FormRequest
 {
@@ -15,7 +17,7 @@ class UpdateTimeslotRequest extends FormRequest
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
-        return $user && $user->isAdmin();
+        return $user && $user->isCompanyAdmin();
     }
 
     /**
@@ -25,6 +27,8 @@ class UpdateTimeslotRequest extends FormRequest
      */
     public function rules(): array
     {
+        $idCompany = $this->user()?->company_id;
+
         return [
             'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
@@ -32,9 +36,16 @@ class UpdateTimeslotRequest extends FormRequest
             'capacity' => 'required|integer|min:1',
             'description' => 'nullable|string|max:255',
             'status' => 'required|in:available,full,closed',
-            'dropoff_address_id' => 'nullable|exists:dropoff_addresses,id',
+            'dropoff_address_id' => [
+                'nullable',
+                Rule::exists('dropoff_addresses', 'id')->where('company_id', $idCompany),
+            ],
             'client_ids' => 'nullable|array',
-            'client_ids.*' => 'exists:users,id',
+            'client_ids.*' => [
+                Rule::exists('users', 'id')
+                    ->where('company_id', $idCompany)
+                    ->where('role', User::ROLE_CLIENT),
+            ],
         ];
     }
 

@@ -84,6 +84,7 @@ class TimeslotController extends Controller
 
         $arrValidated['current_reservations'] = 0;
         $arrValidated['status'] = 'available';
+        $arrValidated['created_by'] = $request->user()->id;
 
         $objTimeslot = Timeslot::create($arrValidated);
 
@@ -106,6 +107,8 @@ class TimeslotController extends Controller
                 ->back()
                 ->with('error', 'Capacidade não pode ser menor que as reservas atuais.');
         }
+
+        $arrValidated['created_by'] = $timeslot->created_by ?: $request->user()->id;
 
         $timeslot->update($arrValidated);
 
@@ -155,7 +158,7 @@ class TimeslotController extends Controller
     {
         return [
             'clients' => User::query()
-                ->where('role', 'client')
+                ->where('role', User::ROLE_CLIENT)
                 ->orderBy('name')
                 ->get(['id', 'name', 'email']),
             'addresses' => DropoffAddress::query()

@@ -17,7 +17,7 @@ class IsClient
     {
         $objUser = $request->user();
 
-        if (! $objUser || ! $objUser->isClient()) {
+        if (! $objUser || ! $objUser->isClient() || ! filled($objUser->company_id)) {
             abort(403, 'Acesso permitido apenas para clientes.');
         }
 

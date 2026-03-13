@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Truck extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'user_id',
         'plate',
         'type',
@@ -19,7 +24,7 @@ class Truck extends Model
         'is_active' => 'boolean',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

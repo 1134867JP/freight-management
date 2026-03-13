@@ -10,7 +10,7 @@ class StoreDropoffAddressRequest extends FormRequest
     {
         $objUser = $this->user();
 
-        return $objUser && $objUser->isAdmin();
+        return $objUser && $objUser->isCompanyAdmin();
     }
 
     public function rules(): array
