@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // Necessário para CREATE INDEX com WHERE no PostgreSQL
+    public $withinTransaction = false;
+
     public function up(): void
     {
         try {
@@ -14,7 +17,7 @@ return new class extends Migration
                 $table->dropUnique('freights_timeslot_id_truck_plate_unique');
             });
         } catch (\Throwable $e) {
-            // Em alguns ambientes (ex.: SQLite de testes), o índice legado pode não existir.
+            // índice legado pode não existir em ambientes novos
         }
 
         DB::statement("
