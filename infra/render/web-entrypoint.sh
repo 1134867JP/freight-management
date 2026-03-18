@@ -28,5 +28,10 @@ if [ "$APP_RUN_OPTIMIZE" = "true" ]; then
   php artisan optimize
 fi
 
+echo "==> Processando configuração do nginx..."
+export PORT="${PORT:-10000}"
+envsubst '${PORT}' < /etc/nginx/http.d/default.conf.template \
+  > /etc/nginx/http.d/default.conf
+
 echo "==> Iniciando servidor..."
 exec "$@"
