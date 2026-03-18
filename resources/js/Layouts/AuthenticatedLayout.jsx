@@ -152,7 +152,9 @@ export default function AuthenticatedLayout({ header, children }) {
           <div className="mt-4">
             <p className="text-base font-semibold text-gray-900">{user.name}</p>
             <p className="text-sm text-gray-500">{roleLabel}</p>
-            {company?.name && <p className="mt-1 text-sm text-gray-400">{company.name}</p>}
+            {company?.name && !isPlatformAdmin && (
+              <p className="mt-1 text-sm text-gray-400">{company.name}</p>
+            )}
           </div>
         </div>
 
