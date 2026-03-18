@@ -63,6 +63,8 @@ RUN chmod +x /usr/local/bin/render-web-entrypoint \
         /var/www/html/storage/framework/views \
         /var/www/html/storage/logs \
         /var/www/html/bootstrap/cache \
+    && chmod -R 777 /var/lib/nginx/tmp \
+    && chmod -R 777 /run/nginx \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /run/nginx /var/lib/nginx /var/log/nginx
 
 ENV PORT=10000
