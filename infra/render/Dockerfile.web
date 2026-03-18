@@ -36,7 +36,7 @@ RUN npm run build
 
 FROM php:8.3-fpm-alpine AS app
 
-RUN apk add --no-cache gettext icu-dev libzip-dev nginx oniguruma-dev postgresql-client supervisor \
+RUN apk add --no-cache gettext icu-dev libzip-dev nginx oniguruma-dev postgresql-client postgresql-dev supervisor \
     && docker-php-ext-install bcmath intl mbstring opcache pdo_pgsql zip \
     && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
