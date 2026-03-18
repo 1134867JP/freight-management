@@ -42,11 +42,17 @@ class DatabaseSeeder extends Seeder
         );
 
         // Criar clientes
-        User::factory(3)->create([
+foreach ([1, 2, 3] as $i) {
+    User::query()->updateOrCreate(
+        ['email' => "cliente{$i}@example.com"],
+        [
             'company_id' => $company->id,
+            'name' => "Cliente {$i}",
             'role' => User::ROLE_CLIENT,
             'password' => bcrypt('password'),
-        ]);
+        ],
+    );
+}
 
         // Criar endereços de descarga
         $addresses = [
