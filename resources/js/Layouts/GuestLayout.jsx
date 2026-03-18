@@ -6,7 +6,7 @@ export default function GuestLayout({ children }) {
       {/* IMAGEM NO FUNDO TODO */}
       <div
         className="absolute inset-0 bg-cover bg-center scale-[1.03]"
-        style={{ backgroundImage: "url('/storage/bg-yard.jpg')" }}
+        style={{ backgroundImage: "url('/bg-yard.jpg')" }}
       />
 
       {/* Overlay geral para dar contraste */}
@@ -61,7 +61,7 @@ export default function GuestLayout({ children }) {
           <div className="relative w-full max-w-md">
             {/* Header mobile */}
             <div className="mb-6 lg:hidden text-center">
-              <img src="/storage/logo.png" alt="Logo" className="mx-auto h-12 w-auto drop-shadow" />
+              <img src="/logo.png" alt="Logo" className="mx-auto h-12 w-auto drop-shadow" />
               <h1 className="mt-3 text-2xl font-semibold text-white">Gerenciador de Pátio</h1>
               <p className="mt-1 text-sm text-white/70">
                 Agendamento e controle de cargas e descargas
