@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+echo "==> Entrypoint iniciado"
+echo "==> PORT=$PORT"
+echo "==> DB_URL=$DB_URL"
+
 echo "==> Aguardando banco de dados..."
 until php artisan db:show --json > /dev/null 2>&1; do
   echo "    banco indisponível, tentando novamente em 2s..."
@@ -29,9 +33,7 @@ if [ "$APP_RUN_OPTIMIZE" = "true" ]; then
 fi
 
 echo "==> Processando configuração do nginx..."
-export PORT="${PORT:-10000}"
-envsubst '${PORT}' < /etc/nginx/http.d/default.conf.template \
-  > /etc/nginx/http.d/default.conf
+cp /etc/nginx/http.d/default.conf.template /etc/nginx/http.d/default.conf
 
 echo "==> Iniciando servidor..."
 exec "$@"
