@@ -123,7 +123,7 @@ class PlatformCompanyController extends Controller
         });
 
         if (filled($logoPath)) {
-            Storage::disk('public')->delete($logoPath);
+            Storage::delete($logoPath);
         }
 
         return redirect()
@@ -139,16 +139,16 @@ class PlatformCompanyController extends Controller
         ]);
 
         if ($removeLogo && filled($settings->logo_path)) {
-            Storage::disk('public')->delete($settings->logo_path);
+            Storage::delete($settings->logo_path);
             $settings->logo_path = null;
         }
 
         if ($logo) {
             if (filled($settings->logo_path)) {
-                Storage::disk('public')->delete($settings->logo_path);
+                Storage::delete($settings->logo_path);
             }
 
-            $settings->logo_path = $logo->store('company-logos', 'public');
+            $settings->logo_path = $logo->store('company-logos');
         }
 
         $settings->save();

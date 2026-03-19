@@ -1,5 +1,8 @@
 import React from 'react';
-import { getTruckTypeLabel } from '@/Features/Truck/utils/truckTypes';
+import { getTruckTypeLabel, normalizeTruckPlate } from '@/Features/Truck/utils/truckTypes';
+import FormField from '@/Components/UI/FormField';
+import { useClientValidation } from '@/hooks/useClientValidation';
+import { isValidBrPlate } from '@/utils/validation';
 
 export default function ReservationForm({
   selectedSlot,
@@ -14,6 +17,37 @@ export default function ReservationForm({
   className = '',
 }) {
   if (!selectedSlot) return null;
+
+  const { clientErrors, validate, clearClientError } = useClientValidation({
+    truck_plate: (value) => {
+      if (!value) return 'Selecione um caminhão.';
+      if (!isValidBrPlate(value)) return 'Placa inválida.';
+      return null;
+    },
+    driver_name: (value) => {
+      if (!value || value.trim().length < 3)
+        return 'Nome do motorista deve ter ao menos 3 caracteres.';
+      return null;
+    },
+    cargo_description: (value) => {
+      if (!value || value.trim().length < 3)
+        return 'Descrição da carga deve ter ao menos 3 caracteres.';
+      return null;
+    },
+    nota_fiscal_path: (value, formData) => {
+      if (formData.operation_type === 'unload' && !value)
+        return 'Nota fiscal é obrigatória para descarga.';
+      return null;
+    },
+  });
+
+  const allErrors = { ...clientErrors, ...errors };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!validate(data)) return;
+    onSubmit(event);
+  };
 
   const nrRemaining = Math.max(selectedSlot.capacity - selectedSlot.current_reservations, 0);
 
@@ -51,30 +85,29 @@ export default function ReservationForm({
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Tipo de operação</label>
-          <select
-            className="mt-1 block w-full rounded-md border-gray-300"
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <FormField label="Tipo de operação" error={allErrors.operation_type} required>
+          <FormField.Select
+            error={allErrors.operation_type}
             value={data.operation_type}
             onChange={(event) => onChangeOperationType(event.target.value)}
             required
           >
             {selectedSlot.operation_type !== 'unload' && <option value="load">Carga</option>}
             {selectedSlot.operation_type !== 'load' && <option value="unload">Descarga</option>}
-          </select>
-          {errors.operation_type && (
-            <span className="text-sm text-red-500">{errors.operation_type}</span>
-          )}
-        </div>
+          </FormField.Select>
+        </FormField>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Caminhão</label>
-          <div className="flex gap-2">
+        <FormField label="Caminhão" error={allErrors.truck_plate} required>
+          <div className="mt-1 flex gap-2">
             <select
-              className="flex-1 rounded-md border-gray-300"
+              className={`flex-1 ${FormField.inputClass(allErrors.truck_plate)}`}
+              aria-invalid={Boolean(allErrors.truck_plate)}
               value={data.truck_plate}
-              onChange={(event) => setData('truck_plate', event.target.value)}
+              onChange={(event) => {
+                setData('truck_plate', normalizeTruckPlate(event.target.value));
+                clearClientError('truck_plate');
+              }}
               required
             >
               <option value="">Selecione um caminhão</option>
@@ -85,7 +118,6 @@ export default function ReservationForm({
                 </option>
               ))}
             </select>
-
             <button
               type="button"
               onClick={onOpenTruckModal}
@@ -95,63 +127,62 @@ export default function ReservationForm({
               +
             </button>
           </div>
-          {errors.truck_plate && <span className="text-sm text-red-500">{errors.truck_plate}</span>}
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Nome do Motorista</label>
-          <input
+        <FormField label="Nome do Motorista" error={allErrors.driver_name} required>
+          <FormField.Input
             type="text"
-            className="mt-1 block w-full rounded-md border-gray-300"
+            error={allErrors.driver_name}
             value={data.driver_name}
-            onChange={(event) => setData('driver_name', event.target.value)}
+            onChange={(event) => {
+              setData('driver_name', event.target.value);
+              clearClientError('driver_name');
+            }}
             required
           />
-          {errors.driver_name && <span className="text-sm text-red-500">{errors.driver_name}</span>}
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Carga (Descrição)</label>
-          <input
+        <FormField label="Carga (Descrição)" error={allErrors.cargo_description} required>
+          <FormField.Input
             type="text"
-            className="mt-1 block w-full rounded-md border-gray-300"
+            error={allErrors.cargo_description}
             value={data.cargo_description}
-            onChange={(event) => setData('cargo_description', event.target.value)}
+            onChange={(event) => {
+              setData('cargo_description', event.target.value);
+              clearClientError('cargo_description');
+            }}
             required
           />
-          {errors.cargo_description && (
-            <span className="text-sm text-red-500">{errors.cargo_description}</span>
-          )}
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Peso (Toneladas)</label>
-          <input
+        <FormField label="Peso (Toneladas)" error={allErrors.weight}>
+          <FormField.Input
             type="number"
             step="0.1"
-            className="mt-1 block w-full rounded-md border-gray-300"
+            error={allErrors.weight}
             value={data.weight}
             onChange={(event) => setData('weight', event.target.value)}
           />
-          {errors.weight && <span className="text-sm text-red-500">{errors.weight}</span>}
-        </div>
+        </FormField>
 
         {data.operation_type === 'unload' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Nota Fiscal (obrigatória para descarga)
-            </label>
+          <FormField
+            label="Nota Fiscal (obrigatória para descarga)"
+            error={allErrors.nota_fiscal_path}
+            required
+          >
             <input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              className="mt-1 block w-full rounded-md border-gray-300"
-              onChange={(event) => setData('nota_fiscal_path', event.target.files?.[0] || null)}
+              className={`mt-1 block w-full ${FormField.inputClass(allErrors.nota_fiscal_path)}`}
+              aria-invalid={Boolean(allErrors.nota_fiscal_path)}
+              onChange={(event) => {
+                setData('nota_fiscal_path', event.target.files?.[0] || null);
+                clearClientError('nota_fiscal_path');
+              }}
               required
             />
-            {errors.nota_fiscal_path && (
-              <span className="text-sm text-red-500">{errors.nota_fiscal_path}</span>
-            )}
-          </div>
+          </FormField>
         )}
 
         <button

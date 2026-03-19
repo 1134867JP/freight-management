@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php --version)",
+      "Read(//c/Apps/php//**)",
+      "Read(//c/Users/joper/**)",
+      "Bash(php artisan:*)"
+    ]
+  }
+}

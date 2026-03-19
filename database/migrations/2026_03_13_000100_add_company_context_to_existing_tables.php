@@ -10,61 +10,73 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('company_id')
-                ->nullable()
-                ->after('id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->string('new_role')->default('client')->after('role');
-            $table->index(['company_id', 'role']);
-        });
+        if (! Schema::hasColumn('users', 'company_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->foreignId('company_id')
+                    ->nullable()
+                    ->after('id')
+                    ->constrained()
+                    ->cascadeOnDelete();
+                $table->string('new_role')->default('client')->after('role');
+                $table->index(['company_id', 'role']);
+            });
+        }
 
-        Schema::table('dropoff_addresses', function (Blueprint $table) {
-            $table->foreignId('company_id')
-                ->nullable()
-                ->after('id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->index(['company_id', 'is_active']);
-        });
+        if (! Schema::hasColumn('dropoff_addresses', 'company_id')) {
+            Schema::table('dropoff_addresses', function (Blueprint $table) {
+                $table->foreignId('company_id')
+                    ->nullable()
+                    ->after('id')
+                    ->constrained()
+                    ->cascadeOnDelete();
+                $table->index(['company_id', 'is_active']);
+            });
+        }
 
-        Schema::table('timeslots', function (Blueprint $table) {
-            $table->foreignId('company_id')
-                ->nullable()
-                ->after('id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->index(['company_id', 'status', 'start_time']);
-        });
+        if (! Schema::hasColumn('timeslots', 'company_id')) {
+            Schema::table('timeslots', function (Blueprint $table) {
+                $table->foreignId('company_id')
+                    ->nullable()
+                    ->after('id')
+                    ->constrained()
+                    ->cascadeOnDelete();
+                $table->index(['company_id', 'status', 'start_time']);
+            });
+        }
 
-        Schema::table('freights', function (Blueprint $table) {
-            $table->foreignId('company_id')
-                ->nullable()
-                ->after('id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->index(['company_id', 'status']);
-        });
+        if (! Schema::hasColumn('freights', 'company_id')) {
+            Schema::table('freights', function (Blueprint $table) {
+                $table->foreignId('company_id')
+                    ->nullable()
+                    ->after('id')
+                    ->constrained()
+                    ->cascadeOnDelete();
+                $table->index(['company_id', 'status']);
+            });
+        }
 
-        Schema::table('trucks', function (Blueprint $table) {
-            $table->foreignId('company_id')
-                ->nullable()
-                ->after('id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->index(['company_id', 'is_active']);
-        });
+        if (! Schema::hasColumn('trucks', 'company_id')) {
+            Schema::table('trucks', function (Blueprint $table) {
+                $table->foreignId('company_id')
+                    ->nullable()
+                    ->after('id')
+                    ->constrained()
+                    ->cascadeOnDelete();
+                $table->index(['company_id', 'is_active']);
+            });
+        }
 
-        Schema::table('client_timeslot', function (Blueprint $table) {
-            $table->foreignId('company_id')
-                ->nullable()
-                ->after('id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->index(['company_id', 'timeslot_id']);
-            $table->index(['company_id', 'user_id']);
-        });
+        if (! Schema::hasColumn('client_timeslot', 'company_id')) {
+            Schema::table('client_timeslot', function (Blueprint $table) {
+                $table->foreignId('company_id')
+                    ->nullable()
+                    ->after('id')
+                    ->constrained()
+                    ->cascadeOnDelete();
+                $table->index(['company_id', 'timeslot_id']);
+                $table->index(['company_id', 'user_id']);
+            });
+        }
 
         $idDefaultCompany = DB::table('companies')
             ->where('slug', Company::DEFAULT_SLUG)
@@ -156,18 +168,20 @@ return new class extends Migration
             [$idDefaultCompany],
         );
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex('users_company_id_role_index');
-            $table->dropColumn('role');
-        });
+        if (Schema::hasColumn('users', 'new_role')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropIndex('users_company_id_role_index');
+                $table->dropColumn('role');
+            });
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->renameColumn('new_role', 'role');
-        });
+            Schema::table('users', function (Blueprint $table) {
+                $table->renameColumn('new_role', 'role');
+            });
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->index(['company_id', 'role']);
-        });
+            Schema::table('users', function (Blueprint $table) {
+                $table->index(['company_id', 'role']);
+            });
+        }
 
         Schema::table('dropoff_addresses', function (Blueprint $table) {
             $table->foreignId('company_id')->nullable(false)->change();

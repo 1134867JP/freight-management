@@ -28,4 +28,11 @@ class UpdateTruckRequest extends FormRequest
             'is_active' => 'required|boolean',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'plate.regex' => 'A placa deve estar no formato ABC1234 ou ABC1D23 (Mercosul).',
+        ];
+    }
 }

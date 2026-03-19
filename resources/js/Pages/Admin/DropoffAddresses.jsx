@@ -5,7 +5,9 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import FormField from '@/Components/UI/FormField';
 import { confirmAction } from '@/Components/UI/confirmAction';
+import { useClientValidation } from '@/hooks/useClientValidation';
 import { Head, useForm, router } from '@inertiajs/react';
 
 export default function DropoffAddresses({ addresses }) {
@@ -28,11 +30,27 @@ export default function DropoffAddresses({ addresses }) {
 
   const isEditing = Boolean(editingAddress?.id);
 
+  const { clientErrors, validate, clearClientError } = useClientValidation({
+    street: (value) => (!value || !value.trim() ? 'Logradouro é obrigatório.' : null),
+    neighborhood: (value) => (!value || !value.trim() ? 'Bairro é obrigatório.' : null),
+    city: (value) => (!value || !value.trim() ? 'Cidade é obrigatória.' : null),
+    state: (value) =>
+      !/^[A-Z]{2}$/.test(value || '') ? 'UF deve ter exatamente 2 letras maiúsculas.' : null,
+  });
+
+  const allErrors = { ...clientErrors, ...errors };
+
   const resetForm = () => {
     setEditingAddress(null);
     setShowCreateModal(false);
     clearErrors();
     reset();
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!validate(data)) return;
+    submit(event);
   };
 
   const startEdit = (address) => {
@@ -178,106 +196,108 @@ export default function DropoffAddresses({ addresses }) {
         onClose={resetForm}
         maxWidthClass="max-w-2xl"
       >
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Nome/Identificador</label>
-              <input
+            <FormField
+              label="Nome/Identificador"
+              error={allErrors.name}
+              required
+              className="md:col-span-2"
+            >
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300"
+                error={allErrors.name}
                 value={data.name}
-                onChange={(event) => setData('name', event.target.value)}
+                onChange={(event) => {
+                  setData('name', event.target.value);
+                  clearClientError('name');
+                }}
                 required
               />
-              {errors.name && <span className="text-sm text-red-500">{errors.name}</span>}
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Logradouro</label>
-              <input
+            <FormField label="Logradouro" error={allErrors.street} required>
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300"
+                error={allErrors.street}
                 value={data.street}
-                onChange={(event) => setData('street', event.target.value)}
+                onChange={(event) => {
+                  setData('street', event.target.value);
+                  clearClientError('street');
+                }}
                 required
               />
-              {errors.street && <span className="text-sm text-red-500">{errors.street}</span>}
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Número</label>
-              <input
+            <FormField label="Número" error={allErrors.number}>
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300"
+                error={allErrors.number}
                 value={data.number}
                 onChange={(event) => setData('number', event.target.value)}
                 required
               />
-              {errors.number && <span className="text-sm text-red-500">{errors.number}</span>}
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Bairro</label>
-              <input
+            <FormField label="Bairro" error={allErrors.neighborhood} required>
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300"
+                error={allErrors.neighborhood}
                 value={data.neighborhood}
-                onChange={(event) => setData('neighborhood', event.target.value)}
+                onChange={(event) => {
+                  setData('neighborhood', event.target.value);
+                  clearClientError('neighborhood');
+                }}
                 required
               />
-              {errors.neighborhood && (
-                <span className="text-sm text-red-500">{errors.neighborhood}</span>
-              )}
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Cidade</label>
-              <input
+            <FormField label="Cidade" error={allErrors.city} required>
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300"
+                error={allErrors.city}
                 value={data.city}
-                onChange={(event) => setData('city', event.target.value)}
+                onChange={(event) => {
+                  setData('city', event.target.value);
+                  clearClientError('city');
+                }}
                 required
               />
-              {errors.city && <span className="text-sm text-red-500">{errors.city}</span>}
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">UF</label>
-              <input
+            <FormField label="UF" error={allErrors.state} required>
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300 uppercase"
+                className="uppercase"
                 maxLength={2}
+                error={allErrors.state}
                 value={data.state}
-                onChange={(event) => setData('state', event.target.value.toUpperCase())}
+                onChange={(event) => {
+                  setData('state', event.target.value.toUpperCase());
+                  clearClientError('state');
+                }}
                 required
               />
-              {errors.state && <span className="text-sm text-red-500">{errors.state}</span>}
-            </div>
+            </FormField>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Complemento</label>
-              <input
+            <FormField label="Complemento" error={allErrors.complement} className="md:col-span-2">
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-md border-gray-300"
+                error={allErrors.complement}
                 value={data.complement}
                 onChange={(event) => setData('complement', event.target.value)}
               />
-              {errors.complement && (
-                <span className="text-sm text-red-500">{errors.complement}</span>
-              )}
-            </div>
+            </FormField>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Observações</label>
+            <FormField label="Observações" error={allErrors.notes} className="md:col-span-2">
               <textarea
-                className="mt-1 block w-full rounded-md border-gray-300"
+                className={`mt-1 block w-full ${FormField.inputClass(allErrors.notes)}`}
+                aria-invalid={Boolean(allErrors.notes)}
                 rows="3"
                 value={data.notes}
                 onChange={(event) => setData('notes', event.target.value)}
               />
-              {errors.notes && <span className="text-sm text-red-500">{errors.notes}</span>}
-            </div>
+            </FormField>
 
             <div className="md:col-span-2">
               <label className="flex cursor-pointer items-center space-x-2">

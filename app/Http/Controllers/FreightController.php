@@ -83,7 +83,7 @@ class FreightController extends Controller
         // Se for descarga, guardar arquivo da nota fiscal (validado e obrigatório)
         $notaFiscalPath = null;
         if ($validated['operation_type'] === 'unload' && $request->hasFile('nota_fiscal_path')) {
-            $notaFiscalPath = $request->file('nota_fiscal_path')->store('notas_fiscais', 'public');
+            $notaFiscalPath = $request->file('nota_fiscal_path')->store('notas_fiscais');
             Log::info('Nota fiscal armazenada', ['path' => $notaFiscalPath]);
         }
 
@@ -118,7 +118,7 @@ class FreightController extends Controller
 
             // Remover arquivo se houve erro
             if ($notaFiscalPath) {
-                Storage::disk('public')->delete($notaFiscalPath);
+                Storage::delete($notaFiscalPath);
                 Log::info('Arquivo removido após erro');
             }
 
@@ -182,11 +182,11 @@ class FreightController extends Controller
 
         if ($request->hasFile('nota_fiscal')) {
             // Remove arquivo antigo se existir
-            if ($freight->nota_fiscal_path && Storage::disk('public')->exists($freight->nota_fiscal_path)) {
-                Storage::disk('public')->delete($freight->nota_fiscal_path);
+            if ($freight->nota_fiscal_path && Storage::exists($freight->nota_fiscal_path)) {
+                Storage::delete($freight->nota_fiscal_path);
             }
 
-            $path = $request->file('nota_fiscal')->store('notas_fiscais', 'public');
+            $path = $request->file('nota_fiscal')->store('notas_fiscais');
             $freight->update([
                 'nota_fiscal_path' => $path,
                 'peso_bruto' => $validated['peso_bruto'] ?? $freight->peso_bruto,
@@ -237,11 +237,11 @@ class FreightController extends Controller
 
         if ($request->hasFile('attachment')) {
             // Remove arquivo antigo se existir
-            if ($freight->attachment_path && Storage::disk('public')->exists($freight->attachment_path)) {
-                Storage::disk('public')->delete($freight->attachment_path);
+            if ($freight->attachment_path && Storage::exists($freight->attachment_path)) {
+                Storage::delete($freight->attachment_path);
             }
 
-            $path = $request->file('attachment')->store('attachments', 'public');
+            $path = $request->file('attachment')->store('attachments');
             $freight->update(['attachment_path' => $path]);
         }
 

@@ -1,11 +1,36 @@
 import React, { useMemo, useState } from 'react';
 import AddressModal from './AddressModal';
+import FormField from '@/Components/UI/FormField';
+import { useClientValidation } from '@/hooks/useClientValidation';
 
 export default function TimeslotForm({ form, clients, addresses, isEditing, onSubmit }) {
   const [showAddressModal, setShowAddressModal] = useState(false);
 
   const arrClients = useMemo(() => clients || [], [clients]);
   const arrAddresses = useMemo(() => addresses || [], [addresses]);
+
+  const { clientErrors, validate, clearClientError } = useClientValidation({
+    start_time: (value) => (!value ? 'Horário de início é obrigatório.' : null),
+    end_time: (value, data) => {
+      if (!value) return 'Horário de fim é obrigatório.';
+      if (data.start_time && value <= data.start_time)
+        return 'Horário de fim deve ser posterior ao início.';
+      return null;
+    },
+    capacity: (value) => {
+      const n = Number(value);
+      if (!value || !Number.isInteger(n) || n < 1) return 'Capacidade deve ser um inteiro >= 1.';
+      return null;
+    },
+  });
+
+  const allErrors = { ...clientErrors, ...form.errors };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!validate(form.data)) return;
+    onSubmit(event);
+  };
 
   const toggleClient = (clientId) => {
     const arrCurrent = [...form.data.client_ids];
@@ -22,55 +47,51 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
 
   return (
     <>
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Início</label>
-            <input
+          <FormField label="Início" error={allErrors.start_time} required>
+            <FormField.Input
               type="datetime-local"
-              className="mt-1 block w-full rounded-md border-gray-300"
+              error={allErrors.start_time}
               value={form.data.start_time}
-              onChange={(event) => form.setData('start_time', event.target.value)}
+              onChange={(event) => {
+                form.setData('start_time', event.target.value);
+                clearClientError('start_time');
+              }}
               required
             />
-            {form.errors.start_time && (
-              <span className="text-sm text-red-500">{form.errors.start_time}</span>
-            )}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Fim</label>
-            <input
+          <FormField label="Fim" error={allErrors.end_time} required>
+            <FormField.Input
               type="datetime-local"
-              className="mt-1 block w-full rounded-md border-gray-300"
+              error={allErrors.end_time}
               value={form.data.end_time}
-              onChange={(event) => form.setData('end_time', event.target.value)}
+              onChange={(event) => {
+                form.setData('end_time', event.target.value);
+                clearClientError('end_time');
+              }}
               required
             />
-            {form.errors.end_time && (
-              <span className="text-sm text-red-500">{form.errors.end_time}</span>
-            )}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Cota (Capacidade)</label>
-            <input
+          <FormField label="Cota (Capacidade)" error={allErrors.capacity} required>
+            <FormField.Input
               type="number"
               min="1"
-              className="mt-1 block w-full rounded-md border-gray-300"
+              error={allErrors.capacity}
               value={form.data.capacity}
-              onChange={(event) => form.setData('capacity', event.target.value)}
+              onChange={(event) => {
+                form.setData('capacity', event.target.value);
+                clearClientError('capacity');
+              }}
               required
             />
-            {form.errors.capacity && (
-              <span className="text-sm text-red-500">{form.errors.capacity}</span>
-            )}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Tipo de Operação</label>
-            <select
-              className="mt-1 block w-full rounded-md border-gray-300"
+          <FormField label="Tipo de Operação" error={allErrors.operation_type}>
+            <FormField.Select
+              error={allErrors.operation_type}
               value={form.data.operation_type}
               onChange={(event) => form.setData('operation_type', event.target.value)}
               required
@@ -78,16 +99,12 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
               <option value="both">Ambos (Carga e Descarga)</option>
               <option value="load">Apenas Carga</option>
               <option value="unload">Apenas Descarga</option>
-            </select>
-            {form.errors.operation_type && (
-              <span className="text-sm text-red-500">{form.errors.operation_type}</span>
-            )}
-          </div>
+            </FormField.Select>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Status</label>
-            <select
-              className="mt-1 block w-full rounded-md border-gray-300"
+          <FormField label="Status" error={allErrors.status}>
+            <FormField.Select
+              error={allErrors.status}
               value={form.data.status}
               onChange={(event) => form.setData('status', event.target.value)}
               required
@@ -95,20 +112,18 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
               <option value="available">Disponível</option>
               <option value="full">Lotado</option>
               <option value="closed">Fechado</option>
-            </select>
-            {form.errors.status && (
-              <span className="text-sm text-red-500">{form.errors.status}</span>
-            )}
-          </div>
+            </FormField.Select>
+          </FormField>
 
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Endereço de Descarga
-            </label>
-
-            <div className="flex gap-2">
+          <FormField
+            label="Endereço de Descarga"
+            error={allErrors.dropoff_address_id}
+            className="md:col-span-2"
+          >
+            <div className="mt-1 flex gap-2">
               <select
-                className="flex-1 rounded-md border-gray-300"
+                className={`flex-1 ${FormField.inputClass(allErrors.dropoff_address_id)}`}
+                aria-invalid={Boolean(allErrors.dropoff_address_id)}
                 value={form.data.dropoff_address_id}
                 onChange={(event) => form.setData('dropoff_address_id', event.target.value)}
               >
@@ -120,7 +135,6 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
                   </option>
                 ))}
               </select>
-
               <button
                 type="button"
                 onClick={() => setShowAddressModal(true)}
@@ -129,24 +143,17 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
                 +
               </button>
             </div>
+          </FormField>
 
-            {form.errors.dropoff_address_id && (
-              <span className="text-sm text-red-500">{form.errors.dropoff_address_id}</span>
-            )}
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Descrição</label>
+          <FormField label="Descrição" error={allErrors.description} className="md:col-span-2">
             <textarea
-              className="mt-1 block w-full rounded-md border-gray-300"
+              className={`mt-1 block w-full ${FormField.inputClass(allErrors.description)}`}
+              aria-invalid={Boolean(allErrors.description)}
               value={form.data.description}
               onChange={(event) => form.setData('description', event.target.value)}
               rows="2"
             />
-            {form.errors.description && (
-              <span className="text-sm text-red-500">{form.errors.description}</span>
-            )}
-          </div>
+          </FormField>
 
           <div className="md:col-span-2">
             <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -190,8 +197,8 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
               </p>
             </div>
 
-            {form.errors.client_ids && (
-              <span className="text-sm text-red-500">{form.errors.client_ids}</span>
+            {allErrors.client_ids && (
+              <span className="text-sm text-red-500">{allErrors.client_ids}</span>
             )}
           </div>
         </div>

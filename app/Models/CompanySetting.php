@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class CompanySetting extends Model
 {
@@ -28,6 +29,6 @@ class CompanySetting extends Model
             return null;
         }
 
-        return '/storage/'.ltrim($this->logo_path, '/');
+        return Storage::url($this->logo_path);
     }
 }

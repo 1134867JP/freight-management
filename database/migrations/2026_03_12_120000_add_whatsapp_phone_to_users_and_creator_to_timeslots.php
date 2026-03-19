@@ -8,17 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('whatsapp_phone', 20)->nullable()->after('email');
-        });
+        if (! Schema::hasColumn('users', 'whatsapp_phone')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('whatsapp_phone', 20)->nullable()->after('email');
+            });
+        }
 
-        Schema::table('timeslots', function (Blueprint $table) {
-            $table->foreignId('created_by')
-                ->nullable()
-                ->after('dropoff_address_id')
-                ->constrained('users')
-                ->nullOnDelete();
-        });
+        if (! Schema::hasColumn('timeslots', 'created_by')) {
+            Schema::table('timeslots', function (Blueprint $table) {
+                $table->foreignId('created_by')
+                    ->nullable()
+                    ->after('dropoff_address_id')
+                    ->constrained('users')
+                    ->nullOnDelete();
+            });
+        }
     }
 
     public function down(): void

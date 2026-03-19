@@ -4,7 +4,10 @@ import EmptyState from '@/Components/UI/EmptyState';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
+import FormField from '@/Components/UI/FormField';
 import { confirmAction } from '@/Components/UI/confirmAction';
+import { useClientValidation } from '@/hooks/useClientValidation';
+import { isValidEmail, isValidWhatsApp } from '@/utils/validation';
 import { Head, useForm, router } from '@inertiajs/react';
 
 export default function Clients({ clients }) {
@@ -22,11 +25,38 @@ export default function Clients({ clients }) {
 
   const isEditing = Boolean(editingClient?.id);
 
+  const { clientErrors, validate, clearClientError } = useClientValidation({
+    name: (value) =>
+      !value || value.trim().length < 2 ? 'Nome deve ter ao menos 2 caracteres.' : null,
+    email: (value) => {
+      if (!value) return 'Email é obrigatório.';
+      if (!isValidEmail(value)) return 'Email inválido.';
+      return null;
+    },
+    whatsapp_phone: (value) => {
+      if (value && !isValidWhatsApp(value)) return 'WhatsApp inválido (10–15 dígitos).';
+      return null;
+    },
+    password: (value) => {
+      if (!isEditing && (!value || value.length < 6))
+        return 'Senha deve ter ao menos 6 caracteres.';
+      return null;
+    },
+  });
+
+  const allErrors = { ...clientErrors, ...errors };
+
   const resetForm = () => {
     setEditingClient(null);
     setShowCreateModal(false);
     clearErrors();
     reset();
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!validate(data)) return;
+    submit(event);
   };
 
   const startEdit = (client) => {
@@ -152,60 +182,67 @@ export default function Clients({ clients }) {
         title={isEditing ? 'Editar Cliente' : 'Novo Cliente'}
         maxWidthClass="max-w-md"
       >
-        <form onSubmit={submit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Nome</label>
-            <input
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FormField label="Nome" error={allErrors.name} required>
+            <FormField.Input
               type="text"
-              className="mt-1 block w-full rounded-md border-gray-300"
+              error={allErrors.name}
               value={data.name}
-              onChange={(event) => setData('name', event.target.value)}
+              onChange={(event) => {
+                setData('name', event.target.value);
+                clearClientError('name');
+              }}
               required
             />
-            {errors.name && <span className="text-sm text-red-500">{errors.name}</span>}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
+          <FormField label="Email" error={allErrors.email} required>
+            <FormField.Input
               type="email"
-              className="mt-1 block w-full rounded-md border-gray-300"
+              error={allErrors.email}
               value={data.email}
-              onChange={(event) => setData('email', event.target.value)}
+              onChange={(event) => {
+                setData('email', event.target.value);
+                clearClientError('email');
+              }}
               required
             />
-            {errors.email && <span className="text-sm text-red-500">{errors.email}</span>}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">WhatsApp</label>
-            <input
+          <FormField
+            label="WhatsApp"
+            error={allErrors.whatsapp_phone}
+            hint="Informe com DDI e apenas números."
+          >
+            <FormField.Input
               type="tel"
               inputMode="numeric"
               placeholder="5511999999999"
-              className="mt-1 block w-full rounded-md border-gray-300"
+              error={allErrors.whatsapp_phone}
               value={data.whatsapp_phone}
-              onChange={(event) => setData('whatsapp_phone', event.target.value)}
+              onChange={(event) => {
+                setData('whatsapp_phone', event.target.value);
+                clearClientError('whatsapp_phone');
+              }}
             />
-            <p className="mt-1 text-xs text-gray-500">Informe com DDI e apenas números.</p>
-            {errors.whatsapp_phone && (
-              <span className="text-sm text-red-500">{errors.whatsapp_phone}</span>
-            )}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              {isEditing ? 'Nova senha (opcional)' : 'Senha'}
-            </label>
-            <input
+          <FormField
+            label={isEditing ? 'Nova senha (opcional)' : 'Senha'}
+            error={allErrors.password}
+            required={!isEditing}
+          >
+            <FormField.Input
               type="password"
-              className="mt-1 block w-full rounded-md border-gray-300"
+              error={allErrors.password}
               value={data.password}
-              onChange={(event) => setData('password', event.target.value)}
+              onChange={(event) => {
+                setData('password', event.target.value);
+                clearClientError('password');
+              }}
               required={!isEditing}
             />
-            {errors.password && <span className="text-sm text-red-500">{errors.password}</span>}
-          </div>
+          </FormField>
 
           <div className="flex gap-3 pt-2">
             <button

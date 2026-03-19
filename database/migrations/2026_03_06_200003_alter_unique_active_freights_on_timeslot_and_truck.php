@@ -20,11 +20,15 @@ return new class extends Migration
             // índice legado pode não existir em ambientes novos
         }
 
-        DB::statement("
-            CREATE UNIQUE INDEX freights_timeslot_id_truck_plate_active_unique
-            ON freights (timeslot_id, truck_plate)
-            WHERE status != 'cancelled'
-        ");
+        try {
+            DB::statement("
+                CREATE UNIQUE INDEX freights_timeslot_id_truck_plate_active_unique
+                ON freights (timeslot_id, truck_plate)
+                WHERE status != 'cancelled'
+            ");
+        } catch (\Throwable $e) {
+            // índice já existe
+        }
     }
 
     public function down(): void

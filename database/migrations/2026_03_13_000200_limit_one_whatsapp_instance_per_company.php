@@ -18,9 +18,13 @@ return new class extends Migration
             )
         ');
 
-        Schema::table('whatsapp_instances', function (Blueprint $table) {
-            $table->unique('company_id');
-        });
+        try {
+            Schema::table('whatsapp_instances', function (Blueprint $table) {
+                $table->unique('company_id');
+            });
+        } catch (\Throwable $e) {
+            // índice já existe
+        }
     }
 
     public function down(): void
