@@ -86,7 +86,6 @@ class Timeslot extends Model
     public function scopeVisibleForClient($query, $userId)
     {
         return $query
-            ->where('start_time', '>=', now())
             ->where('status', '!=', self::STATUS_CLOSED)
             ->whereColumn('current_reservations', '<', 'capacity')
             ->where(function ($q) use ($userId) {
