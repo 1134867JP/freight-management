@@ -61,7 +61,6 @@ export default function GuestLayout({ children }) {
           <div className="relative w-full max-w-md">
             {/* Header mobile */}
             <div className="mb-6 lg:hidden text-center">
-              <img src="/logo.png" alt="Logo" className="mx-auto h-12 w-auto drop-shadow" />
               <h1 className="mt-3 text-2xl font-semibold text-white">Gerenciador de Pátio</h1>
               <p className="mt-1 text-sm text-white/70">
                 Agendamento e controle de cargas e descargas
