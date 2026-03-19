@@ -45,8 +45,8 @@ WORKDIR /var/www/html
 COPY . .
 COPY --from=php-deps /app/vendor ./vendor
 COPY --from=frontend-build /app/public/build ./public/build
-COPY infra/production/php/php.ini $PHP_INI_DIR/conf.d/99-app.ini
-COPY infra/production/php/www.conf /usr/local/etc/php-fpm.d/zz-app.conf
+COPY infra/render/php.ini $PHP_INI_DIR/conf.d/99-app.ini
+COPY infra/render/www.conf /usr/local/etc/php-fpm.d/zz-app.conf
 COPY infra/render/nginx.default.conf.template /etc/nginx/http.d/default.conf.template
 COPY infra/render/supervisord.web.conf /etc/supervisord.conf
 COPY infra/render/web-entrypoint.sh /usr/local/bin/render-web-entrypoint
