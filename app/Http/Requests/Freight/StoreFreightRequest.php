@@ -31,7 +31,7 @@ class StoreFreightRequest extends FormRequest
             'driver_name' => ['required', 'string', 'max:100'],
             'cargo_description' => ['required', 'string', 'max:500'],
             'weight' => ['nullable', 'numeric', 'min:0.1'],
-            'nota_fiscal_path' => ['nullable', 'required_if:operation_type,unload', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'invoice_path' => ['nullable', 'required_if:operation_type,unload', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ];
     }
 
@@ -61,10 +61,10 @@ class StoreFreightRequest extends FormRequest
             'weight.numeric' => 'O peso deve ser um número.',
             'weight.min' => 'O peso deve ser maior que zero.',
 
-            'nota_fiscal_path.required_if' => 'A nota fiscal é obrigatória para descarga.',
-            'nota_fiscal_path.file' => 'A nota fiscal deve ser um arquivo.',
-            'nota_fiscal_path.mimes' => 'A nota fiscal deve ser PDF ou imagem (JPG, PNG).',
-            'nota_fiscal_path.max' => 'A nota fiscal não pode ter mais de 10MB.',
+            'invoice_path.required_if' => 'A nota fiscal é obrigatória para descarga.',
+            'invoice_path.file' => 'A nota fiscal deve ser um arquivo.',
+            'invoice_path.mimes' => 'A nota fiscal deve ser PDF ou imagem (JPG, PNG).',
+            'invoice_path.max' => 'A nota fiscal não pode ter mais de 10MB.',
         ];
     }
 

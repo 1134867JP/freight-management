@@ -5,11 +5,11 @@ import { getFinalizeButtonLabel } from '@/Features/Freight/utils/freightPresenta
 export default function FinalizeFreightModal({
   open,
   freight,
-  pesoBruto,
-  pesoLiquido,
+  grossWeight,
+  netWeight,
   adminNotes,
-  onChangePesoBruto,
-  onChangePesoLiquido,
+  onChangeGrossWeight,
+  onChangeNetWeight,
   onChangeAdminNotes,
   onSubmit,
   onClose,
@@ -28,8 +28,8 @@ export default function FinalizeFreightModal({
             type="number"
             step="0.01"
             min="0.01"
-            value={pesoBruto}
-            onChange={(event) => onChangePesoBruto(event.target.value)}
+            value={grossWeight}
+            onChange={(event) => onChangeGrossWeight(event.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300"
             required
           />
@@ -43,8 +43,8 @@ export default function FinalizeFreightModal({
             type="number"
             step="0.01"
             min="0.01"
-            value={pesoLiquido}
-            onChange={(event) => onChangePesoLiquido(event.target.value)}
+            value={netWeight}
+            onChange={(event) => onChangeNetWeight(event.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300"
             required
           />

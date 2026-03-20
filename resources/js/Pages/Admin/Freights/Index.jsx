@@ -15,8 +15,8 @@ export default function Index({ freights }) {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterDate, setFilterDate] = useState('');
   const [finalizeModal, setFinalizeModal] = useState({ open: false, freight: null });
-  const [pesoBruto, setPesoBruto] = useState('');
-  const [pesoLiquido, setPesoLiquido] = useState('');
+  const [grossWeight, setGrossWeight] = useState('');
+  const [netWeight, setNetWeight] = useState('');
   const [adminNotes, setAdminNotes] = useState('');
   const [attachmentModal, setAttachmentModal] = useState({ open: false, freight: null });
   const [attachmentFile, setAttachmentFile] = useState(null);
@@ -120,16 +120,16 @@ export default function Index({ freights }) {
     router.patch(
       route('freights.finalizarOperacao', finalizeModal.freight.id),
       {
-        peso_bruto: pesoBruto,
-        peso_liquido: pesoLiquido,
+        gross_weight: grossWeight,
+        net_weight: netWeight,
         admin_notes: adminNotes,
       },
       {
         preserveScroll: true,
         onSuccess: () => {
           setFinalizeModal({ open: false, freight: null });
-          setPesoBruto('');
-          setPesoLiquido('');
+          setGrossWeight('');
+          setNetWeight('');
           setAdminNotes('');
         },
       },
@@ -271,11 +271,11 @@ export default function Index({ freights }) {
       <FinalizeFreightModal
         open={finalizeModal.open}
         freight={finalizeModal.freight}
-        pesoBruto={pesoBruto}
-        pesoLiquido={pesoLiquido}
+        grossWeight={grossWeight}
+        netWeight={netWeight}
         adminNotes={adminNotes}
-        onChangePesoBruto={setPesoBruto}
-        onChangePesoLiquido={setPesoLiquido}
+        onChangeGrossWeight={setGrossWeight}
+        onChangeNetWeight={setNetWeight}
         onChangeAdminNotes={setAdminNotes}
         onSubmit={submitFinalize}
         onClose={() => setFinalizeModal({ open: false, freight: null })}

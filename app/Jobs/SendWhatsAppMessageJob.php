@@ -54,5 +54,5 @@ class SendWhatsAppMessageJob implements ShouldQueue
             'phone' => $this->phone,
             'error' => $exception->getMessage(),
         ]);
-    } 
+    }
 }

@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Company;
-use App\Models\CompanySetting;
 use App\Models\Timeslot;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,21 +57,19 @@ class PlatformCompanyManagementTest extends TestCase
             'role' => User::ROLE_COMPANY_ADMIN,
         ]);
 
-        $setting = CompanySetting::query()->where('company_id', $company->id)->firstOrFail();
-        $this->assertNotNull($setting->logo_path);
-        Storage::disk('public')->assertExists($setting->logo_path);
+        $company->refresh();
+        $this->assertNotNull($company->logo_path);
+        Storage::disk('public')->assertExists($company->logo_path);
         $this->assertNull($company->whatsappInstance()->first());
     }
 
-    public function test_company_setting_exposes_relative_logo_url(): void
+    public function test_company_exposes_relative_logo_url(): void
     {
-        $setting = CompanySetting::query()->create([
-            'company_id' => Company::factory()->create()->id,
+        $company = Company::factory()->create([
             'logo_path' => 'company-logos/logo.png',
-            'settings' => [],
         ]);
 
-        $this->assertSame('/storage/company-logos/logo.png', $setting->logo_url);
+        $this->assertSame('/storage/company-logos/logo.png', $company->logo_url);
     }
 
     public function test_platform_admin_can_update_company_logo_and_admin(): void
@@ -92,11 +89,7 @@ class PlatformCompanyManagementTest extends TestCase
 
         Storage::disk('public')->put('company-logos/logo-antiga.png', 'fake-image');
 
-        CompanySetting::query()->create([
-            'company_id' => $company->id,
-            'logo_path' => 'company-logos/logo-antiga.png',
-            'settings' => [],
-        ]);
+        $company->update(['logo_path' => 'company-logos/logo-antiga.png']);
 
         User::factory()->create([
             'company_id' => $company->id,
@@ -133,8 +126,8 @@ class PlatformCompanyManagementTest extends TestCase
             'whatsapp_phone' => '5511888888888',
         ]);
 
-        $setting = CompanySetting::query()->where('company_id', $company->id)->firstOrFail();
-        $this->assertNull($setting->logo_path);
+        $company->refresh();
+        $this->assertNull($company->logo_path);
         Storage::disk('public')->assertMissing('company-logos/logo-antiga.png');
     }
 
@@ -154,11 +147,7 @@ class PlatformCompanyManagementTest extends TestCase
 
         Storage::disk('public')->put('company-logos/logo-arquivada.png', 'fake-image');
 
-        CompanySetting::query()->create([
-            'company_id' => $company->id,
-            'logo_path' => 'company-logos/logo-arquivada.png',
-            'settings' => [],
-        ]);
+        $company->update(['logo_path' => 'company-logos/logo-arquivada.png']);
 
         $companyAdmin = User::factory()->create([
             'company_id' => $company->id,
@@ -171,7 +160,6 @@ class PlatformCompanyManagementTest extends TestCase
             'end_time' => now()->subDays(2)->addHour(),
             'operation_type' => 'load',
             'capacity' => 2,
-            'current_reservations' => 0,
             'status' => Timeslot::STATUS_AVAILABLE,
             'description' => 'Cota encerrada historicamente',
             'created_by' => $companyAdmin->id,
@@ -215,7 +203,6 @@ class PlatformCompanyManagementTest extends TestCase
             'end_time' => now()->addDay()->addHour(),
             'operation_type' => 'load',
             'capacity' => 2,
-            'current_reservations' => 0,
             'status' => Timeslot::STATUS_AVAILABLE,
             'description' => 'Cota futura ativa',
         ]);

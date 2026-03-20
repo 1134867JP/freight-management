@@ -19,11 +19,23 @@ class Company extends Model
         'name',
         'slug',
         'is_active',
+        'logo_path',
+        'settings',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'settings' => 'array',
     ];
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (blank($this->logo_path)) {
+            return null;
+        }
+
+        return '/storage/'.$this->logo_path;
+    }
 
     public static function ensureDefault(): self
     {
@@ -34,11 +46,6 @@ class Company extends Model
                 'is_active' => true,
             ],
         );
-    }
-
-    public function settings(): HasOne
-    {
-        return $this->hasOne(CompanySetting::class);
     }
 
     public function users(): HasMany

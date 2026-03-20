@@ -1,20 +1,20 @@
 import React from 'react';
 
 export default function FreightAttachmentsCell({ freight, onOpenAttachmentModal }) {
-  const blHasNotaFiscal = Boolean(freight.nota_fiscal_path);
-  const blHasAdminAttachment = Boolean(freight.attachment_path);
+  const invoiceAttachment = freight.attachments?.find((a) => a.type === 'invoice');
+  const adminAttachment = freight.attachments?.find((a) => a.type === 'attachment');
 
   return (
     <td className="w-[16%] px-4 py-4 align-top text-sm">
       <div className="space-y-2">
         <div>
           <p className="text-xs uppercase tracking-wide text-gray-500">Nota Fiscal</p>
-          <p className={`font-medium ${blHasNotaFiscal ? 'text-green-700' : 'text-gray-500'}`}>
-            {blHasNotaFiscal ? 'Enviado' : 'Não enviado'}
+          <p className={`font-medium ${invoiceAttachment ? 'text-green-700' : 'text-gray-500'}`}>
+            {invoiceAttachment ? 'Enviado' : 'Não enviado'}
           </p>
-          {blHasNotaFiscal && (
+          {invoiceAttachment && (
             <a
-              href={`/storage/${freight.nota_fiscal_path}`}
+              href={`/storage/${invoiceAttachment.path}`}
               target="_blank"
               rel="noreferrer"
               className="text-xs font-medium text-blue-600 underline"
@@ -26,12 +26,12 @@ export default function FreightAttachmentsCell({ freight, onOpenAttachmentModal 
 
         <div>
           <p className="text-xs uppercase tracking-wide text-gray-500">Anexo Admin</p>
-          <p className={`font-medium ${blHasAdminAttachment ? 'text-green-700' : 'text-gray-500'}`}>
-            {blHasAdminAttachment ? 'Enviado' : 'Não enviado'}
+          <p className={`font-medium ${adminAttachment ? 'text-green-700' : 'text-gray-500'}`}>
+            {adminAttachment ? 'Enviado' : 'Não enviado'}
           </p>
-          {blHasAdminAttachment && (
+          {adminAttachment && (
             <a
-              href={`/storage/${freight.attachment_path}`}
+              href={`/storage/${adminAttachment.path}`}
               target="_blank"
               rel="noreferrer"
               className="text-xs font-medium text-blue-600 underline"

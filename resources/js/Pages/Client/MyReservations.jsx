@@ -24,7 +24,7 @@ export default function MyReservations({ freights }) {
 
   const canUploadNotaFiscal = (freight) =>
     freight.operation_type === 'unload' &&
-    !freight.nota_fiscal_path &&
+    !freight.attachments?.some((a) => a.type === 'invoice') &&
     freight.status !== 'cancelled' &&
     freight.status !== 'completed';
 
@@ -83,38 +83,46 @@ export default function MyReservations({ freights }) {
                         {freight.operation_type === 'load' ? 'Carga' : 'Descarga'}
                       </td>
                       <td className="py-2 text-sm">
-                        <div>Bruto: {freight.peso_bruto ?? '-'}</div>
-                        <div>Líquido: {freight.peso_liquido ?? '-'}</div>
+                        <div>Bruto: {freight.gross_weight ?? '-'}</div>
+                        <div>Líquido: {freight.net_weight ?? '-'}</div>
                       </td>
                       <td className="space-y-1 py-2 text-sm">
-                        <div>
-                          {freight.nota_fiscal_path ? (
-                            <a
-                              href={`/storage/${freight.nota_fiscal_path}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-blue-600 underline"
-                            >
-                              Nota Fiscal
-                            </a>
-                          ) : (
-                            <span className="text-gray-400">Sem NF</span>
-                          )}
-                        </div>
-                        <div>
-                          {freight.attachment_path ? (
-                            <a
-                              href={`/storage/${freight.attachment_path}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-blue-600 underline"
-                            >
-                              Anexo Admin
-                            </a>
-                          ) : (
-                            <span className="text-gray-400">Sem anexo</span>
-                          )}
-                        </div>
+                        {(() => {
+                          const invoiceAtt = freight.attachments?.find((a) => a.type === 'invoice');
+                          const adminAtt = freight.attachments?.find((a) => a.type === 'attachment');
+                          return (
+                            <>
+                              <div>
+                                {invoiceAtt ? (
+                                  <a
+                                    href={`/storage/${invoiceAtt.path}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-blue-600 underline"
+                                  >
+                                    Nota Fiscal
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400">Sem NF</span>
+                                )}
+                              </div>
+                              <div>
+                                {adminAtt ? (
+                                  <a
+                                    href={`/storage/${adminAtt.path}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-blue-600 underline"
+                                  >
+                                    Anexo Admin
+                                  </a>
+                                ) : (
+                                  <span className="text-gray-400">Sem anexo</span>
+                                )}
+                              </div>
+                            </>
+                          );
+                        })()}
                       </td>
                       <td className="py-2">
                         <StatusBadge

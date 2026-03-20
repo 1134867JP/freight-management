@@ -57,7 +57,6 @@ class CompanyTenantIsolationTest extends TestCase
             'end_time' => now()->addDay()->addHours(2),
             'operation_type' => 'load',
             'capacity' => 2,
-            'current_reservations' => 0,
             'status' => 'available',
             'description' => 'Janela empresa B',
             'created_by' => $adminB->id,

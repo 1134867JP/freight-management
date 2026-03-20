@@ -136,10 +136,10 @@ export default function FreightsTable({
 
               <td className="w-[14%] px-4 py-4 align-top text-sm">
                 <p className="text-gray-700">
-                  Peso bruto: <span className="font-medium">{formatWeight(freight.peso_bruto)}</span>
+                  Peso bruto: <span className="font-medium">{formatWeight(freight.gross_weight)}</span>
                 </p>
                 <p className="text-gray-700">
-                  Peso líquido: <span className="font-medium">{formatWeight(freight.peso_liquido)}</span>
+                  Peso líquido: <span className="font-medium">{formatWeight(freight.net_weight)}</span>
                 </p>
               </td>
 

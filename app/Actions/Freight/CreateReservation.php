@@ -4,6 +4,7 @@ namespace App\Actions\Freight;
 
 use App\Models\Freight;
 use App\Models\Timeslot;
+use App\Models\Truck;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -26,7 +27,7 @@ class CreateReservation
         string $cargoDescription,
         string $operationType,
         ?float $weight = null,
-        ?string $notaFiscalPath = null
+        ?string $invoicePath = null
     ): Freight {
         return DB::transaction(function () use (
             $user,
@@ -36,7 +37,7 @@ class CreateReservation
             $cargoDescription,
             $operationType,
             $weight,
-            $notaFiscalPath
+            $invoicePath
         ) {
             if ((int) $user->company_id !== (int) $timeslot->company_id) {
                 throw new \Exception('O horário selecionado não pertence à empresa do cliente.');
@@ -65,28 +66,33 @@ class CreateReservation
             }
 
             // 3. Para unload, nota fiscal é obrigatória
-            if ($operationType === 'unload' && ! $notaFiscalPath) {
+            if ($operationType === 'unload' && ! $invoicePath) {
                 throw new \Exception('Nota fiscal é obrigatória para descarga.');
             }
 
             // 5. Criar a reserva com status inicial baseado na operação
             $status = $operationType === 'load' ? 'loading' : 'unloading';
 
+            // Resolver truck_id pela placa dentro da mesma empresa
+            $truck = Truck::query()
+                ->where('company_id', $timeslot->company_id)
+                ->where('plate', strtoupper($truckPlate))
+                ->first();
+
             $freight = Freight::create([
                 'company_id' => $timeslot->company_id,
                 'user_id' => $user->id,
                 'timeslot_id' => $timeslot->id,
+                'truck_id' => $truck?->id,
                 'truck_plate' => strtoupper($truckPlate),
                 'driver_name' => $driverName,
                 'cargo_description' => $cargoDescription,
                 'operation_type' => $operationType,
                 'weight' => $weight,
-                'nota_fiscal_path' => $notaFiscalPath,
                 'status' => $status,
             ]);
 
-            // 6. Atualizar current_reservations do timeslot
-            $timeslot->increment('current_reservations');
+            // 6. Atualizar status do timeslot baseado nas reservas ativas
             $timeslot->clampReservations();
             $timeslot->save();
 

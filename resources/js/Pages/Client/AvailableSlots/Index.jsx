@@ -18,7 +18,7 @@ export default function Index({ timeslots, trucks }) {
     cargo_description: '',
     weight: '',
     operation_type: 'load',
-    nota_fiscal_path: null,
+    invoice_path: null,
   });
 
   const truckForm = useForm({
@@ -37,7 +37,7 @@ export default function Index({ timeslots, trucks }) {
     }
 
     if (objSlot.operation_type === 'load') {
-      setData('nota_fiscal_path', null);
+      setData('invoice_path', null);
     }
   };
 
@@ -45,7 +45,7 @@ export default function Index({ timeslots, trucks }) {
     setData('operation_type', vlOperationType);
 
     if (vlOperationType !== 'unload') {
-      setData('nota_fiscal_path', null);
+      setData('invoice_path', null);
     }
   };
 

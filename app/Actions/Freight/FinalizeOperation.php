@@ -15,10 +15,10 @@ class FinalizeOperation
      */
     public function execute(
         Freight $freight,
-        ?float $pesoBruto = null,
-        ?float $pesoLiquido = null
+        ?float $grossWeight = null,
+        ?float $netWeight = null
     ): void {
-        DB::transaction(function () use ($freight, $pesoBruto, $pesoLiquido) {
+        DB::transaction(function () use ($freight, $grossWeight, $netWeight) {
             // Verificar status (não pode finalizar se estiver cancelled)
             if ($freight->status === 'cancelled') {
                 throw new \Exception('Não é possível finalizar uma reserva cancelada.');
@@ -30,7 +30,7 @@ class FinalizeOperation
 
             // Para descarga, pesos são obrigatórios
             if ($freight->operation_type === 'unload') {
-                if (! $pesoBruto || ! $pesoLiquido) {
+                if (! $grossWeight || ! $netWeight) {
                     throw new \Exception('Para descarga, os pesos bruto e líquido são obrigatórios.');
                 }
 
@@ -41,8 +41,8 @@ class FinalizeOperation
 
                 // Atualizar pesos e status
                 $freight->update([
-                    'peso_bruto' => $pesoBruto,
-                    'peso_liquido' => $pesoLiquido,
+                    'gross_weight' => $grossWeight,
+                    'net_weight' => $netWeight,
                     'status' => 'completed',
                 ]);
             } else {
@@ -54,12 +54,12 @@ class FinalizeOperation
                 // Atualizar status e pesos (se fornecidos)
                 $updateData = ['status' => 'completed'];
 
-                if ($pesoBruto !== null) {
-                    $updateData['peso_bruto'] = $pesoBruto;
+                if ($grossWeight !== null) {
+                    $updateData['gross_weight'] = $grossWeight;
                 }
 
-                if ($pesoLiquido !== null) {
-                    $updateData['peso_liquido'] = $pesoLiquido;
+                if ($netWeight !== null) {
+                    $updateData['net_weight'] = $netWeight;
                 }
 
                 $freight->update($updateData);

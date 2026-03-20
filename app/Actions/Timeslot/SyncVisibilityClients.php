@@ -36,8 +36,6 @@ class SyncVisibilityClients
             ]);
         }
 
-        $timeslot->clients()->syncWithPivotValues($arrClientIds, [
-            'company_id' => $timeslot->company_id,
-        ]);
+        $timeslot->clients()->sync($arrClientIds);
     }
 }

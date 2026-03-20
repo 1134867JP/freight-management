@@ -42,17 +42,17 @@ class DatabaseSeeder extends Seeder
         );
 
         // Criar clientes
-foreach ([1, 2, 3] as $i) {
-    User::query()->updateOrCreate(
-        ['email' => "cliente{$i}@example.com"],
-        [
-            'company_id' => $company->id,
-            'name' => "Cliente {$i}",
-            'role' => User::ROLE_CLIENT,
-            'password' => bcrypt('password'),
-        ],
-    );
-}
+        foreach ([1, 2, 3] as $i) {
+            User::query()->updateOrCreate(
+                ['email' => "cliente{$i}@example.com"],
+                [
+                    'company_id' => $company->id,
+                    'name' => "Cliente {$i}",
+                    'role' => User::ROLE_CLIENT,
+                    'password' => bcrypt('password'),
+                ],
+            );
+        }
 
         // Criar endereços de descarga
         $addresses = [
@@ -92,7 +92,6 @@ foreach ([1, 2, 3] as $i) {
             'start_time' => $now->copy()->addHour(),
             'end_time' => $now->copy()->addHours(3),
             'capacity' => 5,
-            'current_reservations' => 0,
             'status' => 'available',
             'operation_type' => 'both',
             'description' => 'Turno matutino - públlico',
@@ -104,7 +103,6 @@ foreach ([1, 2, 3] as $i) {
             'start_time' => $now->copy()->addHours(4),
             'end_time' => $now->copy()->addHours(7),
             'capacity' => 3,
-            'current_reservations' => 0,
             'status' => 'available',
             'operation_type' => 'unload',
             'description' => 'Turno vespertino - descarga apenas',
@@ -117,7 +115,6 @@ foreach ([1, 2, 3] as $i) {
             'start_time' => $now->copy()->addHours(8),
             'end_time' => $now->copy()->addHours(11),
             'capacity' => 10,
-            'current_reservations' => 0,
             'status' => 'available',
             'operation_type' => 'load',
             'description' => 'Turno noturno - carga apenas - público',

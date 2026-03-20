@@ -20,7 +20,9 @@ class TimeslotController extends Controller
         $arrStats = [
             'total_timeslots' => Timeslot::count(),
             'available_timeslots' => Timeslot::where('status', 'available')->count(),
-            'reserved_timeslots' => Timeslot::where('current_reservations', '>', 0)->count(),
+            'reserved_timeslots' => Timeslot::whereRaw(
+                "(SELECT COUNT(*) FROM freights WHERE freights.timeslot_id = timeslots.id AND freights.status NOT IN ('cancelled')) > 0"
+            )->count(),
             'full_timeslots' => Timeslot::where('status', 'full')->count(),
         ];
 
@@ -82,7 +84,6 @@ class TimeslotController extends Controller
         $arrClientIds = $arrValidated['client_ids'] ?? [];
         unset($arrValidated['client_ids']);
 
-        $arrValidated['current_reservations'] = 0;
         $arrValidated['status'] = 'available';
         $arrValidated['created_by'] = $request->user()->id;
 
@@ -102,7 +103,7 @@ class TimeslotController extends Controller
         $arrClientIds = $arrValidated['client_ids'] ?? [];
         unset($arrValidated['client_ids']);
 
-        if ((int) $arrValidated['capacity'] < (int) $timeslot->current_reservations) {
+        if ((int) $arrValidated['capacity'] < $timeslot->current_reservations) {
             return redirect()
                 ->back()
                 ->with('error', 'Capacidade não pode ser menor que as reservas atuais.');

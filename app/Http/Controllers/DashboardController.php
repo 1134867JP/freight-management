@@ -44,7 +44,9 @@ class DashboardController extends Controller
             'cancelled_my_freights' => Freight::where('user_id', $cdUserId)->where('status', 'cancelled')->count(),
             'available_today' => Timeslot::whereDate('start_time', now()->toDateString())
                 ->where('status', 'available')
-                ->whereColumn('current_reservations', '<', 'capacity')
+                ->whereRaw(
+                    "(SELECT COUNT(*) FROM freights WHERE freights.timeslot_id = timeslots.id AND freights.status NOT IN ('cancelled')) < timeslots.capacity"
+                )
                 ->count(),
         ];
 

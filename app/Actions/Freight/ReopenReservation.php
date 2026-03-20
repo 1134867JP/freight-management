@@ -41,7 +41,7 @@ class ReopenReservation
                 throw new \Exception('Não é possível reabrir reserva em um timeslot fechado.');
             }
 
-            if ((int) $objTimeslot->current_reservations >= (int) $objTimeslot->capacity) {
+            if ($objTimeslot->current_reservations >= (int) $objTimeslot->capacity) {
                 throw new \Exception('Não há capacidade disponível para reabrir esta reserva.');
             }
 
@@ -67,7 +67,6 @@ class ReopenReservation
                 'status' => $objFreight->operation_type === 'load' ? 'loading' : 'unloading',
             ]);
 
-            $objTimeslot->increment('current_reservations');
             $objTimeslot->clampReservations();
             $objTimeslot->save();
         });

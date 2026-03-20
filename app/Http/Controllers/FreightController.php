@@ -10,6 +10,7 @@ use App\Actions\Freight\StartLoad;
 use App\Actions\Freight\StartUnload;
 use App\Http\Requests\Freight\StoreFreightRequest;
 use App\Models\Freight;
+use App\Models\FreightAttachment;
 use App\Models\Timeslot;
 use App\Services\WhatsApp\FreightWhatsAppNotifier;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class FreightController extends Controller
     // ADMIN: List freights for approval
     public function approvalList()
     {
-        $freights = Freight::with(['user', 'timeslot'])
+        $freights = Freight::with(['user', 'timeslot', 'attachments'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -57,7 +58,7 @@ class FreightController extends Controller
     // CLIENT: My reservations
     public function myReservations(Request $request)
     {
-        $freights = Freight::with('timeslot')
+        $freights = Freight::with(['timeslot', 'attachments'])
             ->where('user_id', $request->user()->id)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -74,17 +75,17 @@ class FreightController extends Controller
             'user_id' => $request->user()->id,
             'timeslot_id' => $timeslot->id,
             'request_all' => $request->all(),
-            'has_file' => $request->hasFile('nota_fiscal_path'),
+            'has_file' => $request->hasFile('invoice_path'),
             'files' => array_keys($request->allFiles()),
         ]);
 
         $validated = $request->validated();
 
         // Se for descarga, guardar arquivo da nota fiscal (validado e obrigatório)
-        $notaFiscalPath = null;
-        if ($validated['operation_type'] === 'unload' && $request->hasFile('nota_fiscal_path')) {
-            $notaFiscalPath = $request->file('nota_fiscal_path')->store('notas_fiscais');
-            Log::info('Nota fiscal armazenada', ['path' => $notaFiscalPath]);
+        $invoicePath = null;
+        if ($validated['operation_type'] === 'unload' && $request->hasFile('invoice_path')) {
+            $invoicePath = $request->file('invoice_path')->store('invoices');
+            Log::info('Nota fiscal armazenada', ['path' => $invoicePath]);
         }
 
         try {
@@ -102,8 +103,21 @@ class FreightController extends Controller
                 cargoDescription: $validated['cargo_description'],
                 operationType: $validated['operation_type'],
                 weight: $validated['weight'] ?? null,
-                notaFiscalPath: $notaFiscalPath
+                invoicePath: $invoicePath
             );
+
+            // Criar anexo de nota fiscal se fornecido
+            if ($invoicePath) {
+                $file = $request->file('invoice_path');
+                $freight->attachments()->create([
+                    'company_id' => $freight->company_id,
+                    'type' => FreightAttachment::TYPE_INVOICE,
+                    'path' => $invoicePath,
+                    'original_name' => $file?->getClientOriginalName(),
+                    'size_bytes' => $file?->getSize(),
+                    'mime_type' => $file?->getMimeType(),
+                ]);
+            }
 
             Log::info('Reserva criada com sucesso', ['freight_id' => $freight->id]);
             $this->whatsAppNotifier->notifyAdminReservationCreated($freight);
@@ -117,8 +131,8 @@ class FreightController extends Controller
             ]);
 
             // Remover arquivo se houve erro
-            if ($notaFiscalPath) {
-                Storage::delete($notaFiscalPath);
+            if ($invoicePath) {
+                Storage::delete($invoicePath);
                 Log::info('Arquivo removido após erro');
             }
 
@@ -177,20 +191,32 @@ class FreightController extends Controller
 
         $validated = $request->validate([
             'nota_fiscal' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240', // 10MB
-            'peso_bruto' => 'nullable|numeric|min:0.01',
+            'gross_weight' => 'nullable|numeric|min:0.01',
         ]);
 
         if ($request->hasFile('nota_fiscal')) {
-            // Remove arquivo antigo se existir
-            if ($freight->nota_fiscal_path && Storage::exists($freight->nota_fiscal_path)) {
-                Storage::delete($freight->nota_fiscal_path);
+            $file = $request->file('nota_fiscal');
+
+            // Remover nota fiscal anterior se existir
+            $existing = $freight->attachments()->where('type', FreightAttachment::TYPE_INVOICE)->first();
+            if ($existing) {
+                Storage::delete($existing->path);
+                $existing->delete();
             }
 
-            $path = $request->file('nota_fiscal')->store('notas_fiscais');
-            $freight->update([
-                'nota_fiscal_path' => $path,
-                'peso_bruto' => $validated['peso_bruto'] ?? $freight->peso_bruto,
+            $path = $file->store('invoices');
+            $freight->attachments()->create([
+                'company_id' => $freight->company_id,
+                'type' => FreightAttachment::TYPE_INVOICE,
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'size_bytes' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
             ]);
+
+            if (isset($validated['gross_weight'])) {
+                $freight->update(['gross_weight' => $validated['gross_weight']]);
+            }
         }
 
         $freight->refresh();
@@ -203,16 +229,16 @@ class FreightController extends Controller
     public function finalizarOperacao(Request $request, Freight $freight)
     {
         $validated = $request->validate([
-            'peso_bruto' => 'required|numeric|min:0.01',
-            'peso_liquido' => 'required|numeric|min:0.01',
+            'gross_weight' => 'required|numeric|min:0.01',
+            'net_weight' => 'required|numeric|min:0.01',
             'admin_notes' => 'nullable|string|max:500',
         ]);
 
         try {
             (new FinalizeOperation)->execute(
                 freight: $freight,
-                pesoBruto: (float) $validated['peso_bruto'],
-                pesoLiquido: (float) $validated['peso_liquido']
+                grossWeight: (float) $validated['gross_weight'],
+                netWeight: (float) $validated['net_weight']
             );
 
             if ($validated['admin_notes']) {
@@ -236,13 +262,24 @@ class FreightController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            // Remove arquivo antigo se existir
-            if ($freight->attachment_path && Storage::exists($freight->attachment_path)) {
-                Storage::delete($freight->attachment_path);
+            $file = $request->file('attachment');
+
+            // Remover anexo admin anterior se existir
+            $existing = $freight->attachments()->where('type', FreightAttachment::TYPE_ATTACHMENT)->first();
+            if ($existing) {
+                Storage::delete($existing->path);
+                $existing->delete();
             }
 
-            $path = $request->file('attachment')->store('attachments');
-            $freight->update(['attachment_path' => $path]);
+            $path = $file->store('attachments');
+            $freight->attachments()->create([
+                'company_id' => $freight->company_id,
+                'type' => FreightAttachment::TYPE_ATTACHMENT,
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'size_bytes' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+            ]);
         }
 
         $freight->refresh();

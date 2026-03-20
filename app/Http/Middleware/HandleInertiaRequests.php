@@ -33,13 +33,13 @@ class HandleInertiaRequests extends Middleware
         $company = null;
 
         if ($user?->company_id) {
-            $user->loadMissing('company.settings');
+            $user->loadMissing('company');
 
             $company = [
                 'id' => $user->company?->id,
                 'name' => $user->company?->name,
                 'slug' => $user->company?->slug,
-                'logo_url' => $user->company?->settings?->logo_url,
+                'logo_url' => $user->company?->logo_url,
             ];
         }
 

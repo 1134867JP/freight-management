@@ -34,7 +34,7 @@ export default function ReservationForm({
         return 'Descrição da carga deve ter ao menos 3 caracteres.';
       return null;
     },
-    nota_fiscal_path: (value, formData) => {
+    invoice_path: (value, formData) => {
       if (formData.operation_type === 'unload' && !value)
         return 'Nota fiscal é obrigatória para descarga.';
       return null;
@@ -168,17 +168,17 @@ export default function ReservationForm({
         {data.operation_type === 'unload' && (
           <FormField
             label="Nota Fiscal (obrigatória para descarga)"
-            error={allErrors.nota_fiscal_path}
+            error={allErrors.invoice_path}
             required
           >
             <input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              className={`mt-1 block w-full ${FormField.inputClass(allErrors.nota_fiscal_path)}`}
-              aria-invalid={Boolean(allErrors.nota_fiscal_path)}
+              className={`mt-1 block w-full ${FormField.inputClass(allErrors.invoice_path)}`}
+              aria-invalid={Boolean(allErrors.invoice_path)}
               onChange={(event) => {
-                setData('nota_fiscal_path', event.target.files?.[0] || null);
-                clearClientError('nota_fiscal_path');
+                setData('invoice_path', event.target.files?.[0] || null);
+                clearClientError('invoice_path');
               }}
               required
             />

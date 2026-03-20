@@ -38,7 +38,6 @@ class WhatsAppNotificationDispatchTest extends TestCase
             'end_time' => now()->addDay()->addHour(),
             'operation_type' => 'load',
             'capacity' => 2,
-            'current_reservations' => 0,
             'status' => 'available',
             'description' => 'Janela da manhã',
             'created_by' => $admin->id,
@@ -84,7 +83,6 @@ class WhatsAppNotificationDispatchTest extends TestCase
             'end_time' => now()->addDay()->addHour(),
             'operation_type' => 'load',
             'capacity' => 2,
-            'current_reservations' => 1,
             'status' => 'available',
             'description' => 'Janela da tarde',
             'created_by' => $admin->id,
@@ -102,8 +100,8 @@ class WhatsAppNotificationDispatchTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)->patch(route('freights.finalizarOperacao', $freight), [
-            'peso_bruto' => '2500.50',
-            'peso_liquido' => '1900.25',
+            'gross_weight' => '2500.50',
+            'net_weight' => '1900.25',
             'admin_notes' => 'Operação concluída sem ressalvas.',
         ]);
 

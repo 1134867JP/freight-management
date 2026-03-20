@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Platform\StoreCompanyRequest;
 use App\Http\Requests\Platform\UpdateCompanyRequest;
 use App\Models\Company;
-use App\Models\CompanySetting;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
@@ -23,7 +22,6 @@ class PlatformCompanyController extends Controller
     {
         $companies = Company::query()
             ->with([
-                'settings',
                 'whatsappInstance',
                 'users' => fn ($query) => $query
                     ->where('role', User::ROLE_COMPANY_ADMIN)
@@ -115,15 +113,14 @@ class PlatformCompanyController extends Controller
                 ->with('error', "A empresa não pode ser excluída porque possui {$activeTimeslotsCount} {$label}.");
         }
 
-        $company->loadMissing('settings');
-        $logoPath = $company->settings?->logo_path;
+        $logoPath = $company->logo_path;
 
         DB::transaction(function () use ($company): void {
             $company->delete();
         });
 
         if (filled($logoPath)) {
-            Storage::delete($logoPath);
+            Storage::disk('public')->delete($logoPath);
         }
 
         return redirect()
@@ -133,25 +130,20 @@ class PlatformCompanyController extends Controller
 
     private function syncCompanyLogo(Company $company, ?UploadedFile $logo, bool $removeLogo): void
     {
-        /** @var CompanySetting $settings */
-        $settings = $company->settings()->firstOrCreate([], [
-            'settings' => [],
-        ]);
-
-        if ($removeLogo && filled($settings->logo_path)) {
-            Storage::delete($settings->logo_path);
-            $settings->logo_path = null;
+        if ($removeLogo && filled($company->logo_path)) {
+            Storage::disk('public')->delete($company->logo_path);
+            $company->logo_path = null;
         }
 
         if ($logo) {
-            if (filled($settings->logo_path)) {
-                Storage::delete($settings->logo_path);
+            if (filled($company->logo_path)) {
+                Storage::disk('public')->delete($company->logo_path);
             }
 
-            $settings->logo_path = $logo->store('company-logos');
+            $company->logo_path = $logo->store('company-logos', 'public');
         }
 
-        $settings->save();
+        $company->save();
     }
 
     private function syncCompanyAdmin(Company $company, array $validated): void
@@ -199,7 +191,7 @@ class PlatformCompanyController extends Controller
             'name' => $company->name,
             'slug' => $company->slug,
             'is_active' => $company->is_active,
-            'logo_url' => $company->settings?->logo_url,
+            'logo_url' => $company->logo_url,
             'admin' => $admin ? [
                 'id' => $admin->id,
                 'name' => $admin->name,

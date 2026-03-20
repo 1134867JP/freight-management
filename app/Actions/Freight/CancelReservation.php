@@ -32,10 +32,9 @@ class CancelReservation
 
             $freight->update($arrUpdate);
 
-            // Decrementar timeslot reservations
+            // Atualizar status do timeslot baseado nas reservas ativas
             $timeslot = $freight->timeslot;
             if ($timeslot) {
-                $timeslot->decrement('current_reservations');
                 $timeslot->clampReservations();
                 $timeslot->save();
             }
