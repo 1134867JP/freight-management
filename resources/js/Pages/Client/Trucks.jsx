@@ -98,15 +98,15 @@ export default function Trucks({ trucks }) {
           <FlashMessages />
 
           {/* Formulário (Criar/Editar) */}
-          <div className="p-4 bg-white shadow sm:p-8 sm:rounded-lg">
+          <div className="p-4 bg-white shadow sm:p-8 sm:rounded-lg dark:bg-gray-800">
             <section>
               <header className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-medium text-gray-900">
+                  <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     {isEditing ? 'Editar Caminhão' : 'Novo Caminhão'}
                   </h2>
                   {isEditing && (
-                    <p className="text-sm text-gray-500 mt-1">Editando ID #{editingTruck.id}</p>
+                    <p className="text-sm text-gray-500 mt-1 dark:text-gray-400">Editando ID #{editingTruck.id}</p>
                   )}
                 </div>
 
@@ -114,7 +114,7 @@ export default function Trucks({ trucks }) {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-3 py-2 rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    className="px-3 py-2 rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300"
                   >
                     Cancelar edição
                   </button>
@@ -124,10 +124,10 @@ export default function Trucks({ trucks }) {
               <form onSubmit={submit} className="mt-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Placa</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Placa</label>
                     <input
                       type="text"
-                      className="mt-1 block w-full rounded-md border-gray-300"
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                       value={data.plate}
                       onChange={(e) => {
                         const vlPlate = normalizeTruckPlate(e.target.value);
@@ -160,9 +160,9 @@ export default function Trucks({ trucks }) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Tipo</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
                     <select
-                      className="mt-1 block w-full rounded-md border-gray-300"
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                       value={data.type}
                       onChange={(e) => setData('type', e.target.value)}
                       required
@@ -177,12 +177,12 @@ export default function Trucks({ trucks }) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Modelo (opcional)
                     </label>
                     <input
                       type="text"
-                      className="mt-1 block w-full rounded-md border-gray-300"
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                       value={data.model}
                       onChange={(e) => setData('model', e.target.value)}
                       placeholder="Ex.: Volvo FH 540"
@@ -191,9 +191,9 @@ export default function Trucks({ trucks }) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Ativo</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ativo</label>
                     <select
-                      className="mt-1 block w-full rounded-md border-gray-300"
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                       value={data.is_active ? '1' : '0'}
                       onChange={(e) => setData('is_active', e.target.value === '1')}
                       required
@@ -207,11 +207,11 @@ export default function Trucks({ trucks }) {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Observações (opcional)
                     </label>
                     <textarea
-                      className="mt-1 block w-full rounded-md border-gray-300"
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                       rows={3}
                       value={data.notes}
                       onChange={(e) => setData('notes', e.target.value)}
@@ -244,7 +244,7 @@ export default function Trucks({ trucks }) {
                     <button
                       type="button"
                       onClick={resetForm}
-                      className="px-4 py-2 rounded-md font-medium bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      className="px-4 py-2 rounded-md font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300"
                     >
                       Limpar
                     </button>
@@ -255,42 +255,42 @@ export default function Trucks({ trucks }) {
           </div>
 
           {/* Lista */}
-          <div className="p-4 bg-white shadow sm:p-8 sm:rounded-lg overflow-x-auto">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Meus Caminhões</h3>
+          <div className="p-4 bg-white dark:bg-gray-800 shadow sm:p-8 sm:rounded-lg overflow-x-auto">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 dark:text-gray-100">Meus Caminhões</h3>
 
             {trucksList.length === 0 ? (
-              <p className="text-gray-500">Nenhum caminhão cadastrado ainda.</p>
+              <p className="text-gray-500 dark:text-gray-400">Nenhum caminhão cadastrado ainda.</p>
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr>
-                    <th className="border-b py-2 px-2">Placa</th>
-                    <th className="border-b py-2 px-2">Tipo</th>
-                    <th className="border-b py-2 px-2">Modelo</th>
-                    <th className="border-b py-2 px-2">Ativo</th>
-                    <th className="border-b py-2 px-2">Observações</th>
-                    <th className="border-b py-2 px-2">Ações</th>
+                  <tr className="dark:border-gray-700">
+                    <th className="border-b py-2 px-2 dark:border-gray-700 dark:text-gray-300">Placa</th>
+                    <th className="border-b py-2 px-2 dark:border-gray-700 dark:text-gray-300">Tipo</th>
+                    <th className="border-b py-2 px-2 dark:border-gray-700 dark:text-gray-300">Modelo</th>
+                    <th className="border-b py-2 px-2 dark:border-gray-700 dark:text-gray-300">Ativo</th>
+                    <th className="border-b py-2 px-2 dark:border-gray-700 dark:text-gray-300">Observações</th>
+                    <th className="border-b py-2 px-2 dark:border-gray-700 dark:text-gray-300">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {trucksList.map((truck) => (
-                    <tr key={truck.id} className="hover:bg-gray-50">
-                      <td className="py-2 px-2 font-semibold">{truck.plate}</td>
-                      <td className="py-2 px-2">{getTruckTypeLabel(truck.type)}</td>
-                      <td className="py-2 px-2 text-sm text-gray-700">{truck.model || '-'}</td>
+                    <tr key={truck.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td className="py-2 px-2 font-semibold dark:text-gray-100">{truck.plate}</td>
+                      <td className="py-2 px-2 dark:text-gray-300">{getTruckTypeLabel(truck.type)}</td>
+                      <td className="py-2 px-2 text-sm text-gray-700 dark:text-gray-400">{truck.model || '-'}</td>
                       <td className="py-2 px-2">
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${
                             truck.is_active
-                              ? 'bg-green-50 text-green-700'
-                              : 'bg-gray-100 text-gray-700'
+                              ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                           }`}
                         >
                           {truck.is_active ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
                       <td
-                        className="py-2 px-2 text-sm text-gray-600 max-w-[320px] truncate"
+                        className="py-2 px-2 text-sm text-gray-600 max-w-[320px] truncate dark:text-gray-400"
                         title={truck.notes || ''}
                       >
                         {truck.notes || '-'}

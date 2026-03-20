@@ -17,8 +17,16 @@ services:
       EVOLUTION_BASE_URL: http://evolution-api:8080
       WAIT_FOR_DB: "true"
       APP_RUN_OPTIMIZE: "true"
+      REDIS_HOST: app-redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      SESSION_DRIVER: redis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
     depends_on:
       app-postgres:
+        condition: service_healthy
+      app-redis:
         condition: service_healthy
     volumes:
       - app_storage:/var/www/html/storage
@@ -38,11 +46,17 @@ services:
       EVOLUTION_BASE_URL: http://evolution-api:8080
       WAIT_FOR_DB: "true"
       APP_RUN_OPTIMIZE: "true"
+      REDIS_HOST: app-redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      SESSION_DRIVER: redis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
     depends_on:
       app-postgres:
         condition: service_healthy
-      evolution-api:
-        condition: service_started
+      app-redis:
+        condition: service_healthy
     volumes:
       - app_storage:/var/www/html/storage
 
@@ -61,7 +75,20 @@ services:
     volumes:
       - app_postgres_data:/var/lib/postgresql/data
 
+  app-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --port 6379 --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - app_redis_data:/data
+
   evolution-api:
+    profiles: [evolution]
     image: ${EVOLUTION_API_IMAGE}
     restart: unless-stopped
     env_file:
@@ -78,6 +105,7 @@ services:
       - evolution_instances:/evolution/instances
 
   evolution-postgres:
+    profiles: [evolution]
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
@@ -93,6 +121,7 @@ services:
       - evolution_postgres_data:/var/lib/postgresql/data
 
   evolution-redis:
+    profiles: [evolution]
     image: redis:7-alpine
     restart: unless-stopped
     command: redis-server --port 6379 --appendonly yes
@@ -113,8 +142,6 @@ services:
     restart: unless-stopped
     depends_on:
       app-fpm:
-        condition: service_started
-      evolution-api:
         condition: service_started
     environment:
       APP_DOMAIN: ${APP_DOMAIN}
@@ -138,6 +165,7 @@ services:
 
 volumes:
   app_postgres_data:
+  app_redis_data:
   app_storage:
   evolution_instances:
   evolution_postgres_data:

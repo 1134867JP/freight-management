@@ -5,7 +5,7 @@ export default function Dashboard({ stats }) {
   return (
     <AuthenticatedLayout
       header={
-        <h2 className="text-xl font-semibold leading-tight text-gray-800">
+        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-100">
           Painel do Administrador
         </h2>
       }
@@ -15,24 +15,24 @@ export default function Dashboard({ stats }) {
       <div className="py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-lg bg-white p-5 shadow-sm">
-              <p className="text-sm text-gray-500">Horários anunciados</p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">{stats?.total_timeslots ?? 0}</p>
+            <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Horários anunciados</p>
+              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats?.total_timeslots ?? 0}</p>
             </div>
-            <div className="rounded-lg bg-white p-5 shadow-sm">
-              <p className="text-sm text-gray-500">Disponíveis</p>
+            <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Disponíveis</p>
               <p className="mt-2 text-3xl font-bold text-green-700">
                 {stats?.available_timeslots ?? 0}
               </p>
             </div>
-            <div className="rounded-lg bg-white p-5 shadow-sm">
-              <p className="text-sm text-gray-500">Reservados</p>
+            <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Reservados</p>
               <p className="mt-2 text-3xl font-bold text-blue-700">
                 {stats?.reserved_timeslots ?? 0}
               </p>
             </div>
-            <div className="rounded-lg bg-white p-5 shadow-sm">
-              <p className="text-sm text-gray-500">Lotados</p>
+            <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Lotados</p>
               <p className="mt-2 text-3xl font-bold text-orange-600">
                 {stats?.full_timeslots ?? 0}
               </p>
@@ -42,28 +42,28 @@ export default function Dashboard({ stats }) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Link
               href={route('timeslots.index')}
-              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50"
+              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
             >
-              <h3 className="text-lg font-bold text-gray-900">Gerenciar Horários</h3>
-              <p className="mt-2 text-gray-600">Criar, editar e fechar horários da operação.</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Gerenciar Horários</h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">Criar, editar e fechar horários da operação.</p>
             </Link>
 
             <Link
               href={route('admin.agenda')}
-              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50"
+              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
             >
-              <h3 className="text-lg font-bold text-gray-900">Agenda</h3>
-              <p className="mt-2 text-gray-600">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Agenda</h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
                 Ver horários anunciados e os clientes que reservaram.
               </p>
             </Link>
 
             <Link
               href={route('freights.approvalList')}
-              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50"
+              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
             >
-              <h3 className="text-lg font-bold text-gray-900">Aprovação de Fretes</h3>
-              <p className="mt-2 text-gray-600">Aprovar ou rejeitar solicitações dos clientes.</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Aprovação de Fretes</h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">Aprovar ou rejeitar solicitações dos clientes.</p>
             </Link>
           </div>
         </div>

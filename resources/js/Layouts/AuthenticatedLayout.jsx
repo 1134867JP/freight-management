@@ -1,8 +1,11 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { useTheme } from '@/hooks/useTheme';
 import { Link, usePage } from '@inertiajs/react';
 import { useMemo, useRef, useState, useEffect } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
+  useTheme();
+
   const { auth } = usePage().props;
   const user = auth.user;
   const company = auth.company;
@@ -106,7 +109,9 @@ export default function AuthenticatedLayout({ header, children }) {
     <Link
       href={href}
       className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
-        active ? 'bg-teal-700 text-white' : 'text-gray-700 hover:bg-gray-100'
+        active
+          ? 'bg-teal-700 text-white'
+          : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
       }`}
     >
       {icon && <MenuIcon name={icon} className="h-4 w-4 shrink-0" />}
@@ -136,11 +141,11 @@ export default function AuthenticatedLayout({ header, children }) {
   }, [showAccountMenu]);
 
   return (
-    <div className="min-h-screen bg-gray-100 lg:flex">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 lg:flex">
       {/* SIDEBAR DESKTOP */}
-      <aside className="hidden w-72 shrink-0 border-r border-gray-200 bg-white lg:flex lg:flex-col">
+      <aside className="hidden w-72 shrink-0 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 lg:flex lg:flex-col">
         {/* Header */}
-        <div className="border-b border-gray-200 p-6">
+        <div className="border-b border-gray-200 dark:border-gray-700 p-6">
           <Link href={route('dashboard')}>
             {company?.logo_url ? (
               <img src={logoUrl} className="h-28 w-auto object-contain" alt={company.name || 'Logo'} />
@@ -150,10 +155,10 @@ export default function AuthenticatedLayout({ header, children }) {
           </Link>
 
           <div className="mt-4">
-            <p className="text-base font-semibold text-gray-900">{user.name}</p>
-            <p className="text-sm text-gray-500">{roleLabel}</p>
+            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{roleLabel}</p>
             {company?.name && !isPlatformAdmin && (
-              <p className="mt-1 text-sm text-gray-400">{company.name}</p>
+              <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">{company.name}</p>
             )}
           </div>
         </div>
@@ -161,7 +166,7 @@ export default function AuthenticatedLayout({ header, children }) {
         {/* Menu */}
         <div className="flex-1 space-y-6 p-6">
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Menu</p>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Menu</p>
             <div className="space-y-2">
               {mainLinks.map((link) => (
                 <SideLink key={link.label} {...link} />
@@ -171,24 +176,24 @@ export default function AuthenticatedLayout({ header, children }) {
         </div>
 
         {/* Engrenagem + dropdown (canto inferior esquerdo) */}
-        <div className="relative border-t border-gray-200 p-4" ref={accountMenuRef}>
+        <div className="relative border-t border-gray-200 dark:border-gray-700 p-4" ref={accountMenuRef}>
           <button
             type="button"
             onClick={() => setShowAccountMenu((v) => !v)}
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
           >
             <span className="flex items-center gap-2">
-              <GearIcon className="h-5 w-5 text-gray-600" />
+              <GearIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               Conta
             </span>
-            <span className="text-gray-400">{showAccountMenu ? '▲' : '▼'}</span>
+            <span className="text-gray-400 dark:text-gray-500">{showAccountMenu ? '▲' : '▼'}</span>
           </button>
 
           {showAccountMenu && (
-            <div className="absolute bottom-14 left-4 right-4 rounded-lg border border-gray-200 bg-white shadow-lg">
+            <div className="absolute bottom-14 left-4 right-4 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
               <Link
                 href={route('profile.edit')}
-                className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
                 onClick={() => setShowAccountMenu(false)}
               >
                 Perfil
@@ -198,7 +203,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 href={route('logout')}
                 method="post"
                 as="button"
-                className="block w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-gray-50"
+                className="block w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                 onClick={() => setShowAccountMenu(false)}
               >
                 Sair
@@ -211,7 +216,7 @@ export default function AuthenticatedLayout({ header, children }) {
       {/* CONTEÚDO */}
       <div className="min-w-0 flex-1">
         {/* Top bar mobile */}
-        <div className="border-b border-gray-200 bg-white px-4 py-3 lg:hidden">
+        <div className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900 lg:hidden">
           <div className="flex items-center justify-between">
             <Link href={route('dashboard')}>
               <ApplicationLogo className="h-8 w-auto fill-current text-gray-800" />
@@ -219,7 +224,7 @@ export default function AuthenticatedLayout({ header, children }) {
             <button
               type="button"
               onClick={() => setShowMobileMenu((state) => !state)}
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700"
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300"
             >
               Menu
             </button>
@@ -248,7 +253,7 @@ export default function AuthenticatedLayout({ header, children }) {
         </div>
 
         {header && (
-          <header className="border-b border-gray-200 bg-white">
+          <header className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
             <div className="px-4 py-6 sm:px-6 lg:px-8">{header}</div>
           </header>
         )}

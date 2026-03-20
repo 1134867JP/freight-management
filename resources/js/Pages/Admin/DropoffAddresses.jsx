@@ -115,47 +115,47 @@ export default function DropoffAddresses({ addresses }) {
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="rounded-lg bg-white p-4 shadow sm:p-8">
+          <div className="rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
             {addressesList.length === 0 ? (
               <EmptyState title="Nenhum endereço cadastrado" />
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         Nome
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         Endereço
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         Cidade/UF
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
+                  <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                     {addressesList.map((address) => (
                       <tr key={address.id}>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                           {address.name}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           <div>
                             {address.street}, {address.number}
                           </div>
                           {address.complement && (
-                            <div className="text-xs text-gray-400">({address.complement})</div>
+                            <div className="text-xs text-gray-400 dark:text-gray-500">({address.complement})</div>
                           )}
-                          <div className="text-xs text-gray-400">{address.neighborhood}</div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500">{address.neighborhood}</div>
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {address.city}/{address.state}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
@@ -307,7 +307,7 @@ export default function DropoffAddresses({ addresses }) {
                   checked={data.is_active}
                   onChange={(event) => setData('is_active', event.target.checked)}
                 />
-                <span className="text-sm font-medium text-gray-700">Endereço ativo</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Endereço ativo</span>
               </label>
             </div>
           </div>
@@ -316,7 +316,7 @@ export default function DropoffAddresses({ addresses }) {
             <button
               type="button"
               onClick={resetForm}
-              className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300"
+              className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             >
               Cancelar
             </button>

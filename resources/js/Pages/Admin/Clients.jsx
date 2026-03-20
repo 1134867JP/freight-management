@@ -116,38 +116,38 @@ export default function Clients({ clients }) {
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="rounded-lg bg-white p-4 shadow sm:p-8">
+          <div className="rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
             {clientsList.length === 0 ? (
               <EmptyState title="Nenhum cliente cadastrado" />
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         Nome
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         WhatsApp
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500">
+                      <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
+                  <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                     {clientsList.map((client) => (
                       <tr key={client.id}>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                           {client.name}
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {client.email}
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {client.whatsapp_phone || '-'}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium space-x-2">
@@ -248,7 +248,7 @@ export default function Clients({ clients }) {
             <button
               type="button"
               onClick={resetForm}
-              className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300"
+              className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             >
               Cancelar
             </button>

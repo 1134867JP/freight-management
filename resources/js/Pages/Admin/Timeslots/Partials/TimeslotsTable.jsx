@@ -29,10 +29,10 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       <table className="min-w-[980px] w-full table-fixed text-left">
-        <thead className="bg-gray-50">
-          <tr className="text-xs uppercase tracking-wide text-gray-600">
+        <thead className="bg-gray-50 dark:bg-gray-700">
+          <tr className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">
             <th className="w-[19%] px-4 py-3 font-semibold">Horário</th>
             <th className="w-[11%] px-4 py-3 font-semibold">Operação</th>
             <th className="w-[22%] px-4 py-3 font-semibold">Endereço</th>
@@ -43,7 +43,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
           {timeslots.map((objSlot) => {
             const vlStart = new Date(objSlot.start_time);
             const vlEnd = new Date(objSlot.end_time);
@@ -56,13 +56,13 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
               <tr
                 key={objSlot.id}
                 onClick={() => onEdit(objSlot.id)}
-                className="cursor-pointer align-top transition hover:bg-gray-50"
+                className="cursor-pointer align-top transition hover:bg-gray-50 dark:hover:bg-gray-700/50"
               >
                 <td className="px-4 py-5">
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {vlStart.toLocaleDateString('pt-BR')} {vlStart.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     até {vlEnd.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </td>
@@ -78,25 +78,25 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
                 <td className="px-4 py-5">
                   {objSlot.dropoff_address ? (
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{objSlot.dropoff_address.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{objSlot.dropoff_address.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {objSlot.dropoff_address.city}/{objSlot.dropoff_address.state}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-sm italic text-gray-500">Não informado</p>
+                    <p className="text-sm italic text-gray-500 dark:text-gray-400">Não informado</p>
                   )}
                 </td>
 
                 <td className="px-4 py-5">
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
                     Reservas:{' '}
-                    <span className={`font-semibold ${blIsFull ? 'text-amber-700' : 'text-gray-900'}`}>
+                    <span className={`font-semibold ${blIsFull ? 'text-amber-700 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'}`}>
                       {objSlot.current_reservations} de {objSlot.capacity}
                     </span>
                   </p>
 
-                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600">
                     <div
                       className={`h-full ${strOccupancyToneClass}`}
                       style={{ width: `${nrOccupancyPercent}%` }}
@@ -132,7 +132,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
                         event.stopPropagation();
                         onEdit(objSlot.id);
                       }}
-                      className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                      className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
                     >
                       Editar
                     </button>
@@ -143,7 +143,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
                         event.stopPropagation();
                         onDelete(event, objSlot.id);
                       }}
-                      className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                      className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
                     >
                       Excluir
                     </button>

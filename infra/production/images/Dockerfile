@@ -40,6 +40,11 @@ RUN apk add --no-cache bash fcgi icu-dev libzip-dev oniguruma-dev postgresql-cli
     && docker-php-ext-install bcmath pdo_pgsql zip opcache \
     && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
+RUN apk add --no-cache autoconf g++ make \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del autoconf g++ make
+
 WORKDIR /var/www/html
 
 COPY . .

@@ -4,7 +4,7 @@ function FormField({ label, error, hint, required, children, className = '' }) {
   return (
     <div className={className}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
@@ -27,7 +27,7 @@ function FormField({ label, error, hint, required, children, className = '' }) {
           <span>{error}</span>
         </div>
       ) : hint ? (
-        <p className="mt-1 text-xs text-gray-500">{hint}</p>
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{hint}</p>
       ) : null}
     </div>
   );
@@ -35,8 +35,8 @@ function FormField({ label, error, hint, required, children, className = '' }) {
 
 FormField.inputClass = function inputClass(error, extra = '') {
   const state = error
-    ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-200'
-    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200';
+    ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-200 dark:border-red-500 dark:bg-red-900/20 dark:text-gray-100'
+    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:focus:border-blue-400';
   return ['rounded-md transition-colors', state, extra].filter(Boolean).join(' ');
 };
 

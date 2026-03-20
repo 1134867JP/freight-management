@@ -123,8 +123,8 @@ export default function TimeslotList({
   return (
     <section className={`w-full space-y-4 ${className}`}>
       <div className="space-y-1">
-        <h3 className="text-lg font-semibold text-gray-900">Escolha um horário</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Escolha um horário</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           {filteredTimeslots.length} opção(ões) em {groupedTimeslots.length} dia(s)
         </p>
       </div>
@@ -148,10 +148,10 @@ export default function TimeslotList({
       )}
 
       {groupedTimeslots.length > 0 && (
-        <div className="max-h-[72vh] space-y-5 overflow-y-auto pr-1">
+        <div className="max-h-[72vh] space-y-5 overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-500">
           {groupedTimeslots.map((objGroup) => (
             <div key={objGroup.key} className="space-y-3">
-              <h4 className="sticky top-0 z-10 rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700">
+              <h4 className="sticky top-0 z-10 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 {objGroup.label}
               </h4>
 

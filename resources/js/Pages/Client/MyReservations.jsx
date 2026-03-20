@@ -43,7 +43,7 @@ export default function MyReservations({ freights }) {
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="overflow-x-auto rounded-lg bg-white p-4 shadow sm:p-8">
+          <div className="overflow-x-auto rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
             {freights.length === 0 ? (
               <EmptyState
                 title="Você não possui nenhuma reserva."
@@ -57,20 +57,20 @@ export default function MyReservations({ freights }) {
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr>
-                    <th className="border-b py-2">Horário</th>
-                    <th className="border-b py-2">Caminhão / Placa</th>
-                    <th className="border-b py-2">Operação</th>
-                    <th className="border-b py-2">Pesos</th>
-                    <th className="border-b py-2">Anexos</th>
-                    <th className="border-b py-2">Status</th>
-                    <th className="border-b py-2">Observações</th>
-                    <th className="border-b py-2">Ações</th>
+                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Horário</th>
+                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Caminhão / Placa</th>
+                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Operação</th>
+                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Pesos</th>
+                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Anexos</th>
+                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Status</th>
+                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Observações</th>
+                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Ações</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {freights.map((freight) => (
-                    <tr key={freight.id} className="align-top hover:bg-gray-50">
+                    <tr key={freight.id} className="align-top hover:bg-gray-50 dark:hover:bg-gray-700/50 dark:text-gray-300">
                       <td className="py-2">
                         {freight.timeslot
                           ? new Date(freight.timeslot.start_time).toLocaleString('pt-BR')
@@ -103,7 +103,7 @@ export default function MyReservations({ freights }) {
                                     Nota Fiscal
                                   </a>
                                 ) : (
-                                  <span className="text-gray-400">Sem NF</span>
+                                  <span className="text-gray-400 dark:text-gray-500">Sem NF</span>
                                 )}
                               </div>
                               <div>
@@ -117,7 +117,7 @@ export default function MyReservations({ freights }) {
                                     Anexo Admin
                                   </a>
                                 ) : (
-                                  <span className="text-gray-400">Sem anexo</span>
+                                  <span className="text-gray-400 dark:text-gray-500">Sem anexo</span>
                                 )}
                               </div>
                             </>
@@ -130,12 +130,12 @@ export default function MyReservations({ freights }) {
                           tone={getFreightStatusTone(freight.status)}
                         />
                       </td>
-                      <td className="py-2 text-sm text-gray-600">{freight.admin_notes || '-'}</td>
+                      <td className="py-2 text-sm text-gray-600 dark:text-gray-400">{freight.admin_notes || '-'}</td>
 
                       <td className="space-y-2 py-2">
                         {canUploadNotaFiscal(freight) && (
                           <div>
-                            <label className="mb-1 block text-xs text-gray-600">Enviar NF</label>
+                            <label className="mb-1 block text-xs text-gray-600 dark:text-gray-400">Enviar NF</label>
                             <input
                               type="file"
                               accept=".pdf,.jpg,.jpeg,.png"
@@ -182,7 +182,7 @@ export default function MyReservations({ freights }) {
                         )}
 
                         {!hasActions(freight) && (
-                          <span className="text-xs italic text-gray-500">
+                          <span className="text-xs italic text-gray-500 dark:text-gray-400">
                             Sem ações disponíveis
                           </span>
                         )}

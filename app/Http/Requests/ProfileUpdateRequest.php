@@ -27,6 +27,7 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
             'whatsapp_phone' => ['nullable', 'regex:/^\d{10,15}$/'],
+            'theme_preference' => ['sometimes', 'string', 'in:light,dark,system'],
         ];
     }
 

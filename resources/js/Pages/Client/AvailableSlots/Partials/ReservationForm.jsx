@@ -52,36 +52,36 @@ export default function ReservationForm({
   const nrRemaining = Math.max(selectedSlot.capacity - selectedSlot.current_reservations, 0);
 
   return (
-    <div className={`h-fit w-full bg-white p-6 shadow sm:rounded-lg ${className}`}>
-      <h3 className="mb-4 text-lg font-medium text-gray-900">
+    <div className={`h-fit w-full bg-white dark:bg-gray-800 p-6 shadow sm:rounded-lg ${className}`}>
+      <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">
         Reservar para {new Date(selectedSlot.start_time).toLocaleString('pt-BR')}
       </h3>
 
-      <div className="mb-4 rounded border border-emerald-200 bg-emerald-50 p-3">
-        <p className="text-sm font-medium text-emerald-900">Resumo da cota</p>
-        <p className="text-sm text-emerald-800">
+      <div className="mb-4 rounded border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 p-3">
+        <p className="text-sm font-medium text-emerald-900 dark:text-emerald-300">Resumo da cota</p>
+        <p className="text-sm text-emerald-800 dark:text-emerald-400">
           Ocupação: {selectedSlot.current_reservations} / {selectedSlot.capacity}
         </p>
-        <p className="text-sm font-semibold text-emerald-800">Vagas restantes: {nrRemaining}</p>
+        <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-400">Vagas restantes: {nrRemaining}</p>
       </div>
 
       {selectedSlot.dropoff_address ? (
-        <div className="mb-4 rounded border border-blue-200 bg-blue-50 p-3">
-          <p className="text-sm font-medium text-blue-900">Endereço de Descarga:</p>
-          <p className="text-sm font-semibold text-blue-800">{selectedSlot.dropoff_address.name}</p>
-          <p className="text-xs text-blue-700">
+        <div className="mb-4 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3">
+          <p className="text-sm font-medium text-blue-900 dark:text-blue-300">Endereço de Descarga:</p>
+          <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">{selectedSlot.dropoff_address.name}</p>
+          <p className="text-xs text-blue-700 dark:text-blue-400">
             {selectedSlot.dropoff_address.street}, {selectedSlot.dropoff_address.number}
             {selectedSlot.dropoff_address.complement &&
               ` (${selectedSlot.dropoff_address.complement})`}
           </p>
-          <p className="text-xs text-blue-700">
+          <p className="text-xs text-blue-700 dark:text-blue-400">
             {selectedSlot.dropoff_address.neighborhood} - {selectedSlot.dropoff_address.city}/
             {selectedSlot.dropoff_address.state}
           </p>
         </div>
       ) : (
-        <div className="mb-4 rounded border border-gray-200 bg-gray-50 p-3">
-          <p className="text-sm italic text-gray-600">Endereço de descarga não informado</p>
+        <div className="mb-4 rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 p-3">
+          <p className="text-sm italic text-gray-600 dark:text-gray-400">Endereço de descarga não informado</p>
         </div>
       )}
 

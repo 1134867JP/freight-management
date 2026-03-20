@@ -25,10 +25,10 @@ export default function TruckQuickCreateModal({ show, form, onClose, onSubmit })
     <ModalShell show={show} title="Adicionar Caminhão" onClose={onClose} maxWidthClass="max-w-md">
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Placa</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Placa</label>
           <input
             type="text"
-            className="mt-1 block w-full rounded-md border-gray-300"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
             placeholder="ABC1D23"
             value={form.data.plate}
             onChange={(event) => {
@@ -42,9 +42,9 @@ export default function TruckQuickCreateModal({ show, form, onClose, onSubmit })
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Tipo</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
           <select
-            className="mt-1 block w-full rounded-md border-gray-300"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
             value={form.data.type}
             onChange={(event) => form.setData('type', event.target.value)}
             required
@@ -60,10 +60,10 @@ export default function TruckQuickCreateModal({ show, form, onClose, onSubmit })
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Modelo (Opcional)</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Modelo (Opcional)</label>
           <input
             type="text"
-            className="mt-1 block w-full rounded-md border-gray-300"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
             value={form.data.model}
             onChange={(event) => form.setData('model', event.target.value)}
           />
@@ -73,7 +73,7 @@ export default function TruckQuickCreateModal({ show, form, onClose, onSubmit })
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300"
+            className="flex-1 rounded-md bg-gray-200 dark:bg-gray-700 px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
           >
             Cancelar
           </button>

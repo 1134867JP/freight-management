@@ -23,9 +23,9 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
   return (
     <section className={className}>
       <header>
-        <h2 className="text-lg font-medium text-gray-900">Profile Information</h2>
+        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Profile Information</h2>
 
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
           Update your account's profile information and email address.
         </p>
       </header>
@@ -77,13 +77,13 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
             placeholder="5511999999999"
           />
 
-          <p className="mt-1 text-xs text-gray-500">Use o número com DDI e apenas números.</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Use o número com DDI e apenas números.</p>
           <InputError className="mt-2" message={errors.whatsapp_phone} />
         </div>
 
         {mustVerifyEmail && user.email_verified_at === null && (
           <div>
-            <p className="mt-2 text-sm text-gray-800">
+            <p className="mt-2 text-sm text-gray-800 dark:text-gray-200">
               Your email address is unverified.
               <Link
                 href={route('verification.send')}
@@ -113,7 +113,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
             leave="transition ease-in-out"
             leaveTo="opacity-0"
           >
-            <p className="text-sm text-gray-600">Saved.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Saved.</p>
           </Transition>
         </div>
       </form>

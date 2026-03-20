@@ -181,42 +181,42 @@ export default function Index({ freights }) {
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="rounded-lg bg-white p-4 shadow sm:p-8">
+          <div className="rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
             <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                <p className="text-xs uppercase tracking-wide text-gray-500">Reservados</p>
-                <p className="mt-1 text-2xl font-semibold text-gray-800">{statusSummary.reserved}</p>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-700/40">
+                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Reservados</p>
+                <p className="mt-1 text-2xl font-semibold text-gray-800 dark:text-gray-200">{statusSummary.reserved}</p>
               </div>
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                <p className="text-xs uppercase tracking-wide text-amber-700">Carregando</p>
-                <p className="mt-1 text-2xl font-semibold text-amber-800">{statusSummary.loading}</p>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+                <p className="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-400">Carregando</p>
+                <p className="mt-1 text-2xl font-semibold text-amber-800 dark:text-amber-300">{statusSummary.loading}</p>
               </div>
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
-                <p className="text-xs uppercase tracking-wide text-blue-700">Descarregando</p>
-                <p className="mt-1 text-2xl font-semibold text-blue-800">{statusSummary.unloading}</p>
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                <p className="text-xs uppercase tracking-wide text-blue-700 dark:text-blue-400">Descarregando</p>
+                <p className="mt-1 text-2xl font-semibold text-blue-800 dark:text-blue-300">{statusSummary.unloading}</p>
               </div>
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3">
-                <p className="text-xs uppercase tracking-wide text-green-700">Finalizados</p>
-                <p className="mt-1 text-2xl font-semibold text-green-800">{statusSummary.completed}</p>
+              <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+                <p className="text-xs uppercase tracking-wide text-green-700 dark:text-green-400">Finalizados</p>
+                <p className="mt-1 text-2xl font-semibold text-green-800 dark:text-green-300">{statusSummary.completed}</p>
               </div>
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-                <p className="text-xs uppercase tracking-wide text-red-700">Cancelados</p>
-                <p className="mt-1 text-2xl font-semibold text-red-800">{statusSummary.cancelled}</p>
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                <p className="text-xs uppercase tracking-wide text-red-700 dark:text-red-400">Cancelados</p>
+                <p className="mt-1 text-2xl font-semibold text-red-800 dark:text-red-300">{statusSummary.cancelled}</p>
               </div>
             </div>
 
-            <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-700/30">
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
                 <input
                   type="text"
                   value={filterSearch}
                   onChange={(event) => setFilterSearch(event.target.value)}
                   placeholder="Buscar cliente ou placa"
-                  className="rounded-md border-gray-300 text-sm"
+                  className="rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
 
                 <select
-                  className="rounded-md border-gray-300 text-sm"
+                  className="rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                   value={filterOp}
                   onChange={(event) => setFilterOp(event.target.value)}
                 >
@@ -226,7 +226,7 @@ export default function Index({ freights }) {
                 </select>
 
                 <select
-                  className="rounded-md border-gray-300 text-sm"
+                  className="rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                   value={filterStatus}
                   onChange={(event) => setFilterStatus(event.target.value)}
                 >
@@ -242,13 +242,13 @@ export default function Index({ freights }) {
                   type="date"
                   value={filterDate}
                   onChange={(event) => setFilterDate(event.target.value)}
-                  className="rounded-md border-gray-300 text-sm"
+                  className="rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
 
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                   Limpar filtros
                 </button>

@@ -34,6 +34,7 @@ class User extends Authenticatable
         'whatsapp_phone',
         'password',
         'role',
+        'theme_preference',
     ];
 
     /**

@@ -21,22 +21,22 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
   return (
     <article
       className={`rounded-xl border p-4 shadow-sm transition ${
-        selected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
+        selected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
       }`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <p className="text-lg font-semibold text-gray-900">
+          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {vlStart.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
             {' - '}
             {vlEnd.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             {vlStart.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
           </p>
         </div>
 
-        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
+        <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
           {translateTimeslotOperationType(slot.operation_type)}
         </span>
       </div>
@@ -44,23 +44,23 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
       <div className="mb-3">
         {slot.dropoff_address ? (
           <div>
-            <p className="text-sm font-medium text-gray-900">{slot.dropoff_address.name}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{slot.dropoff_address.name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {slot.dropoff_address.city}/{slot.dropoff_address.state}
             </p>
           </div>
         ) : (
-          <p className="text-sm italic text-gray-500">Endereço não informado</p>
+          <p className="text-sm italic text-gray-500 dark:text-gray-400">Endereço não informado</p>
         )}
       </div>
 
       <div className="space-y-1">
         <p className="text-sm text-gray-700">
-          <span className="font-semibold text-gray-900">{nrRemaining}</span>{' '}
-          vaga(s) disponível(is) de <span className="font-semibold text-gray-900">{slot.capacity}</span>
+          <span className="font-semibold text-gray-900 dark:text-gray-100">{nrRemaining}</span>{' '}
+          <span className="text-gray-700 dark:text-gray-300">vaga(s) disponível(is) de</span> <span className="font-semibold text-gray-900 dark:text-gray-100">{slot.capacity}</span>
         </p>
 
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600">
           <div
             className={`h-full ${getProgressClass(nrOccupationPercent)}`}
             style={{ width: `${nrOccupationPercent}%` }}

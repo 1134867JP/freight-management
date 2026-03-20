@@ -149,14 +149,14 @@ export default function Agenda({ timeslots }) {
 
   const statusPill = (status) => {
     const base = 'inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold';
-    if (status === 'available') return `${base} bg-green-50 text-green-700`;
-    if (status === 'full') return `${base} bg-orange-50 text-orange-700`;
-    if (status === 'closed') return `${base} bg-red-50 text-red-700`;
-    if (status === 'approved') return `${base} bg-blue-50 text-blue-700`;
-    if (status === 'pending') return `${base} bg-yellow-50 text-yellow-800`;
-    if (status === 'completed') return `${base} bg-emerald-50 text-emerald-700`;
-    if (status === 'cancelled') return `${base} bg-gray-100 text-gray-700`;
-    return `${base} bg-gray-100 text-gray-700`;
+    if (status === 'available') return `${base} bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400`;
+    if (status === 'full') return `${base} bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400`;
+    if (status === 'closed') return `${base} bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400`;
+    if (status === 'approved') return `${base} bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400`;
+    if (status === 'pending') return `${base} bg-yellow-50 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400`;
+    if (status === 'completed') return `${base} bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400`;
+    if (status === 'cancelled') return `${base} bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400`;
+    return `${base} bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400`;
   };
 
   const prevMonth = () => {
@@ -186,7 +186,7 @@ export default function Agenda({ timeslots }) {
 
   return (
     <AuthenticatedLayout
-      header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Agenda</h2>}
+      header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-100">Agenda</h2>}
     >
       <Head title="Agenda" />
 
@@ -195,8 +195,8 @@ export default function Agenda({ timeslots }) {
           {/* Header / navegação mês */}
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-500">Mês</p>
-              <h3 className="text-lg font-semibold text-gray-900 capitalize">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Mês</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 capitalize">
                 {monthLabel(monthCursor)}
               </h3>
             </div>
@@ -205,14 +205,14 @@ export default function Agenda({ timeslots }) {
               <button
                 type="button"
                 onClick={prevMonth}
-                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               >
                 ← Anterior
               </button>
               <button
                 type="button"
                 onClick={nextMonth}
-                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               >
                 Próximo →
               </button>
@@ -221,10 +221,10 @@ export default function Agenda({ timeslots }) {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* Calendário */}
-            <div className="lg:col-span-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+            <div className="lg:col-span-2 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 dark:bg-gray-800 dark:ring-gray-700">
               <div className="grid grid-cols-7 gap-2 mb-2">
                 {weekDays.map((w) => (
-                  <div key={w} className="text-xs font-semibold text-gray-500 text-center py-2">
+                  <div key={w} className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-center py-2">
                     {w}
                   </div>
                 ))}
@@ -241,23 +241,23 @@ export default function Agenda({ timeslots }) {
                       type="button"
                       onClick={() => setSelectedDayKey(cell.key)}
                       className={[
-                        'rounded-lg border p-2 text-left hover:bg-gray-50 transition',
-                        cell.inMonth ? 'bg-white' : 'bg-gray-50',
-                        isSelected ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200',
+                        'rounded-lg border p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition',
+                        cell.inMonth ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900/50',
+                        isSelected ? 'border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900' : 'border-gray-200 dark:border-gray-700',
                       ].join(' ')}
                     >
                       <div className="flex items-center justify-between">
                         <span
                           className={[
                             'text-sm font-semibold',
-                            cell.inMonth ? 'text-gray-900' : 'text-gray-400',
+                            cell.inMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600',
                           ].join(' ')}
                         >
                           {cell.date.getDate()}
                         </span>
 
                         {cell.isToday && (
-                          <span className="text-[10px] font-semibold rounded-full bg-blue-50 text-blue-700 px-2 py-0.5">
+                          <span className="text-[10px] font-semibold rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5">
                             Hoje
                           </span>
                         )}
@@ -266,13 +266,13 @@ export default function Agenda({ timeslots }) {
                       <div className="mt-2 space-y-1">
                         {totalSlots > 0 ? (
                           <>
-                            <div className="text-[11px] text-gray-600">{totalSlots} horário(s)</div>
-                            <div className="text-[11px] text-gray-600">
+                            <div className="text-[11px] text-gray-600 dark:text-gray-400">{totalSlots} horário(s)</div>
+                            <div className="text-[11px] text-gray-600 dark:text-gray-400">
                               Ocupação {totalReservations}/{totalCapacity}
                             </div>
                           </>
                         ) : (
-                          <div className="text-[11px] text-gray-400">Sem horários</div>
+                          <div className="text-[11px] text-gray-400 dark:text-gray-600">Sem horários</div>
                         )}
                       </div>
                     </button>
@@ -282,20 +282,20 @@ export default function Agenda({ timeslots }) {
             </div>
 
             {/* Detalhe do dia */}
-            <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+            <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 dark:bg-gray-800 dark:ring-gray-700">
               <div className="mb-3">
-                <p className="text-sm text-gray-500">Dia selecionado</p>
-                <h4 className="text-base font-semibold text-gray-900 capitalize">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Dia selecionado</p>
+                <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100 capitalize">
                   {selectedDayLabel || '-'}
                 </h4>
               </div>
 
               {selectedSlots.length === 0 ? (
-                <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-600">
+                <div className="rounded-lg bg-gray-50 dark:bg-gray-700/50 p-4 text-sm text-gray-600 dark:text-gray-400">
                   Nenhum horário para este dia.
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="max-h-[65vh] overflow-y-auto space-y-3 pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-500">
                   {selectedSlots.map((slot) => {
                     const reservations = (slot.freights || []).filter(
                       (f) => f.status !== 'cancelled',
@@ -304,40 +304,40 @@ export default function Agenda({ timeslots }) {
                     return (
                       <div
                         key={`${selectedDayKey}-${slot.id}`}
-                        className="rounded-lg border border-gray-200 p-3"
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 p-3"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-semibold text-gray-900">
+                              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                 {formatRange(slot)}
                               </p>
                               <span className={statusPill(slot.status)}>
                                 {translateStatus(slot.status)}
                               </span>
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                               Capacidade: {slot.current_reservations}/{slot.capacity}
                             </p>
-                            <p className="mt-1 text-sm text-gray-600">
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                               {slot.description || 'Sem descrição'}
                             </p>
                           </div>
                         </div>
 
-                        <div className="mt-3 border-t border-gray-100 pt-3">
-                          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        <div className="mt-3 border-t border-gray-100 dark:border-gray-700 pt-3">
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             Reservas
                           </p>
 
                           {reservations.length === 0 ? (
-                            <p className="text-sm text-gray-500">Ainda não reservado.</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Ainda não reservado.</p>
                           ) : (
                             <div className="space-y-2">
                               {reservations.map((freight) => (
-                                <div key={freight.id} className="rounded-md bg-gray-50 p-3">
+                                <div key={freight.id} className="rounded-md bg-gray-50 dark:bg-gray-700/50 p-3">
                                   <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-semibold text-gray-900 truncate">
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                                       {freight.user?.name || 'Cliente não informado'}
                                     </p>
                                     <span className={statusPill(freight.status)}>
@@ -346,11 +346,11 @@ export default function Agenda({ timeslots }) {
                                   </div>
 
                                   <div className="mt-2 space-y-1">
-                                    <p className="text-sm text-gray-700">
+                                    <p className="text-sm text-gray-700 dark:text-gray-300">
                                       <span className="font-semibold">Motorista:</span>{' '}
                                       {freight.driver_name}
                                     </p>
-                                    <p className="text-sm text-gray-700">
+                                    <p className="text-sm text-gray-700 dark:text-gray-300">
                                       <span className="font-semibold">Placa:</span>{' '}
                                       {freight.truck_plate}
                                     </p>
@@ -369,7 +369,7 @@ export default function Agenda({ timeslots }) {
           </div>
 
           {(!Array.isArray(timeslots) || timeslots.length === 0) && (
-            <div className="mt-4 rounded-lg bg-white p-6 text-gray-500 shadow-sm">
+            <div className="mt-4 rounded-lg bg-white dark:bg-gray-800 p-6 text-gray-500 dark:text-gray-400 shadow-sm">
               Nenhum horário anunciado ainda.
             </div>
           )}

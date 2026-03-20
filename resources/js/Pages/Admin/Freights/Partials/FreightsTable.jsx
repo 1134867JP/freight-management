@@ -72,47 +72,47 @@ export default function FreightsTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
       <table className="min-w-full table-fixed text-left">
-        <thead className="bg-gray-50">
+        <thead className="bg-gray-50 dark:bg-gray-700">
           <tr>
-            <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Cliente
             </th>
-            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Veículo
             </th>
-            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Operação
             </th>
-            <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Agendamento
             </th>
-            <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Pesos
             </th>
-            <th className="w-[18%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <th className="w-[18%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Documentos
             </th>
-            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Status
             </th>
-            <th className="w-[18%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            <th className="w-[18%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Ações
             </th>
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
           {freights.map((freight) => (
-            <tr key={freight.id} className="align-top transition hover:bg-gray-50/70">
+            <tr key={freight.id} className="align-top transition hover:bg-gray-50/70 dark:hover:bg-gray-700/50">
               <td className="w-[16%] px-4 py-4 align-top">
-                <p className="text-sm font-semibold text-gray-900">{freight.user?.name || '-'}</p>
-                <p className="text-xs text-gray-500">{freight.driver_name || 'Motorista não informado'}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{freight.user?.name || '-'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{freight.driver_name || 'Motorista não informado'}</p>
               </td>
 
               <td className="w-[10%] px-4 py-4 align-top">
-                <p className="text-sm font-semibold tracking-wide text-gray-900">{freight.truck_plate}</p>
+                <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate}</p>
               </td>
 
               <td className="w-[10%] px-4 py-4 align-top">
@@ -126,19 +126,19 @@ export default function FreightsTable({
               <td className="w-[14%] px-4 py-4 align-top text-sm">
                 {freight.timeslot ? (
                   <div className="space-y-0.5">
-                    <p className="font-medium text-gray-900">{formatDate(freight.timeslot.start_time)}</p>
-                    <p className="text-gray-600">{formatTime(freight.timeslot.start_time)}</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{formatDate(freight.timeslot.start_time)}</p>
+                    <p className="text-gray-600 dark:text-gray-400">{formatTime(freight.timeslot.start_time)}</p>
                   </div>
                 ) : (
-                  <span className="text-gray-500">Não informado</span>
+                  <span className="text-gray-500 dark:text-gray-400">Não informado</span>
                 )}
               </td>
 
               <td className="w-[14%] px-4 py-4 align-top text-sm">
-                <p className="text-gray-700">
+                <p className="text-gray-700 dark:text-gray-300">
                   Peso bruto: <span className="font-medium">{formatWeight(freight.gross_weight)}</span>
                 </p>
-                <p className="text-gray-700">
+                <p className="text-gray-700 dark:text-gray-300">
                   Peso líquido: <span className="font-medium">{formatWeight(freight.net_weight)}</span>
                 </p>
               </td>

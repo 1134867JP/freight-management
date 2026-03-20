@@ -13,7 +13,7 @@ export default function TimeslotsPagination({ links }) {
   if (!links || links.length <= 3) return null;
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-3">
+    <div className="flex flex-wrap items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
       {links.map((objLink, index) => (
         <button
           key={`${objLink.label}-${index}`}
@@ -23,7 +23,7 @@ export default function TimeslotsPagination({ links }) {
           className={`min-w-[38px] rounded-md border px-3 py-2 text-sm font-medium transition ${
             objLink.active
               ? 'border-blue-600 bg-blue-600 text-white'
-              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
           } disabled:cursor-not-allowed disabled:opacity-50`}
           dangerouslySetInnerHTML={{ __html: formatLinkLabel(objLink.label) }}
         />

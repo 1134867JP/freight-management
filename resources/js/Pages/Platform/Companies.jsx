@@ -159,8 +159,8 @@ export default function Companies({ companies, summary }) {
 
           <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {cards.map((card) => (
-              <div key={card.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-sm text-slate-500">{card.label}</p>
+              <div key={card.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <p className="text-sm text-slate-500 dark:text-gray-400">{card.label}</p>
                 <p className={`mt-2 text-3xl font-bold ${card.tone}`}>{card.value}</p>
               </div>
             ))}
@@ -168,7 +168,7 @@ export default function Companies({ companies, summary }) {
 
           <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
             {companies.map((company) => (
-              <article key={company.id} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+              <article key={company.id} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex flex-col gap-5 border-b border-slate-100 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 p-6 text-white sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
                     <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-white/10">
@@ -229,10 +229,10 @@ export default function Companies({ companies, summary }) {
                   <div className="space-y-3">
                     <SectionTitle>Admin principal</SectionTitle>
                     {company.admin ? (
-                      <div className="rounded-2xl bg-slate-50 p-4">
-                        <p className="font-medium text-slate-900">{company.admin.name}</p>
-                        <p className="mt-1 text-sm text-slate-600">{company.admin.email}</p>
-                        <p className="mt-1 text-sm text-slate-500">WhatsApp: {company.admin.whatsapp_phone || 'Não informado'}</p>
+                      <div className="rounded-2xl bg-slate-50 p-4 dark:bg-gray-700">
+                        <p className="font-medium text-slate-900 dark:text-gray-100">{company.admin.name}</p>
+                        <p className="mt-1 text-sm text-slate-600 dark:text-gray-400">{company.admin.email}</p>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-gray-500">WhatsApp: {company.admin.whatsapp_phone || 'Não informado'}</p>
                       </div>
                     ) : (
                       <EmptyBlock text="Nenhum admin cadastrado." />
@@ -249,17 +249,17 @@ export default function Companies({ companies, summary }) {
                   <div className="space-y-3">
                     <SectionTitle>Instância WhatsApp</SectionTitle>
                     {company.whatsapp_instance ? (
-                      <div className="rounded-2xl border border-slate-200 p-4">
+                      <div className="rounded-2xl border border-slate-200 p-4 dark:border-gray-700">
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="font-medium text-slate-900">{company.whatsapp_instance.label}</p>
-                            <p className="mt-1 text-sm text-slate-500">{company.whatsapp_instance.instance_name}</p>
+                            <p className="font-medium text-slate-900 dark:text-gray-100">{company.whatsapp_instance.label}</p>
+                            <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">{company.whatsapp_instance.instance_name}</p>
                           </div>
                           <StatusPill active={company.whatsapp_instance.is_active}>
                             {company.whatsapp_instance.is_active ? 'Ativa' : 'Desligada'}
                           </StatusPill>
                         </div>
-                        <p className="mt-3 text-sm text-slate-600">
+                        <p className="mt-3 text-sm text-slate-600 dark:text-gray-400">
                           Base URL: {company.whatsapp_instance.base_url || 'Não configurada'}
                         </p>
                         <p className="mt-1 text-sm text-slate-600">
@@ -295,7 +295,7 @@ export default function Companies({ companies, summary }) {
             <Field label="Nome da empresa" error={errors.company_name}>
               <input
                 type="text"
-                className="mt-1 block w-full rounded-xl border-slate-300"
+                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 value={data.company_name}
                 onChange={(event) => setData('company_name', event.target.value)}
                 required
@@ -305,7 +305,7 @@ export default function Companies({ companies, summary }) {
             <Field label="Slug" hint="Se vazio, será gerado a partir do nome." error={errors.company_slug}>
               <input
                 type="text"
-                className="mt-1 block w-full rounded-xl border-slate-300"
+                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 value={data.company_slug}
                 onChange={(event) => setData('company_slug', event.target.value)}
                 placeholder="minha-empresa"
@@ -328,9 +328,9 @@ export default function Companies({ companies, summary }) {
               />
             </Field>
 
-            <div className="space-y-3 rounded-2xl border border-dashed border-slate-200 p-4">
-              <p className="text-sm font-medium text-slate-700">Status e branding</p>
-              <label className="flex items-center gap-3 text-sm text-slate-700">
+            <div className="space-y-3 rounded-2xl border border-dashed border-slate-200 p-4 dark:border-gray-700">
+              <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Status e branding</p>
+              <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
                 <input
                   type="checkbox"
                   checked={Boolean(data.company_is_active)}
@@ -339,7 +339,7 @@ export default function Companies({ companies, summary }) {
                 />
                 Empresa ativa
               </label>
-              <label className="flex items-center gap-3 text-sm text-slate-700">
+              <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
                 <input
                   type="checkbox"
                   checked={Boolean(data.remove_logo)}
@@ -362,7 +362,7 @@ export default function Companies({ companies, summary }) {
             <Field label="Nome" error={errors.admin_name}>
               <input
                 type="text"
-                className="mt-1 block w-full rounded-xl border-slate-300"
+                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 value={data.admin_name}
                 onChange={(event) => setData('admin_name', event.target.value)}
                 required
@@ -372,7 +372,7 @@ export default function Companies({ companies, summary }) {
             <Field label="Email" error={errors.admin_email}>
               <input
                 type="email"
-                className="mt-1 block w-full rounded-xl border-slate-300"
+                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 value={data.admin_email}
                 onChange={(event) => setData('admin_email', event.target.value)}
                 required
@@ -382,7 +382,7 @@ export default function Companies({ companies, summary }) {
             <Field label="WhatsApp" hint="Com DDI e apenas números." error={errors.admin_whatsapp_phone}>
               <input
                 type="tel"
-                className="mt-1 block w-full rounded-xl border-slate-300"
+                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 value={data.admin_whatsapp_phone}
                 onChange={(event) => setData('admin_whatsapp_phone', event.target.value)}
                 placeholder="5511999999999"
@@ -396,7 +396,7 @@ export default function Companies({ companies, summary }) {
             >
               <input
                 type="password"
-                className="mt-1 block w-full rounded-xl border-slate-300"
+                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 value={data.admin_password}
                 onChange={(event) => setData('admin_password', event.target.value)}
                 required={!editingCompany}
@@ -408,7 +408,7 @@ export default function Companies({ companies, summary }) {
             <button
               type="button"
               onClick={resetForm}
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Cancelar
             </button>
@@ -427,15 +427,15 @@ export default function Companies({ companies, summary }) {
 }
 
 function SectionTitle({ children }) {
-  return <h3 className="text-base font-semibold text-slate-900">{children}</h3>;
+  return <h3 className="text-base font-semibold text-slate-900 dark:text-gray-100">{children}</h3>;
 }
 
 function Field({ label, hint = null, error = null, children }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <span className="text-sm font-medium text-slate-700 dark:text-gray-300">{label}</span>
       {children}
-      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">{hint}</p>}
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </label>
   );
@@ -445,7 +445,9 @@ function StatusPill({ active, children }) {
   return (
     <span
       className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-        active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'
+        active
+          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+          : 'bg-slate-200 text-slate-700 dark:bg-gray-700 dark:text-gray-300'
       }`}
     >
       {children}
@@ -455,16 +457,16 @@ function StatusPill({ active, children }) {
 
 function MiniStat({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-      <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-slate-900">{value}</p>
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-700">
+      <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-gray-400">{label}</p>
+      <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-gray-100">{value}</p>
     </div>
   );
 }
 
 function EmptyBlock({ text }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500 dark:border-gray-700 dark:bg-gray-700/30 dark:text-gray-400">
       {text}
     </div>
   );
