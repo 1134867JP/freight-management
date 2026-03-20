@@ -100,7 +100,7 @@ class FreightController extends Controller
                 timeslot: $timeslot,
                 truckPlate: $validated['truck_plate'],
                 driverName: $validated['driver_name'],
-                cargoDescription: $validated['cargo_description'],
+                cargoDescription: $validated['cargo_description'] ?? null,
                 operationType: $validated['operation_type'],
                 weight: $validated['weight'] ?? null,
                 invoicePath: $invoicePath

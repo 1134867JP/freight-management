@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Freight;
 
+use App\Models\Timeslot;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,14 +26,30 @@ class StoreFreightRequest extends FormRequest
      */
     public function rules(): array
     {
+        $blCargoRequired = $this->isCargoDescriptionRequired();
+
         return [
             'operation_type' => ['required', 'in:load,unload'],
             'truck_plate' => ['required', 'string', 'max:10'],
             'driver_name' => ['required', 'string', 'max:100'],
-            'cargo_description' => ['required', 'string', 'max:500'],
+            'cargo_description' => $blCargoRequired
+                ? ['required', 'string', 'max:500']
+                : ['nullable', 'string', 'max:500'],
             'weight' => ['nullable', 'numeric', 'min:0.1'],
             'invoice_path' => ['nullable', 'required_if:operation_type,unload', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ];
+    }
+
+    private function isCargoDescriptionRequired(): bool
+    {
+        /** @var \App\Models\Timeslot|null $objTimeslot */
+        $objTimeslot = $this->route('timeslot');
+
+        if (! $objTimeslot instanceof Timeslot) {
+            return true;
+        }
+
+        return $objTimeslot->modelo === Timeslot::MODELO_ABERTA;
     }
 
     /**

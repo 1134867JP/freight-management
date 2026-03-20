@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Actions\Timeslot\SyncVisibilityClients;
 use App\Http\Requests\Timeslot\StoreTimeslotRequest;
 use App\Http\Requests\Timeslot\UpdateTimeslotRequest;
+use App\Models\Doca;
 use App\Models\DropoffAddress;
+use App\Models\Produto;
 use App\Models\Timeslot;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -62,18 +64,22 @@ class TimeslotController extends Controller
             'timeslot' => null,
             'clients' => $arrFormData['clients'],
             'addresses' => $arrFormData['addresses'],
+            'produtos' => $arrFormData['produtos'],
+            'docas' => $arrFormData['docas'],
         ]);
     }
 
     public function edit(Timeslot $timeslot): Response
     {
-        $timeslot->load(['clients', 'dropoffAddress']);
+        $timeslot->load(['clients', 'dropoffAddress', 'produto', 'doca']);
         $arrFormData = $this->buildTimeslotFormData();
 
         return Inertia::render('Admin/Timeslots/Form', [
             'timeslot' => $timeslot,
             'clients' => $arrFormData['clients'],
             'addresses' => $arrFormData['addresses'],
+            'produtos' => $arrFormData['produtos'],
+            'docas' => $arrFormData['docas'],
         ]);
     }
 
@@ -86,6 +92,14 @@ class TimeslotController extends Controller
 
         $arrValidated['status'] = 'available';
         $arrValidated['created_by'] = $request->user()->id;
+
+        // Limpar produto/doca se modelo não exige
+        if ($arrValidated['modelo'] === Timeslot::MODELO_ABERTA) {
+            $arrValidated['produto_id'] = null;
+            $arrValidated['doca_id'] = null;
+        } elseif ($arrValidated['modelo'] === Timeslot::MODELO_POR_PRODUTO) {
+            $arrValidated['doca_id'] = null;
+        }
 
         $objTimeslot = Timeslot::create($arrValidated);
 
@@ -110,6 +124,14 @@ class TimeslotController extends Controller
         }
 
         $arrValidated['created_by'] = $timeslot->created_by ?: $request->user()->id;
+
+        // Limpar produto/doca se modelo não exige
+        if ($arrValidated['modelo'] === Timeslot::MODELO_ABERTA) {
+            $arrValidated['produto_id'] = null;
+            $arrValidated['doca_id'] = null;
+        } elseif ($arrValidated['modelo'] === Timeslot::MODELO_POR_PRODUTO) {
+            $arrValidated['doca_id'] = null;
+        }
 
         $timeslot->update($arrValidated);
 
@@ -140,7 +162,7 @@ class TimeslotController extends Controller
         $idUser = $objUser->id;
 
         $arrTimeslots = Timeslot::visibleForClient($idUser)
-            ->with(['clients', 'dropoffAddress'])
+            ->with(['clients', 'dropoffAddress', 'produto', 'doca'])
             ->orderBy('start_time', 'asc')
             ->get();
 
@@ -175,6 +197,14 @@ class TimeslotController extends Controller
                     'state',
                     'complement',
                 ]),
+            'produtos' => Produto::query()
+                ->where('is_active', true)
+                ->orderBy('nome')
+                ->get(['id', 'nome', 'descricao']),
+            'docas' => Doca::query()
+                ->where('is_active', true)
+                ->orderBy('nome')
+                ->get(['id', 'nome', 'descricao']),
         ];
     }
 }

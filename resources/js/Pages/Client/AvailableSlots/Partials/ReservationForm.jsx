@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { getTruckTypeLabel, normalizeTruckPlate } from '@/Features/Truck/utils/truckTypes';
 import FormField from '@/Components/UI/FormField';
 import { useClientValidation } from '@/hooks/useClientValidation';
@@ -18,6 +18,10 @@ export default function ReservationForm({
 }) {
   if (!selectedSlot) return null;
 
+  const blModeloAberta = !selectedSlot.modelo || selectedSlot.modelo === 'aberta';
+  const blTemProduto = selectedSlot.modelo === 'por_produto' || selectedSlot.modelo === 'por_produto_doca';
+  const blTemDoca = selectedSlot.modelo === 'por_produto_doca';
+
   const { clientErrors, validate, clearClientError } = useClientValidation({
     truck_plate: (value) => {
       if (!value) return 'Selecione um caminhão.';
@@ -29,7 +33,8 @@ export default function ReservationForm({
         return 'Nome do motorista deve ter ao menos 3 caracteres.';
       return null;
     },
-    cargo_description: (value) => {
+    cargo_description: (value, formData) => {
+      if (!blModeloAberta) return null;
       if (!value || value.trim().length < 3)
         return 'Descrição da carga deve ter ao menos 3 caracteres.';
       return null;
@@ -64,6 +69,20 @@ export default function ReservationForm({
         </p>
         <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-400">Vagas restantes: {nrRemaining}</p>
       </div>
+
+      {/* Badge do modelo */}
+      {blTemProduto && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          <span className="inline-flex items-center rounded-full bg-purple-100 dark:bg-purple-900/30 px-3 py-1 text-xs font-semibold text-purple-800 dark:text-purple-300">
+            Produto: {selectedSlot.produto?.nome ?? '—'}
+          </span>
+          {blTemDoca && (
+            <span className="inline-flex items-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-3 py-1 text-xs font-semibold text-indigo-800 dark:text-indigo-300">
+              Doca: {selectedSlot.doca?.nome ?? '—'}
+            </span>
+          )}
+        </div>
+      )}
 
       {selectedSlot.dropoff_address ? (
         <div className="mb-4 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3">
@@ -142,18 +161,21 @@ export default function ReservationForm({
           />
         </FormField>
 
-        <FormField label="Carga (Descrição)" error={allErrors.cargo_description} required>
-          <FormField.Input
-            type="text"
-            error={allErrors.cargo_description}
-            value={data.cargo_description}
-            onChange={(event) => {
-              setData('cargo_description', event.target.value);
-              clearClientError('cargo_description');
-            }}
-            required
-          />
-        </FormField>
+        {/* Descrição da carga: apenas no modelo aberta */}
+        {blModeloAberta && (
+          <FormField label="Carga (Descrição)" error={allErrors.cargo_description} required>
+            <FormField.Input
+              type="text"
+              error={allErrors.cargo_description}
+              value={data.cargo_description}
+              onChange={(event) => {
+                setData('cargo_description', event.target.value);
+                clearClientError('cargo_description');
+              }}
+              required
+            />
+          </FormField>
+        )}
 
         <FormField label="Peso (Toneladas)" error={allErrors.weight}>
           <FormField.Input

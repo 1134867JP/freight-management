@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminManagementController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ClientManagementController;
+use App\Http\Controllers\DocaController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DropoffAddressController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\FreightController;
 use App\Http\Controllers\PlatformCompanyController;
 use App\Http\Controllers\PlatformCompanyInstanceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\TimeslotController;
 use App\Http\Controllers\TruckController;
 use Illuminate\Support\Facades\Route;
@@ -58,6 +60,18 @@ Route::middleware('auth')->group(function () {
         Route::post('/clients', [ClientManagementController::class, 'store'])->name('clients.store');
         Route::patch('/clients/{user}', [ClientManagementController::class, 'update'])->name('clients.update');
         Route::delete('/clients/{user}', [ClientManagementController::class, 'destroy'])->name('clients.destroy');
+
+        // Produtos
+        Route::get('/produtos', [ProdutoController::class, 'index'])->name('produtos.index');
+        Route::post('/produtos', [ProdutoController::class, 'store'])->name('produtos.store');
+        Route::patch('/produtos/{produto}', [ProdutoController::class, 'update'])->name('produtos.update');
+        Route::delete('/produtos/{produto}', [ProdutoController::class, 'destroy'])->name('produtos.destroy');
+
+        // Docas
+        Route::get('/docas', [DocaController::class, 'index'])->name('docas.index');
+        Route::post('/docas', [DocaController::class, 'store'])->name('docas.store');
+        Route::patch('/docas/{doca}', [DocaController::class, 'update'])->name('docas.update');
+        Route::delete('/docas/{doca}', [DocaController::class, 'destroy'])->name('docas.destroy');
 
         // Logs de auditoria
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');

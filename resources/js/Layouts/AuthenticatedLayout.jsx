@@ -25,14 +25,14 @@ export default function AuthenticatedLayout({ header, children }) {
       ? 'Administrador da empresa'
       : 'Cliente';
 
-  const mainLinks = useMemo(() => {
+  const menuSections = useMemo(() => {
     if (isPlatformAdmin) {
       return [
         {
-          label: 'Empresas',
-          href: route('platform.dashboard'),
-          active: route().current('platform.*'),
-          icon: 'buildings',
+          section: null,
+          items: [
+            { label: 'Empresas', href: route('platform.dashboard'), active: route().current('platform.*'), icon: 'buildings' },
+          ],
         },
       ];
     }
@@ -40,109 +40,68 @@ export default function AuthenticatedLayout({ header, children }) {
     if (isCompanyAdmin) {
       return [
         {
-          label: 'Painel',
-          href: route('admin.dashboard'),
-          active: route().current('admin.dashboard'),
-          icon: 'dashboard',
-        },
-        {
-          label: 'Horários',
-          href: route('timeslots.index'),
-          active: route().current('timeslots.*'),
-          icon: 'calendar',
-        },
-        {
-          label: 'Agenda',
-          href: route('admin.agenda'),
-          active: route().current('admin.agenda'),
-          icon: 'schedule',
-        },
-        {
-          label: 'Fretes',
-          href: route('freights.approvalList'),
-          active: route().current('freights.*'),
-          icon: 'freight',
-        },
-        {
-          label: 'Clientes',
-          href: route('clients.index'),
-          active: route().current('clients.*'),
-          icon: 'users',
-        },
-        {
-          label: 'Admins',
-          href: route('admins.index'),
-          active: route().current('admins.*'),
-          icon: 'users',
-        },
-        {
-          label: 'Logs',
-          href: route('audit-logs.index'),
-          active: route().current('audit-logs.*'),
-          icon: 'schedule',
-        },
-        {
-          label: 'Relatórios',
-          icon: 'chart',
-          group: 'reports-admin',
-          active: route().current('reports.admin.*'),
-          children: [
-            {
-              label: 'Horários',
-              href: route('reports.admin.timeslots'),
-              active: route().current('reports.admin.timeslots'),
-            },
-            {
-              label: 'Fretes',
-              href: route('reports.admin.freights'),
-              active: route().current('reports.admin.freights'),
-            },
+          section: 'Operação',
+          items: [
+            { label: 'Painel', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
+            { label: 'Cotas', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
+            { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda'), icon: 'schedule' },
+            { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
           ],
         },
         {
-          label: 'Endereços',
-          href: route('dropoff-addresses.index'),
-          active: route().current('dropoff-addresses.*'),
-          icon: 'location',
+          section: 'Gestão',
+          items: [
+            { label: 'Clientes', href: route('clients.index'), active: route().current('clients.*'), icon: 'users' },
+          ],
+        },
+        {
+          section: 'Cadastros',
+          items: [
+            { label: 'Endereços', href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*'), sub: true },
+            { label: 'Produtos', href: route('produtos.index'), active: route().current('produtos.*'), sub: true },
+            { label: 'Docas', href: route('docas.index'), active: route().current('docas.*'), sub: true },
+          ],
+        },
+        {
+          section: 'Dados',
+          items: [
+            {
+              label: 'Relatórios',
+              icon: 'chart',
+              group: 'reports-admin',
+              active: route().current('reports.admin.*'),
+              children: [
+                { label: 'Cotas', href: route('reports.admin.timeslots'), active: route().current('reports.admin.timeslots') },
+                { label: 'Fretes', href: route('reports.admin.freights'), active: route().current('reports.admin.freights') },
+              ],
+            },
+          ],
         },
       ];
     }
 
+    // Client
     return [
       {
-        label: 'Painel',
-        href: route('client.dashboard'),
-        active: route().current('client.dashboard'),
-        icon: 'dashboard',
+        section: 'Operação',
+        items: [
+          { label: 'Painel', href: route('client.dashboard'), active: route().current('client.dashboard'), icon: 'dashboard' },
+          { label: 'Cotas Disponíveis', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
+          { label: 'Minhas Reservas', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'clipboard' },
+          { label: 'Caminhões', href: route('client.trucks'), active: route().current('client.trucks'), icon: 'truck' },
+        ],
       },
       {
-        label: 'Horários Disponíveis',
-        href: route('client.available'),
-        active: route().current('client.available'),
-        icon: 'calendar',
-      },
-      {
-        label: 'Minhas Reservas',
-        href: route('client.reservations'),
-        active: route().current('client.reservations'),
-        icon: 'clipboard',
-      },
-      {
-        label: 'Caminhões',
-        href: route('client.trucks'),
-        active: route().current('client.trucks'),
-        icon: 'truck',
-      },
-      {
-        label: 'Relatórios',
-        icon: 'chart',
-        group: 'reports-client',
-        active: route().current('reports.client.*'),
-        children: [
+        section: 'Dados',
+        items: [
           {
-            label: 'Meus Fretes',
-            href: route('reports.client.reservations'),
-            active: route().current('reports.client.reservations'),
+            label: 'Relatórios',
+            icon: 'chart',
+            group: 'reports-client',
+            active: route().current('reports.client.*'),
+            children: [
+              { label: 'Meus Fretes', href: route('reports.client.reservations'), active: route().current('reports.client.reservations') },
+            ],
           },
         ],
       },
@@ -152,7 +111,7 @@ export default function AuthenticatedLayout({ header, children }) {
   const SideLink = ({ href, active, label, icon }) => (
     <Link
       href={href}
-      className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
         active
           ? 'bg-teal-700 text-white'
           : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -160,6 +119,20 @@ export default function AuthenticatedLayout({ header, children }) {
     >
       {icon && <MenuIcon name={icon} className="h-4 w-4 shrink-0" />}
       <span>{label}</span>
+    </Link>
+  );
+
+  const SubLink = ({ href, active, label }) => (
+    <Link
+      href={href}
+      className={`flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition ${
+        active
+          ? 'font-medium text-teal-600 dark:text-teal-400'
+          : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+      }`}
+    >
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${active ? 'bg-teal-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+      {label}
     </Link>
   );
 
@@ -252,18 +225,24 @@ export default function AuthenticatedLayout({ header, children }) {
         </div>
 
         {/* Menu */}
-        <div className="flex-1 space-y-6 p-6">
-          <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Menu</p>
-            <div className="space-y-2">
-              {mainLinks.map((link) =>
-                link.children
-                  ? <NavGroup key={link.label} item={link} />
-                  : <SideLink key={link.label} {...link} />
+        <nav className="flex-1 space-y-5 overflow-y-auto p-4">
+          {menuSections.map((objSection) => (
+            <div key={objSection.section ?? '_main'}>
+              {objSection.section && (
+                <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                  {objSection.section}
+                </p>
               )}
+              <div className="space-y-0.5">
+                {objSection.items.map((item) => {
+                  if (item.children) return <NavGroup key={item.label} item={item} />;
+                  if (item.sub) return <SubLink key={item.label} {...item} />;
+                  return <SideLink key={item.label} {...item} />;
+                })}
+              </div>
             </div>
-          </div>
-        </div>
+          ))}
+        </nav>
 
         {/* Engrenagem + dropdown (canto inferior esquerdo) */}
         <div className="relative border-t border-gray-200 dark:border-gray-700 p-4" ref={accountMenuRef}>
@@ -288,6 +267,26 @@ export default function AuthenticatedLayout({ header, children }) {
               >
                 Perfil
               </Link>
+
+              {isCompanyAdmin && (
+                <>
+                  <Link
+                    href={route('admins.index')}
+                    className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                    onClick={() => setShowAccountMenu(false)}
+                  >
+                    Funcionários
+                  </Link>
+
+                  <Link
+                    href={route('audit-logs.index')}
+                    className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                    onClick={() => setShowAccountMenu(false)}
+                  >
+                    Logs
+                  </Link>
+                </>
+              )}
 
               <Link
                 href={route('logout')}
@@ -321,12 +320,23 @@ export default function AuthenticatedLayout({ header, children }) {
           </div>
 
           {showMobileMenu && (
-            <div className="mt-3 space-y-2">
-              {mainLinks.map((link) =>
-                link.children
-                  ? <NavGroup key={link.label} item={link} />
-                  : <SideLink key={link.label} {...link} />
-              )}
+            <div className="mt-3 space-y-4">
+              {menuSections.map((objSection) => (
+                <div key={objSection.section ?? '_main'}>
+                  {objSection.section && (
+                    <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                      {objSection.section}
+                    </p>
+                  )}
+                  <div className="space-y-0.5">
+                    {objSection.items.map((item) => {
+                      if (item.children) return <NavGroup key={item.label} item={item} />;
+                      if (item.sub) return <SubLink key={item.label} {...item} />;
+                      return <SideLink key={item.label} {...item} />;
+                    })}
+                  </div>
+                </div>
+              ))}
               <SideLink
                 href={route('profile.edit')}
                 active={route().current('profile.edit')}
@@ -396,6 +406,8 @@ function MenuIcon({ name, className = '' }) {
       'M3 7h10v7H3V7Zm10 2h3l3 3v2h-6V9Zm-6 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
     chart:
       'M3 17l4-8 4 5 3-3 4 6M3 21h18',
+    logs:
+      'M9 12h6M9 16h4M7 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-4H7ZM13 4v4h4',
   };
 
   const strPath = objPaths[name] || objPaths.dashboard;

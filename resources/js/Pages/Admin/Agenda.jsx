@@ -272,7 +272,7 @@ export default function Agenda({ timeslots }) {
                             </div>
                           </>
                         ) : (
-                          <div className="text-[11px] text-gray-400 dark:text-gray-600">Sem horários</div>
+                          <div className="text-[11px] text-gray-400 dark:text-gray-600">Sem Cotas</div>
                         )}
                       </div>
                     </button>

@@ -24,7 +24,7 @@ class CreateReservation
         Timeslot $timeslot,
         string $truckPlate,
         string $driverName,
-        string $cargoDescription,
+        ?string $cargoDescription,
         string $operationType,
         ?float $weight = null,
         ?string $invoicePath = null
@@ -79,10 +79,16 @@ class CreateReservation
                 ->where('plate', strtoupper($truckPlate))
                 ->first();
 
+            // Para cotas por_produto/por_produto_doca, herdar produto e doca da cota
+            $idProduto = $timeslot->produto_id;
+            $idDoca = $timeslot->doca_id;
+
             $freight = Freight::create([
                 'company_id' => $timeslot->company_id,
                 'user_id' => $user->id,
                 'timeslot_id' => $timeslot->id,
+                'produto_id' => $idProduto,
+                'doca_id' => $idDoca,
                 'truck_id' => $truck?->id,
                 'truck_plate' => strtoupper($truckPlate),
                 'driver_name' => $driverName,

@@ -7,6 +7,8 @@ use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Produto;
+use App\Models\Doca;
 
 class Freight extends Model
 {
@@ -21,8 +23,8 @@ class Freight extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'company_id', 'user_id', 'timeslot_id', 'truck_id', 'operation_type', 'truck_plate', 'driver_name',
-        'cargo_description', 'weight', 'gross_weight', 'net_weight',
+        'company_id', 'user_id', 'timeslot_id', 'produto_id', 'doca_id', 'truck_id', 'operation_type',
+        'truck_plate', 'driver_name', 'cargo_description', 'weight', 'gross_weight', 'net_weight',
         'status', 'admin_notes',
     ];
 
@@ -45,6 +47,16 @@ class Freight extends Model
     public function truck(): BelongsTo
     {
         return $this->belongsTo(Truck::class);
+    }
+
+    public function produto(): BelongsTo
+    {
+        return $this->belongsTo(Produto::class);
+    }
+
+    public function doca(): BelongsTo
+    {
+        return $this->belongsTo(Doca::class);
     }
 
     public function attachments(): HasMany

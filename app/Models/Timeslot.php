@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToCompany;
+use App\Models\Doca;
+use App\Models\Produto;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +22,12 @@ class Timeslot extends Model
 
     public const STATUS_CLOSED = 'closed';
 
+    public const MODELO_ABERTA = 'aberta';
+
+    public const MODELO_POR_PRODUTO = 'por_produto';
+
+    public const MODELO_POR_PRODUTO_DOCA = 'por_produto_doca';
+
     protected $fillable = [
         'company_id',
         'start_time',
@@ -28,6 +36,9 @@ class Timeslot extends Model
         'capacity',
         'status',
         'description',
+        'modelo',
+        'produto_id',
+        'doca_id',
         'dropoff_address_id',
         'created_by',
     ];
@@ -47,6 +58,16 @@ class Timeslot extends Model
     public function dropoffAddress(): BelongsTo
     {
         return $this->belongsTo(DropoffAddress::class);
+    }
+
+    public function produto(): BelongsTo
+    {
+        return $this->belongsTo(Produto::class);
+    }
+
+    public function doca(): BelongsTo
+    {
+        return $this->belongsTo(Doca::class);
     }
 
     public function freights(): HasMany

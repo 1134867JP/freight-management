@@ -39,6 +39,12 @@ export default function Index({ timeslots, trucks }) {
     if (objSlot.operation_type === 'load') {
       setData('invoice_path', null);
     }
+
+    // Para cotas com produto fixo, limpar descrição da carga (não será enviada)
+    const blModeloComProduto = objSlot.modelo === 'por_produto' || objSlot.modelo === 'por_produto_doca';
+    if (blModeloComProduto) {
+      setData('cargo_description', '');
+    }
   };
 
   const handleOperationTypeChange = (vlOperationType) => {
@@ -77,12 +83,12 @@ export default function Index({ timeslots, trucks }) {
     <AuthenticatedLayout
       header={
         <PageHeader
-          title="Horários Disponíveis"
+          title="Cotas Disponíveis"
           subtitle="Selecione um horário futuro e reserve sua operação"
         />
       }
     >
-      <Head title="Horários Disponíveis" />
+      <Head title="Cotas Disponíveis" />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

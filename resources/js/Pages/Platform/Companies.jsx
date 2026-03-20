@@ -241,7 +241,7 @@ export default function Companies({ companies, summary }) {
                     <div className="grid grid-cols-2 gap-3">
                       <MiniStat label="Admins" value={company.stats.company_admins_count} />
                       <MiniStat label="Clientes" value={company.stats.clients_count} />
-                      <MiniStat label="Horários" value={company.stats.timeslots_count} />
+                      <MiniStat label="Cotas" value={company.stats.timeslots_count} />
                       <MiniStat label="Fretes" value={company.stats.freights_count} />
                     </div>
                   </div>

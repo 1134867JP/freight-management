@@ -16,7 +16,7 @@ export default function Dashboard({ stats }) {
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Horários anunciados</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Cotas anunciados</p>
               <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats?.total_timeslots ?? 0}</p>
             </div>
             <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
@@ -44,8 +44,8 @@ export default function Dashboard({ stats }) {
               href={route('timeslots.index')}
               className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
             >
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Gerenciar Horários</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Criar, editar e fechar horários da operação.</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Gerenciar Cotas</h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">Criar, editar e fechar Cotas da operação.</p>
             </Link>
 
             <Link
@@ -54,7 +54,7 @@ export default function Dashboard({ stats }) {
             >
               <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Agenda</h3>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Ver horários anunciados e os clientes que reservaram.
+                Ver Cotas anunciados e os clientes que reservaram.
               </p>
             </Link>
 

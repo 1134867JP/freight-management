@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreTimeslotRequest extends FormRequest
 {
@@ -36,6 +37,15 @@ class StoreTimeslotRequest extends FormRequest
             'capacity' => 'required|integer|min:1',
             'description' => 'nullable|string|max:255',
             'status' => 'required|in:available,full,closed',
+            'modelo' => 'required|in:aberta,por_produto,por_produto_doca',
+            'produto_id' => [
+                'nullable',
+                Rule::exists('produtos', 'id')->where('company_id', $idCompany),
+            ],
+            'doca_id' => [
+                'nullable',
+                Rule::exists('docas', 'id')->where('company_id', $idCompany),
+            ],
             'dropoff_address_id' => [
                 'nullable',
                 Rule::exists('dropoff_addresses', 'id')->where('company_id', $idCompany),
@@ -47,6 +57,21 @@ class StoreTimeslotRequest extends FormRequest
                     ->where('role', User::ROLE_CLIENT),
             ],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $v) {
+            $strModelo = $this->input('modelo');
+
+            if (in_array($strModelo, ['por_produto', 'por_produto_doca']) && ! $this->input('produto_id')) {
+                $v->errors()->add('produto_id', 'O produto é obrigatório para este modelo de cota.');
+            }
+
+            if ($strModelo === 'por_produto_doca' && ! $this->input('doca_id')) {
+                $v->errors()->add('doca_id', 'A doca é obrigatória para este modelo de cota.');
+            }
+        });
     }
 
     /**
@@ -69,6 +94,10 @@ class StoreTimeslotRequest extends FormRequest
             'capacity.min' => 'A capacidade deve ser de pelo menos 1.',
             'status.required' => 'O status é obrigatório.',
             'status.in' => 'O status deve ser Disponível, Lotado ou Fechado.',
+            'modelo.required' => 'O modelo da cota é obrigatório.',
+            'modelo.in' => 'O modelo deve ser Aberta, Por Produto ou Por Produto + Doca.',
+            'produto_id.exists' => 'O produto selecionado não existe.',
+            'doca_id.exists' => 'A doca selecionada não existe.',
             'dropoff_address_id.exists' => 'O endereço de descarga selecionado não existe.',
             'client_ids.array' => 'Os clientes devem ser um array.',
             'client_ids.*.exists' => 'Um ou mais clientes selecionados não existem.',

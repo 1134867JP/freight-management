@@ -47,9 +47,9 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
 
   return (
     <AuthenticatedLayout
-      header={<PageHeader title="Relatório de Horários" subtitle="Horários cadastrados no sistema" />}
+      header={<PageHeader title="Relatório de Cotas" subtitle="Cotas cadastrados no sistema" />}
     >
-      <Head title="Relatório de Horários" />
+      <Head title="Relatório de Cotas" />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-4">

@@ -5,7 +5,7 @@ import PageHeader from '@/Components/UI/PageHeader';
 import { Head, Link, useForm } from '@inertiajs/react';
 import TimeslotForm from './Partials/TimeslotForm';
 
-export default function Form({ timeslot, clients, addresses }) {
+export default function Form({ timeslot, clients, addresses, produtos, docas }) {
   const isEditing = Boolean(timeslot?.id);
 
   const toDatetimeLocal = (value) => {
@@ -26,6 +26,9 @@ export default function Form({ timeslot, clients, addresses }) {
     status: timeslot?.status ?? 'available',
     description: timeslot?.description ?? '',
     operation_type: timeslot?.operation_type ?? 'both',
+    modelo: timeslot?.modelo ?? 'aberta',
+    produto_id: timeslot?.produto_id ?? '',
+    doca_id: timeslot?.doca_id ?? '',
     client_ids: timeslot?.clients?.map((objClient) => objClient.id) || [],
     dropoff_address_id: timeslot?.dropoff_address_id ?? '',
   });
@@ -53,7 +56,7 @@ export default function Form({ timeslot, clients, addresses }) {
           actions={
             <Link
               href={route('timeslots.index')}
-              className="rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300"
+              className="rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             >
               Voltar
             </Link>
@@ -67,11 +70,13 @@ export default function Form({ timeslot, clients, addresses }) {
         <div className="mx-auto max-w-5xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="rounded-lg bg-white p-4 shadow sm:p-8">
+          <div className="rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
             <TimeslotForm
               form={form}
               clients={clients}
               addresses={addresses}
+              produtos={produtos}
+              docas={docas}
               isEditing={isEditing}
               onSubmit={submit}
             />

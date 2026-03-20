@@ -23,7 +23,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
     return (
       <EmptyState
         title="Nenhum horário encontrado com os filtros atuais."
-        description="Ajuste os filtros para visualizar mais horários."
+        description="Ajuste os filtros para visualizar mais Cotas."
       />
     );
   }

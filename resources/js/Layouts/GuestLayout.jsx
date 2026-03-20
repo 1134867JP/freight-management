@@ -40,12 +40,12 @@ export default function GuestLayout({ children }) {
                 Organização, visibilidade <span className="text-white/80">e</span> controle.
               </p>
               <p className="mt-4 text-base text-white/75 leading-relaxed">
-                Centralize horários, reservas e aprovações em um só lugar, com uma visão clara da
+                Centralize Cotas, reservas e aprovações em um só lugar, com uma visão clara da
                 operação.
               </p>
 
               <div className="mt-8 grid grid-cols-1 gap-3">
-                <Feature title="Agenda por horários" desc="Visualização por dia e ocupação." />
+                <Feature title="Agenda por Cotas" desc="Visualização por dia e ocupação." />
                 <Feature title="Reservas com status" desc="Pendente, aprovado e concluído." />
                 <Feature title="Aprovação e acompanhamento" desc="Controle simples para o time." />
               </div>

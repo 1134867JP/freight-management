@@ -1,13 +1,29 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import AddressModal from './AddressModal';
 import FormField from '@/Components/UI/FormField';
 import { useClientValidation } from '@/hooks/useClientValidation';
 
-export default function TimeslotForm({ form, clients, addresses, isEditing, onSubmit }) {
+export default function TimeslotForm({ form, clients, addresses, produtos, docas, isEditing, onSubmit }) {
   const [showAddressModal, setShowAddressModal] = useState(false);
 
   const arrClients = useMemo(() => clients || [], [clients]);
   const arrAddresses = useMemo(() => addresses || [], [addresses]);
+  const arrProdutos = useMemo(() => produtos || [], [produtos]);
+  const arrDocas = useMemo(() => docas || [], [docas]);
+
+  const blTemProduto = form.data.modelo === 'por_produto' || form.data.modelo === 'por_produto_doca';
+  const blTemDoca = form.data.modelo === 'por_produto_doca';
+
+  // Limpar produto/doca quando o modelo não os exige
+  useEffect(() => {
+    if (!blTemProduto) {
+      form.setData('produto_id', '');
+    }
+    if (!blTemDoca) {
+      form.setData('doca_id', '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.data.modelo]);
 
   const { clientErrors, validate, clearClientError } = useClientValidation({
     start_time: (value) => (!value ? 'Horário de início é obrigatório.' : null),
@@ -115,6 +131,76 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
             </FormField.Select>
           </FormField>
 
+          {/* Modelo da Cota */}
+          <FormField label="Modelo da Cota" error={allErrors.modelo} required>
+            <FormField.Select
+              error={allErrors.modelo}
+              value={form.data.modelo}
+              onChange={(event) => form.setData('modelo', event.target.value)}
+              required
+            >
+              <option value="aberta">Cota Aberta (cliente descreve a carga)</option>
+              <option value="por_produto">Por Produto (produto fixo)</option>
+              <option value="por_produto_doca">Por Produto + Doca (produto e doca fixos)</option>
+            </FormField.Select>
+          </FormField>
+
+          {/* Produto — aparece nos modelos por_produto e por_produto_doca */}
+          {blTemProduto && (
+            <FormField
+              label="Produto"
+              error={allErrors.produto_id}
+              required
+            >
+              <FormField.Select
+                error={allErrors.produto_id}
+                value={form.data.produto_id}
+                onChange={(event) => form.setData('produto_id', event.target.value)}
+                required
+              >
+                <option value="">Selecione um produto</option>
+                {arrProdutos.map((objProduto) => (
+                  <option key={objProduto.id} value={objProduto.id}>
+                    {objProduto.nome}
+                  </option>
+                ))}
+              </FormField.Select>
+              {arrProdutos.length === 0 && (
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                  Nenhum produto ativo cadastrado. Cadastre em Produtos primeiro.
+                </p>
+              )}
+            </FormField>
+          )}
+
+          {/* Doca — aparece apenas no modelo por_produto_doca */}
+          {blTemDoca && (
+            <FormField
+              label="Doca / Baia"
+              error={allErrors.doca_id}
+              required
+            >
+              <FormField.Select
+                error={allErrors.doca_id}
+                value={form.data.doca_id}
+                onChange={(event) => form.setData('doca_id', event.target.value)}
+                required
+              >
+                <option value="">Selecione uma doca</option>
+                {arrDocas.map((objDoca) => (
+                  <option key={objDoca.id} value={objDoca.id}>
+                    {objDoca.nome}
+                  </option>
+                ))}
+              </FormField.Select>
+              {arrDocas.length === 0 && (
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                  Nenhuma doca ativa cadastrada. Cadastre em Docas primeiro.
+                </p>
+              )}
+            </FormField>
+          )}
+
           <FormField
             label="Endereço de Descarga"
             error={allErrors.dropoff_address_id}
@@ -156,33 +242,33 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
           </FormField>
 
           <div className="md:col-span-2">
-            <label className="mb-2 block text-sm font-medium text-gray-700">
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Visibilidade do Horário
             </label>
 
-            <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
-              <p className="mb-3 text-sm text-gray-600">
+            <div className="rounded-md border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
+              <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
                 <strong>Nenhum cliente selecionado</strong> = Horário PÚBLICO
                 <br />
                 <strong>Clientes selecionados</strong> = Horário RESTRITO
               </p>
 
               {arrClients.length === 0 ? (
-                <p className="italic text-sm text-gray-500">Nenhum cliente cadastrado</p>
+                <p className="italic text-sm text-gray-500 dark:text-gray-400">Nenhum cliente cadastrado</p>
               ) : (
                 <div className="grid max-h-48 grid-cols-1 gap-2 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
                   {arrClients.map((objClient) => (
                     <label
                       key={objClient.id}
-                      className="flex cursor-pointer items-center space-x-2 rounded p-2 hover:bg-gray-100"
+                      className="flex cursor-pointer items-center space-x-2 rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600"
                     >
                       <input
                         type="checkbox"
                         checked={form.data.client_ids.includes(objClient.id)}
                         onChange={() => toggleClient(objClient.id)}
-                        className="rounded border-gray-300 text-blue-600"
+                        className="rounded border-gray-300 text-blue-600 dark:border-gray-500"
                       />
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
                         {objClient.name} ({objClient.email})
                       </span>
                     </label>
@@ -190,10 +276,10 @@ export default function TimeslotForm({ form, clients, addresses, isEditing, onSu
                 </div>
               )}
 
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 {form.data.client_ids.length === 0
-                  ? '🌍 Horário PÚBLICO - Visível para TODOS os clientes'
-                  : `🔒 Horário RESTRITO - Visível para ${form.data.client_ids.length} cliente(s)`}
+                  ? 'Horário PÚBLICO - Visível para TODOS os clientes'
+                  : `Horário RESTRITO - Visível para ${form.data.client_ids.length} cliente(s)`}
               </p>
             </div>
 

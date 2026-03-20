@@ -89,8 +89,8 @@ export default function Admins({ admins, currentUserId }) {
     <AuthenticatedLayout
       header={
         <PageHeader
-          title="Administradores"
-          subtitle="Gerencie os administradores desta empresa"
+          title="Funcionários"
+          subtitle="Gerencie os funcionários desta empresa"
           actions={
             <button
               type="button"
@@ -103,7 +103,7 @@ export default function Admins({ admins, currentUserId }) {
         />
       }
     >
-      <Head title="Administradores" />
+      <Head title="Funcionários" />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">

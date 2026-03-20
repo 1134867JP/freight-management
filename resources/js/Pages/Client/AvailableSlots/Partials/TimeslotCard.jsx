@@ -12,11 +12,23 @@ function getProgressClass(percent) {
   return 'bg-emerald-500';
 }
 
+function getModeloBadge(strModelo) {
+  switch (strModelo) {
+    case 'por_produto':
+      return { label: 'Produto fixo', className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' };
+    case 'por_produto_doca':
+      return { label: 'Produto + Doca', className: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300' };
+    default:
+      return { label: 'Cota aberta', className: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+  }
+}
+
 export default function TimeslotCard({ slot, selected, onReserve }) {
   const vlStart = new Date(slot.start_time);
   const vlEnd = new Date(slot.end_time);
   const nrOccupationPercent = getOccupationPercent(slot);
   const nrRemaining = Math.max(slot.capacity - slot.current_reservations, 0);
+  const objModeloBadge = getModeloBadge(slot.modelo);
 
   return (
     <article
@@ -36,10 +48,29 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
           </p>
         </div>
 
-        <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
-          {translateTimeslotOperationType(slot.operation_type)}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
+            {translateTimeslotOperationType(slot.operation_type)}
+          </span>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${objModeloBadge.className}`}>
+            {objModeloBadge.label}
+          </span>
+        </div>
       </div>
+
+      {/* Produto / Doca info para cotas por_produto */}
+      {slot.produto && (
+        <div className="mb-2 flex flex-wrap gap-1">
+          <span className="inline-flex items-center rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 px-2 py-0.5 text-xs text-purple-700 dark:text-purple-300">
+            {slot.produto.nome}
+          </span>
+          {slot.doca && (
+            <span className="inline-flex items-center rounded-full bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 text-xs text-indigo-700 dark:text-indigo-300">
+              {slot.doca.nome}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="mb-3">
         {slot.dropoff_address ? (

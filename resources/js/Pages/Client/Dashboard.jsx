@@ -51,7 +51,7 @@ export default function Dashboard({ stats }) {
             >
               <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Reservar Horário</h3>
               <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Veja horários disponíveis e faça sua solicitação.
+                Veja Cotas disponíveis e faça sua solicitação.
               </p>
             </Link>
 
@@ -85,7 +85,7 @@ export default function Dashboard({ stats }) {
                 </p>
               </div>
               <div className="rounded-md bg-gray-50 p-4 dark:bg-gray-700">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Horários disponíveis hoje</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Cotas disponíveis hoje</p>
                 <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {stats?.available_today ?? 0}
                 </p>

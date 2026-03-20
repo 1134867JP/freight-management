@@ -156,8 +156,8 @@ export default function Index({ timeslots }) {
     <AuthenticatedLayout
       header={
         <PageHeader
-          title="Horários"
-          subtitle="Gerencie os horários disponíveis do pátio"
+          title="Cotas"
+          subtitle="Gerencie os Cotas disponíveis do pátio"
           actions={
             <Link
               href={route('timeslots.create')}
@@ -169,7 +169,7 @@ export default function Index({ timeslots }) {
         />
       }
     >
-      <Head title="Horários" />
+      <Head title="Cotas" />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
