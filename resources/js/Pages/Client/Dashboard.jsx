@@ -16,7 +16,7 @@ export default function Dashboard({ stats }) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
               <p className="text-sm text-gray-500 dark:text-gray-400">Minhas solicitações</p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">
+              <p className="mt-2 text-3xl font-bold text-blue-300">
                 {stats?.total_my_freights ?? 0}
               </p>
             </div>

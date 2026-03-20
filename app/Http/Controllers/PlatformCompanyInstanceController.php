@@ -15,7 +15,7 @@ class PlatformCompanyInstanceController extends Controller
 {
     public function edit(Company $company): Response
     {
-        $company->loadMissing(['settings', 'whatsappInstance']);
+        $company->loadMissing(['whatsappInstance']);
 
         return Inertia::render('Platform/CompanyInstance', [
             'company' => [
