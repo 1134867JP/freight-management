@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToCompany;
 use App\Support\WhatsAppPhone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use BelongsToCompany, HasFactory, Notifiable;
+    use Auditable, BelongsToCompany, HasFactory, Notifiable;
 
     public const ROLE_PLATFORM_ADMIN = 'platform_admin';
 

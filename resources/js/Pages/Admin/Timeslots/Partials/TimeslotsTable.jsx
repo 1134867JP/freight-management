@@ -33,13 +33,13 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
       <table className="min-w-[980px] w-full table-fixed text-left">
         <thead className="bg-gray-50 dark:bg-gray-700">
           <tr className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">
-            <th className="w-[19%] px-4 py-3 font-semibold">Horário</th>
-            <th className="w-[11%] px-4 py-3 font-semibold">Operação</th>
-            <th className="w-[22%] px-4 py-3 font-semibold">Endereço</th>
-            <th className="w-[20%] px-4 py-3 font-semibold">Cota / Reservas</th>
+            <th className="w-[18%] px-4 py-3 font-semibold">Horário</th>
+            <th className="w-[10%] px-4 py-3 font-semibold">Operação</th>
+            <th className="w-[19%] px-4 py-3 font-semibold">Endereço</th>
+            <th className="w-[18%] px-4 py-3 font-semibold">Cota / Reservas</th>
             <th className="w-[10%] px-4 py-3 font-semibold">Status</th>
-            <th className="w-[10%] px-4 py-3 font-semibold">Visibilidade</th>
-            <th className="w-[8%] px-4 py-3 text-right font-semibold">Ações</th>
+            <th className="w-[11%] px-4 py-3 font-semibold">Visibilidade</th>
+            <th className="w-[14%] px-4 py-3 text-right font-semibold">Ações</th>
           </tr>
         </thead>
 

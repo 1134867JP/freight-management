@@ -1,7 +1,7 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useTheme } from '@/hooks/useTheme';
 import { Link, usePage } from '@inertiajs/react';
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
   useTheme();
@@ -10,6 +10,7 @@ export default function AuthenticatedLayout({ header, children }) {
   const user = auth.user;
   const company = auth.company;
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [openGroups, setOpenGroups] = useState({});
 
   // menu engrenagem
   const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -69,6 +70,36 @@ export default function AuthenticatedLayout({ header, children }) {
           icon: 'users',
         },
         {
+          label: 'Admins',
+          href: route('admins.index'),
+          active: route().current('admins.*'),
+          icon: 'users',
+        },
+        {
+          label: 'Logs',
+          href: route('audit-logs.index'),
+          active: route().current('audit-logs.*'),
+          icon: 'schedule',
+        },
+        {
+          label: 'Relatórios',
+          icon: 'chart',
+          group: 'reports-admin',
+          active: route().current('reports.admin.*'),
+          children: [
+            {
+              label: 'Horários',
+              href: route('reports.admin.timeslots'),
+              active: route().current('reports.admin.timeslots'),
+            },
+            {
+              label: 'Fretes',
+              href: route('reports.admin.freights'),
+              active: route().current('reports.admin.freights'),
+            },
+          ],
+        },
+        {
           label: 'Endereços',
           href: route('dropoff-addresses.index'),
           active: route().current('dropoff-addresses.*'),
@@ -102,6 +133,19 @@ export default function AuthenticatedLayout({ header, children }) {
         active: route().current('client.trucks'),
         icon: 'truck',
       },
+      {
+        label: 'Relatórios',
+        icon: 'chart',
+        group: 'reports-client',
+        active: route().current('reports.client.*'),
+        children: [
+          {
+            label: 'Meus Fretes',
+            href: route('reports.client.reservations'),
+            active: route().current('reports.client.reservations'),
+          },
+        ],
+      },
     ];
   }, [isCompanyAdmin, isPlatformAdmin]);
 
@@ -118,6 +162,50 @@ export default function AuthenticatedLayout({ header, children }) {
       <span>{label}</span>
     </Link>
   );
+
+  const toggleGroup = useCallback((key) => {
+    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  const NavGroup = ({ item }) => {
+    const isOpen = openGroups[item.group] !== undefined ? openGroups[item.group] : (item.active ?? false);
+    return (
+      <div>
+        <button
+          type="button"
+          onClick={() => toggleGroup(item.group)}
+          className={`flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+            item.active
+              ? 'bg-teal-700/20 text-teal-700 dark:text-teal-400'
+              : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            {item.icon && <MenuIcon name={item.icon} className="h-4 w-4 shrink-0" />}
+            {item.label}
+          </span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{isOpen ? '▲' : '▼'}</span>
+        </button>
+        {isOpen && (
+          <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3 dark:border-gray-700">
+            {item.children.map((child) => (
+              <Link
+                key={child.label}
+                href={child.href}
+                className={`block rounded-md px-3 py-2 text-sm transition ${
+                  child.active
+                    ? 'bg-teal-700 font-medium text-white'
+                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                }`}
+              >
+                {child.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // fecha menu ao clicar fora / esc
   useEffect(() => {
@@ -168,9 +256,11 @@ export default function AuthenticatedLayout({ header, children }) {
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Menu</p>
             <div className="space-y-2">
-              {mainLinks.map((link) => (
-                <SideLink key={link.label} {...link} />
-              ))}
+              {mainLinks.map((link) =>
+                link.children
+                  ? <NavGroup key={link.label} item={link} />
+                  : <SideLink key={link.label} {...link} />
+              )}
             </div>
           </div>
         </div>
@@ -232,9 +322,11 @@ export default function AuthenticatedLayout({ header, children }) {
 
           {showMobileMenu && (
             <div className="mt-3 space-y-2">
-              {mainLinks.map((link) => (
-                <SideLink key={link.label} {...link} />
-              ))}
+              {mainLinks.map((link) =>
+                link.children
+                  ? <NavGroup key={link.label} item={link} />
+                  : <SideLink key={link.label} {...link} />
+              )}
               <SideLink
                 href={route('profile.edit')}
                 active={route().current('profile.edit')}
@@ -302,6 +394,8 @@ function MenuIcon({ name, className = '' }) {
       'M9 4.5h6m-5-2h4a1 1 0 0 1 1 1v1H9v-1a1 1 0 0 1 1-1Zm-2 3h8a2 2 0 0 1 2 2v10.5a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8.5a2 2 0 0 1 2-2Z',
     truck:
       'M3 7h10v7H3V7Zm10 2h3l3 3v2h-6V9Zm-6 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
+    chart:
+      'M3 17l4-8 4 5 3-3 4 6M3 21h18',
   };
 
   const strPath = objPaths[name] || objPaths.dashboard;

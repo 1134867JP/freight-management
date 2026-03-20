@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminManagementController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ClientManagementController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DropoffAddressController;
 use App\Http\Controllers\FreightController;
@@ -55,6 +58,19 @@ Route::middleware('auth')->group(function () {
         Route::post('/clients', [ClientManagementController::class, 'store'])->name('clients.store');
         Route::patch('/clients/{user}', [ClientManagementController::class, 'update'])->name('clients.update');
         Route::delete('/clients/{user}', [ClientManagementController::class, 'destroy'])->name('clients.destroy');
+
+        // Logs de auditoria
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
+        // Relatórios
+        Route::get('/reports/timeslots', [ReportController::class, 'adminTimeslots'])->name('reports.admin.timeslots');
+        Route::get('/reports/freights', [ReportController::class, 'adminFreights'])->name('reports.admin.freights');
+
+        // Gerenciamento de administradores
+        Route::get('/admins', [AdminManagementController::class, 'index'])->name('admins.index');
+        Route::post('/admins', [AdminManagementController::class, 'store'])->name('admins.store');
+        Route::patch('/admins/{admin_user}', [AdminManagementController::class, 'update'])->name('admins.update');
+        Route::delete('/admins/{admin_user}', [AdminManagementController::class, 'destroy'])->name('admins.destroy');
     });
 
     // -------------------------
@@ -71,6 +87,9 @@ Route::middleware('auth')->group(function () {
 
         // Upload de nota fiscal
         Route::post('/my-reservations/{freight}/nota-fiscal', [FreightController::class, 'uploadNotaFiscal'])->name('client.uploadNotaFiscal');
+
+        // Relatórios do cliente
+        Route::get('/reports/reservations', [ReportController::class, 'clientReservations'])->name('reports.client.reservations');
 
         // Caminhões (dentro do grupo client para manter padrão)
         Route::get('/trucks', [TruckController::class, 'index'])->name('client.trucks');
