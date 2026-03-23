@@ -73,25 +73,6 @@ export default function Dashboard({ stats }) {
               </p>
             </Link>
           </div>
-
-          {/* Bloco “status rápido” */}
-          <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Resumo</h3>
-            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div className="rounded-md bg-gray-50 p-4 dark:bg-gray-700">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Canceladas</p>
-                <p className="mt-1 text-2xl font-bold text-red-600">
-                  {stats?.cancelled_my_freights ?? 0}
-                </p>
-              </div>
-              <div className="rounded-md bg-gray-50 p-4 dark:bg-gray-700">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cotas disponíveis hoje</p>
-                <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {stats?.available_today ?? 0}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </AuthenticatedLayout>

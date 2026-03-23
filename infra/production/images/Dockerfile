@@ -36,7 +36,7 @@ RUN npm run build
 
 FROM php:8.3-fpm-alpine AS php-fpm
 
-RUN apk add --no-cache bash fcgi icu-dev libzip-dev oniguruma-dev postgresql-client \
+RUN apk add --no-cache bash fcgi icu-dev libzip-dev oniguruma-dev postgresql-client postgresql-dev \
     && docker-php-ext-install bcmath pdo_pgsql zip opcache \
     && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
@@ -55,6 +55,7 @@ COPY infra/production/php/www.conf /usr/local/etc/php-fpm.d/zz-app.conf
 COPY infra/production/php/entrypoint.sh /usr/local/bin/app-entrypoint
 
 RUN chmod +x /usr/local/bin/app-entrypoint \
+    && rm -f bootstrap/cache/packages.php bootstrap/cache/services.php \
     && rm -rf node_modules \
     && mkdir -p storage/app/public storage/app/private storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache

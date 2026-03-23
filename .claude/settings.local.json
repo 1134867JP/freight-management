@@ -4,7 +4,11 @@
       "Bash(php --version)",
       "Read(//c/Apps/php//**)",
       "Read(//c/Users/joper/**)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(docker exec:*)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec freight-management-app-fpm-1 ls //var/www/html/public/hot)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec freight-management-app-fpm-1 rm -f //var/www/html/public/hot)",
+      "Bash(MSYS_NO_PATHCONV=1 docker exec freight-management-web-1 rm -f //var/www/html/public/hot)"
     ]
   }
 }

@@ -3,91 +3,121 @@ import { Link } from '@inertiajs/react';
 export default function GuestLayout({ children }) {
   return (
     <div className="min-h-screen relative overflow-hidden bg-slate-950">
-      {/* IMAGEM NO FUNDO TODO */}
+      {/* Fundo */}
       <div
         className="absolute inset-0 bg-cover bg-center scale-[1.03]"
         style={{ backgroundImage: "url('/bg-yard.jpg')" }}
       />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-950/85 via-slate-950/60 to-slate-950/85" />
+      <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-blue-500/15 blur-3xl" />
+      <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
+      <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(to_right,rgba(255,255,255,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.15)_1px,transparent_1px)] [background-size:28px_28px]" />
 
-      {/* Overlay geral para dar contraste */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-950/55 to-slate-950/80" />
+      <div className="relative min-h-screen grid grid-cols-1 lg:grid-cols-[1fr_480px]">
 
-      {/* “Glow” suave */}
-      <div className="absolute -top-24 -left-24 h-80 w-80 rounded-full bg-teal-500/20 blur-3xl" />
-      <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
-
-      {/* Grid pattern discreto */}
-      <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(to_right,rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:28px_28px]" />
-
-      {/* CONTEÚDO */}
-      <div className="relative min-h-screen grid grid-cols-1 lg:grid-cols-2">
-        {/* Lado visual */}
-        <div className="hidden lg:flex flex-col justify-between p-10">
+        {/* ── Painel esquerdo ── */}
+        <div className="hidden lg:flex flex-col justify-between p-12">
           <div>
+            {/* Logo texto para fundo escuro */}
             <Link href="/" className="inline-flex items-center gap-3">
-              <div>
-                <div className="text-white font-semibold text-lg leading-tight">
-                  Gerenciador de Pátio
-                </div>
-                <div className="text-white/70 text-sm">
-                  Agendamento e controle de cargas e descargas
-                </div>
-              </div>
+              <CargoHubLogo dark />
             </Link>
 
-            <div className="mt-12 max-w-lg">
-              <p className="text-3xl font-semibold leading-tight text-white">
-                Organização, visibilidade <span className="text-white/80">e</span> controle.
+            <div className="mt-16 max-w-md">
+              <p className="text-4xl font-bold leading-tight text-white tracking-tight">
+                Organização,<br />
+                visibilidade<br />
+                <span className="text-blue-400">e controle.</span>
               </p>
-              <p className="mt-4 text-base text-white/75 leading-relaxed">
-                Centralize Cotas, reservas e aprovações em um só lugar, com uma visão clara da
-                operação.
+              <p className="mt-5 text-base text-white/65 leading-relaxed">
+                Centralize Cotas, reservas e aprovações em um só lugar,
+                com visibilidade total da operação de pátio.
               </p>
-
-              <div className="mt-8 grid grid-cols-1 gap-3">
-                <Feature title="Agenda por Cotas" desc="Visualização por dia e ocupação." />
-                <Feature title="Reservas com status" desc="Pendente, aprovado e concluído." />
-                <Feature title="Aprovação e acompanhamento" desc="Controle simples para o time." />
-              </div>
             </div>
           </div>
+
+          <p className="text-xs text-white/35">© 2025 CargoHub YMS. Todos os direitos reservados.</p>
         </div>
 
-        {/* Lado do formulário (COM DESFOQUE) */}
-        <div className="relative flex items-center justify-center px-4 py-10 lg:px-12">
-          {/* Camada desfocada apenas neste lado */}
-          <div className="absolute inset-0 backdrop-blur-sm bg-slate-950/35" />
+        {/* ── Painel direito (formulário) ── */}
+        <div className="relative flex items-center justify-center px-6 py-12 lg:px-10">
+          <div className="absolute inset-0 backdrop-blur-sm bg-slate-950/40 lg:border-l lg:border-white/5" />
 
-          <div className="relative w-full max-w-md">
-            {/* Header mobile */}
-            <div className="mb-6 lg:hidden text-center">
-              <h1 className="mt-3 text-2xl font-semibold text-white">Gerenciador de Pátio</h1>
-              <p className="mt-1 text-sm text-white/70">
-                Agendamento e controle de cargas e descargas
-              </p>
+          <div className="relative w-full max-w-sm">
+
+            {/* Logo mobile (acima do card) */}
+            <div className="mb-8 lg:hidden flex justify-center">
+              <CargoHubLogo dark />
             </div>
 
             {/* Card */}
-            <div className="rounded-2xl bg-white/95 backdrop-blur-2xl shadow-2xl ring-1 ring-black/5">
-              <div className="h-1 w-full rounded-t-2xl bg-white/10" />
-              <div className="p-6 sm:p-8">{children}</div>
+            <div className="rounded-2xl bg-white shadow-2xl overflow-hidden [&_input]:!bg-white [&_input]:!text-gray-900 [&_input]:!border-gray-300 [&_input]:!placeholder-gray-400 [&_label]:!text-gray-700">
+
+              {/* Barra de cor no topo */}
+              <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400" />
+
+              <div className="px-8 pt-8 pb-9">
+                {/* Logo dentro do card */}
+                <div className="mb-8 flex justify-center">
+                  <img
+                    src="/cargohub-logo.png"
+                    alt="CargoHub YMS"
+                    className="h-20 w-auto"
+                  />
+                </div>
+
+                {children}
+              </div>
             </div>
 
-            <p className="mt-6 text-center text-xs text-white/60 lg:hidden">
-              Multiempresa • Acesso seguro
+            <p className="mt-5 text-center text-xs text-white/40">
+              Acesso seguro
             </p>
           </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function CargoHubLogo({ dark }) {
+  return (
+    <div className="flex items-center gap-3">
+      {/* Ícone SVG */}
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="19" stroke={dark ? 'rgba(255,255,255,0.15)' : '#e2e8f0'} strokeWidth="1.5" />
+        <path d="M20 8C14.477 8 10 12.477 10 18c0 7 10 16 10 16s10-9 10-16c0-5.523-4.477-10-10-10z" fill="#3b82f6" fillOpacity="0.2" stroke="#3b82f6" strokeWidth="1.5" />
+        <rect x="15" y="14" width="10" height="8" rx="1" fill={dark ? 'white' : '#1e293b'} />
+        <path d="M15 17h10M18 14v8" stroke="#3b82f6" strokeWidth="1" />
+        <path d="M7 20a1 1 0 0 1 2 0" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M31 20a1 1 0 0 1 2 0" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+
+      {/* Texto */}
+      <div>
+        <div className="flex items-baseline gap-0.5 leading-none">
+          <span className={`text-xl font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-800'}`}>
+            cargo
+          </span>
+          <span className="text-xl font-bold tracking-tight text-blue-500">hub</span>
+        </div>
+        <div className={`text-[10px] font-semibold tracking-[0.2em] uppercase mt-0.5 ${dark ? 'text-white/50' : 'text-slate-400'}`}>
+          YMS
         </div>
       </div>
     </div>
   );
 }
 
-function Feature({ title, desc }) {
+function Feature({ icon, title, desc }) {
   return (
-    <div className="rounded-xl bg-white/5 ring-1 ring-white/10 px-4 py-3">
-      <div className="text-sm font-semibold text-white">{title}</div>
-      <div className="mt-1 text-sm text-white/70">{desc}</div>
+    <div className="flex items-start gap-4 rounded-xl bg-white/5 ring-1 ring-white/8 px-4 py-3">
+      <span className="text-lg mt-0.5">{icon}</span>
+      <div>
+        <div className="text-sm font-semibold text-white">{title}</div>
+        <div className="mt-0.5 text-xs text-white/60">{desc}</div>
+      </div>
     </div>
   );
 }
