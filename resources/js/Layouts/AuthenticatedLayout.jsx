@@ -202,7 +202,7 @@ export default function AuthenticatedLayout({ header, children }) {
   }, [showAccountMenu]);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 lg:flex">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 lg:flex lg:h-screen lg:overflow-hidden">
       {/* SIDEBAR DESKTOP */}
       <aside className="hidden w-72 shrink-0 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 lg:flex lg:flex-col">
         {/* Header */}
@@ -303,7 +303,7 @@ export default function AuthenticatedLayout({ header, children }) {
       </aside>
 
       {/* CONTEÚDO */}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 lg:overflow-y-auto">
         {/* Top bar mobile */}
         <div className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900 lg:hidden">
           <div className="flex items-center justify-between">

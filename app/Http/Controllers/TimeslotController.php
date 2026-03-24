@@ -36,6 +36,7 @@ class TimeslotController extends Controller
     public function agenda(): Response
     {
         $arrTimeslots = Timeslot::with(['freights.user'])
+            ->withCount(['freights as current_reservations' => fn ($q) => $q->whereNotIn('status', ['cancelled'])])
             ->orderBy('start_time', 'asc')
             ->get();
 
@@ -47,6 +48,7 @@ class TimeslotController extends Controller
     public function index(): Response
     {
         $arrTimeslots = Timeslot::with(['clients', 'dropoffAddress'])
+            ->withCount(['freights as current_reservations' => fn ($q) => $q->whereNotIn('status', ['cancelled'])])
             ->orderBy('start_time', 'desc')
             ->paginate(10)
             ->withQueryString();
@@ -163,6 +165,7 @@ class TimeslotController extends Controller
 
         $arrTimeslots = Timeslot::visibleForClient($idUser)
             ->with(['clients', 'dropoffAddress', 'produto', 'doca'])
+            ->withCount(['freights as current_reservations' => fn ($q) => $q->whereNotIn('status', ['cancelled'])])
             ->orderBy('start_time', 'asc')
             ->get();
 

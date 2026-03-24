@@ -73,8 +73,8 @@ class FreightWhatsAppNotifier
             'Placa: '.$freight->truck_plate,
         ];
 
-        if ($freight->peso_bruto !== null) {
-            $arrLines[] = 'Peso bruto informado: '.$this->formatWeight($freight->peso_bruto).' kg';
+        if ($freight->gross_weight !== null) {
+            $arrLines[] = 'Peso bruto informado: '.$this->formatWeight($freight->gross_weight).' kg';
         }
 
         $this->dispatchToAdmin($freight, implode("\n", $arrLines), 'client_invoice_uploaded');
@@ -128,12 +128,12 @@ class FreightWhatsAppNotifier
             'Placa: '.$freight->truck_plate,
         ];
 
-        if ($freight->peso_bruto !== null) {
-            $arrLines[] = 'Peso bruto: '.$this->formatWeight($freight->peso_bruto).' kg';
+        if ($freight->gross_weight !== null) {
+            $arrLines[] = 'Peso bruto: '.$this->formatWeight($freight->gross_weight).' kg';
         }
 
-        if ($freight->peso_liquido !== null) {
-            $arrLines[] = 'Peso líquido: '.$this->formatWeight($freight->peso_liquido).' kg';
+        if ($freight->net_weight !== null) {
+            $arrLines[] = 'Peso líquido: '.$this->formatWeight($freight->net_weight).' kg';
         }
 
         if (filled($freight->admin_notes)) {

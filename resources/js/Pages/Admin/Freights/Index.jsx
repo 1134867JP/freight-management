@@ -100,7 +100,7 @@ export default function Index({ freights }) {
   const startOperation = (objFreight) => {
     if (objFreight.operation_type === 'load') {
       router.patch(
-        route('freights.iniciarCarregamento', objFreight.id),
+        route('freights.start-load', objFreight.id),
         {},
         { preserveScroll: true },
       );
@@ -108,7 +108,7 @@ export default function Index({ freights }) {
     }
 
     if (objFreight.operation_type === 'unload') {
-      router.patch(route('freights.iniciarDescarga', objFreight.id), {}, { preserveScroll: true });
+      router.patch(route('freights.start-unload', objFreight.id), {}, { preserveScroll: true });
     }
   };
 
@@ -118,7 +118,7 @@ export default function Index({ freights }) {
     if (!finalizeModal.freight) return;
 
     router.patch(
-      route('freights.finalizarOperacao', finalizeModal.freight.id),
+      route('freights.finalize-operation', finalizeModal.freight.id),
       {
         gross_weight: grossWeight,
         net_weight: netWeight,
@@ -160,7 +160,7 @@ export default function Index({ freights }) {
     setUploadingAttachment(true);
 
     router.post(
-      route('freights.adicionarAnexo', attachmentModal.freight.id),
+      route('freights.add-attachment', attachmentModal.freight.id),
       { attachment: attachmentFile },
       {
         forceFormData: true,

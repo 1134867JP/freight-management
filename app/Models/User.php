@@ -98,8 +98,7 @@ class User extends Authenticatable
 
     public function visibleTimeslots(): BelongsToMany
     {
-        return $this->belongsToMany(Timeslot::class, 'client_timeslot', 'user_id', 'timeslot_id')
-            ->withPivot('company_id');
+        return $this->belongsToMany(Timeslot::class, 'client_timeslot', 'user_id', 'timeslot_id');
     }
 
     public function routeWhatsAppPhone(): ?string

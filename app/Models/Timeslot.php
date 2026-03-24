@@ -52,6 +52,10 @@ class Timeslot extends Model
 
     public function getCurrentReservationsAttribute(): int
     {
+        if (array_key_exists('current_reservations', $this->attributes)) {
+            return (int) $this->attributes['current_reservations'];
+        }
+
         return $this->freights()->whereNotIn('status', ['cancelled'])->count();
     }
 

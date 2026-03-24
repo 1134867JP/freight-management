@@ -50,10 +50,10 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/freights', [FreightController::class, 'approvalList'])->name('freights.approvalList');
         Route::patch('/freights/{freight}/reject', [FreightController::class, 'reject'])->name('freights.reject');
-        Route::patch('/freights/{freight}/iniciar-carregamento', [FreightController::class, 'iniciarCarregamento'])->name('freights.iniciarCarregamento');
-        Route::patch('/freights/{freight}/iniciar-descarga', [FreightController::class, 'iniciarDescarga'])->name('freights.iniciarDescarga');
-        Route::patch('/freights/{freight}/finalizar-operacao', [FreightController::class, 'finalizarOperacao'])->name('freights.finalizarOperacao');
-        Route::post('/freights/{freight}/anexo', [FreightController::class, 'adicionarAnexo'])->name('freights.adicionarAnexo');
+        Route::patch('/freights/{freight}/start-load', [FreightController::class, 'startLoad'])->name('freights.start-load');
+        Route::patch('/freights/{freight}/start-unload', [FreightController::class, 'startUnload'])->name('freights.start-unload');
+        Route::patch('/freights/{freight}/finalize-operation', [FreightController::class, 'finalizeOperation'])->name('freights.finalize-operation');
+        Route::post('/freights/{freight}/add-attachment', [FreightController::class, 'addAttachment'])->name('freights.add-attachment');
 
         // Gerenciamento de clientes
         Route::get('/clients', [ClientManagementController::class, 'index'])->name('clients.index');
@@ -100,7 +100,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/my-reservations/{freight}/reopen', [FreightController::class, 'reopenMyReservation'])->name('client.reservations.reopen');
 
         // Upload de nota fiscal
-        Route::post('/my-reservations/{freight}/nota-fiscal', [FreightController::class, 'uploadNotaFiscal'])->name('client.uploadNotaFiscal');
+        Route::post('/my-reservations/{freight}/upload-invoice', [FreightController::class, 'uploadInvoice'])->name('client.upload-invoice');
 
         // Relatórios do cliente
         Route::get('/reports/reservations', [ReportController::class, 'clientReservations'])->name('reports.client.reservations');

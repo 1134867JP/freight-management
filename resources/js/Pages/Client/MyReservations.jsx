@@ -16,7 +16,7 @@ export default function MyReservations({ freights }) {
     if (!file) return;
 
     router.post(
-      route('client.uploadNotaFiscal', freightId),
+      route('client.upload-invoice', freightId),
       { nota_fiscal: file },
       { forceFormData: true, preserveScroll: true },
     );

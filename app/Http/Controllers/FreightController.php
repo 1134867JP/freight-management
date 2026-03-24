@@ -8,13 +8,16 @@ use App\Actions\Freight\FinalizeOperation;
 use App\Actions\Freight\ReopenReservation;
 use App\Actions\Freight\StartLoad;
 use App\Actions\Freight\StartUnload;
+use App\Http\Requests\Freight\AddAttachmentRequest;
+use App\Http\Requests\Freight\FinalizeOperationRequest;
 use App\Http\Requests\Freight\StoreFreightRequest;
+use App\Http\Requests\Freight\UploadInvoiceRequest;
 use App\Models\Freight;
 use App\Models\FreightAttachment;
 use App\Models\Timeslot;
 use App\Services\WhatsApp\FreightWhatsAppNotifier;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -24,7 +27,7 @@ class FreightController extends Controller
         private readonly FreightWhatsAppNotifier $whatsAppNotifier,
     ) {}
 
-    // ADMIN: List freights for approval
+    // ADMIN: List freights
     public function approvalList()
     {
         $freights = Freight::with(['user', 'timeslot', 'attachments'])
@@ -36,16 +39,14 @@ class FreightController extends Controller
         ]);
     }
 
-    // ADMIN: Reject
+    // ADMIN: Cancel/reject
     public function reject(Request $request, Freight $freight)
     {
         try {
-            $blShouldNotify = $freight->status !== Freight::STATUS_CANCELLED;
-
-            (new CancelReservation)->execute($freight, $request->input('notes', 'Rejeitado pelo admin.'));
+            $cancelled = (new CancelReservation)->execute($freight, $request->input('notes', 'Rejeitado pelo admin.'));
             $freight->refresh();
 
-            if ($blShouldNotify && $freight->status === Freight::STATUS_CANCELLED) {
+            if ($cancelled) {
                 $this->whatsAppNotifier->notifyClientReservationRejected($freight, $request->user());
             }
 
@@ -71,30 +72,14 @@ class FreightController extends Controller
     // CLIENT: Reserve a timeslot
     public function store(StoreFreightRequest $request, Timeslot $timeslot)
     {
-        Log::info('=== RESERVE REQUEST START ===', [
-            'user_id' => $request->user()->id,
-            'timeslot_id' => $timeslot->id,
-            'request_all' => $request->all(),
-            'has_file' => $request->hasFile('invoice_path'),
-            'files' => array_keys($request->allFiles()),
-        ]);
-
         $validated = $request->validated();
 
-        // Se for descarga, guardar arquivo da nota fiscal (validado e obrigatório)
         $invoicePath = null;
         if ($validated['operation_type'] === 'unload' && $request->hasFile('invoice_path')) {
             $invoicePath = $request->file('invoice_path')->store('invoices');
-            Log::info('Nota fiscal armazenada', ['path' => $invoicePath]);
         }
 
         try {
-            Log::info('Tentando criar reserva', [
-                'truck_plate' => $validated['truck_plate'],
-                'operation_type' => $validated['operation_type'],
-            ]);
-
-            // Usar Action para criar reserva
             $freight = (new CreateReservation)->execute(
                 user: $request->user(),
                 timeslot: $timeslot,
@@ -106,58 +91,41 @@ class FreightController extends Controller
                 invoicePath: $invoicePath
             );
 
-            // Criar anexo de nota fiscal se fornecido
             if ($invoicePath) {
                 $file = $request->file('invoice_path');
                 $freight->attachments()->create([
-                    'company_id' => $freight->company_id,
-                    'type' => FreightAttachment::TYPE_INVOICE,
-                    'path' => $invoicePath,
+                    'company_id'    => $freight->company_id,
+                    'type'          => FreightAttachment::TYPE_INVOICE,
+                    'path'          => $invoicePath,
                     'original_name' => $file?->getClientOriginalName(),
-                    'size_bytes' => $file?->getSize(),
-                    'mime_type' => $file?->getMimeType(),
+                    'size_bytes'    => $file?->getSize(),
+                    'mime_type'     => $file?->getMimeType(),
                 ]);
             }
 
-            Log::info('Reserva criada com sucesso', ['freight_id' => $freight->id]);
             $this->whatsAppNotifier->notifyAdminReservationCreated($freight);
 
             return redirect()->route('client.reservations')->with('success', 'Reserva criada com sucesso!');
         } catch (\Throwable $e) {
-            Log::error('Erro ao criar reserva', [
-                'exception' => get_class($e),
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            // Remover arquivo se houve erro
             if ($invoicePath) {
                 Storage::delete($invoicePath);
-                Log::info('Arquivo removido após erro');
             }
 
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
+    // CLIENT: Cancel own reservation
     public function cancelMyReservation(Request $request, Freight $freight)
     {
         abort_unless($request->user()->id === $freight->user_id, 403);
 
-        // Só permitir cancelar se não foi concluído
-        if ($freight->status === 'completed') {
-            return redirect()->back()->with('error', 'Não é possível cancelar uma reserva concluída.');
-        }
-
-        // Se já está cancelada, nada fazer
-        if ($freight->status === 'cancelled') {
-            return redirect()->back()->with('success', 'Reserva já está cancelada.');
-        }
-
         try {
-            (new CancelReservation)->execute($freight);
-            $freight->refresh();
-            $this->whatsAppNotifier->notifyAdminReservationCancelled($freight, $request->user());
+            $cancelled = (new CancelReservation)->execute($freight);
+            if ($cancelled) {
+                $freight->refresh();
+                $this->whatsAppNotifier->notifyAdminReservationCancelled($freight, $request->user());
+            }
 
             return redirect()->back()->with('success', 'Reserva cancelada com sucesso.');
         } catch (\Throwable $e) {
@@ -165,6 +133,7 @@ class FreightController extends Controller
         }
     }
 
+    // CLIENT: Reopen reservation
     public function reopenMyReservation(Request $request, Freight $freight)
     {
         abort_unless($request->user()->id === $freight->user_id, 403);
@@ -180,8 +149,8 @@ class FreightController extends Controller
         }
     }
 
-    // CLIENT: Upload nota fiscal
-    public function uploadNotaFiscal(Request $request, Freight $freight)
+    // CLIENT: Upload invoice (nota fiscal)
+    public function uploadInvoice(UploadInvoiceRequest $request, Freight $freight)
     {
         abort_unless($request->user()->id === $freight->user_id, 403);
 
@@ -189,34 +158,12 @@ class FreightController extends Controller
             return redirect()->back()->with('error', 'Nota fiscal é obrigatória apenas para operações de descarga.');
         }
 
-        $validated = $request->validate([
-            'nota_fiscal' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240', // 10MB
-            'gross_weight' => 'nullable|numeric|min:0.01',
-        ]);
+        $validated = $request->validated();
 
-        if ($request->hasFile('nota_fiscal')) {
-            $file = $request->file('nota_fiscal');
+        $this->storeAttachment($freight, $request->file('nota_fiscal'), FreightAttachment::TYPE_INVOICE, 'invoices');
 
-            // Remover nota fiscal anterior se existir
-            $existing = $freight->attachments()->where('type', FreightAttachment::TYPE_INVOICE)->first();
-            if ($existing) {
-                Storage::delete($existing->path);
-                $existing->delete();
-            }
-
-            $path = $file->store('invoices');
-            $freight->attachments()->create([
-                'company_id' => $freight->company_id,
-                'type' => FreightAttachment::TYPE_INVOICE,
-                'path' => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'size_bytes' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-            ]);
-
-            if (isset($validated['gross_weight'])) {
-                $freight->update(['gross_weight' => $validated['gross_weight']]);
-            }
+        if (!empty($validated['gross_weight'])) {
+            $freight->update(['gross_weight' => $validated['gross_weight']]);
         }
 
         $freight->refresh();
@@ -225,14 +172,10 @@ class FreightController extends Controller
         return redirect()->back()->with('success', 'Nota fiscal enviada com sucesso!');
     }
 
-    // ADMIN: Finalizar operação (carga ou descarga) com pesos
-    public function finalizarOperacao(Request $request, Freight $freight)
+    // ADMIN: Finalize operation
+    public function finalizeOperation(FinalizeOperationRequest $request, Freight $freight)
     {
-        $validated = $request->validate([
-            'gross_weight' => 'required|numeric|min:0.01',
-            'net_weight' => 'required|numeric|min:0.01',
-            'admin_notes' => 'nullable|string|max:500',
-        ]);
+        $validated = $request->validated();
 
         try {
             (new FinalizeOperation)->execute(
@@ -241,7 +184,7 @@ class FreightController extends Controller
                 netWeight: (float) $validated['net_weight']
             );
 
-            if ($validated['admin_notes']) {
+            if (!empty($validated['admin_notes'])) {
                 $freight->update(['admin_notes' => $validated['admin_notes']]);
             }
 
@@ -254,33 +197,10 @@ class FreightController extends Controller
         }
     }
 
-    // ADMIN: Adicionar anexo
-    public function adicionarAnexo(Request $request, Freight $freight)
+    // ADMIN: Add attachment
+    public function addAttachment(AddAttachmentRequest $request, Freight $freight)
     {
-        $validated = $request->validate([
-            'attachment' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB
-        ]);
-
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-
-            // Remover anexo admin anterior se existir
-            $existing = $freight->attachments()->where('type', FreightAttachment::TYPE_ATTACHMENT)->first();
-            if ($existing) {
-                Storage::delete($existing->path);
-                $existing->delete();
-            }
-
-            $path = $file->store('attachments');
-            $freight->attachments()->create([
-                'company_id' => $freight->company_id,
-                'type' => FreightAttachment::TYPE_ATTACHMENT,
-                'path' => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'size_bytes' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-            ]);
-        }
+        $this->storeAttachment($freight, $request->file('attachment'), FreightAttachment::TYPE_ATTACHMENT, 'attachments');
 
         $freight->refresh();
         $this->whatsAppNotifier->notifyClientAttachmentAdded($freight, $request->user());
@@ -288,16 +208,16 @@ class FreightController extends Controller
         return redirect()->back()->with('success', 'Anexo adicionado com sucesso!');
     }
 
-    // ADMIN: Iniciar carregamento
-    public function iniciarCarregamento(Request $request, Freight $freight)
+    // ADMIN: Start load
+    public function startLoad(Request $request, Freight $freight)
     {
         try {
-            $blShouldNotify = $freight->status !== Freight::STATUS_LOADING;
+            $shouldNotify = $freight->status !== Freight::STATUS_LOADING;
 
             (new StartLoad)->execute($freight);
             $freight->refresh();
 
-            if ($blShouldNotify && $freight->status === Freight::STATUS_LOADING) {
+            if ($shouldNotify && $freight->status === Freight::STATUS_LOADING) {
                 $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
             }
 
@@ -307,16 +227,16 @@ class FreightController extends Controller
         }
     }
 
-    // ADMIN: Iniciar descarga
-    public function iniciarDescarga(Request $request, Freight $freight)
+    // ADMIN: Start unload
+    public function startUnload(Request $request, Freight $freight)
     {
         try {
-            $blShouldNotify = $freight->status !== Freight::STATUS_UNLOADING;
+            $shouldNotify = $freight->status !== Freight::STATUS_UNLOADING;
 
             (new StartUnload)->execute($freight);
             $freight->refresh();
 
-            if ($blShouldNotify && $freight->status === Freight::STATUS_UNLOADING) {
+            if ($shouldNotify && $freight->status === Freight::STATUS_UNLOADING) {
                 $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
             }
 
@@ -324,5 +244,23 @@ class FreightController extends Controller
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
+    }
+
+    private function storeAttachment(Freight $freight, UploadedFile $file, string $type, string $directory): void
+    {
+        $existing = $freight->attachments()->where('type', $type)->first();
+        if ($existing) {
+            Storage::delete($existing->path);
+            $existing->delete();
+        }
+
+        $freight->attachments()->create([
+            'company_id'    => $freight->company_id,
+            'type'          => $type,
+            'path'          => $file->store($directory),
+            'original_name' => $file->getClientOriginalName(),
+            'size_bytes'    => $file->getSize(),
+            'mime_type'     => $file->getMimeType(),
+        ]);
     }
 }
