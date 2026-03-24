@@ -21,6 +21,8 @@ class User extends Authenticatable
 
     public const ROLE_COMPANY_ADMIN = 'company_admin';
 
+    public const ROLE_COMPANY_EMPLOYEE = 'company_employee';
+
     public const ROLE_CLIENT = 'client';
 
     /**
@@ -35,6 +37,7 @@ class User extends Authenticatable
         'whatsapp_phone',
         'password',
         'role',
+        'permissions',
         'theme_preference',
     ];
 
@@ -58,6 +61,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'permissions' => 'array',
         ];
     }
 
@@ -76,14 +80,43 @@ class User extends Authenticatable
         return $this->role === self::ROLE_COMPANY_ADMIN;
     }
 
+    public function isCompanyEmployee(): bool
+    {
+        return $this->role === self::ROLE_COMPANY_EMPLOYEE;
+    }
+
     public function isAdmin(): bool
     {
-        return $this->isCompanyAdmin();
+        return $this->isCompanyAdmin() || $this->isCompanyEmployee();
     }
 
     public function isClient(): bool
     {
         return $this->role === self::ROLE_CLIENT;
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->isPlatformAdmin() || $this->isCompanyAdmin()) {
+            return true;
+        }
+
+        if (! $this->isCompanyEmployee()) {
+            return false;
+        }
+
+        $permissions = $this->permissions ?? [];
+
+        return (bool) ($permissions[$permission] ?? false);
+    }
+
+    public static function defaultEmployeePermissions(): array
+    {
+        return [
+            'view_audit_logs' => false,
+            'manage_admins' => false,
+            'manage_employees' => false,
+        ];
     }
 
     public function trucks(): HasMany

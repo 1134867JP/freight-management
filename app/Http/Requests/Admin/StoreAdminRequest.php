@@ -13,7 +13,7 @@ class StoreAdminRequest extends FormRequest
     {
         $objUser = $this->user();
 
-        return $objUser && $objUser->isCompanyAdmin();
+        return $objUser && $objUser->hasPermission('manage_admins');
     }
 
     public function rules(): array

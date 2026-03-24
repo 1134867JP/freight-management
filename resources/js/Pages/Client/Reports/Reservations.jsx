@@ -2,27 +2,11 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmptyState from '@/Components/UI/EmptyState';
 import PageHeader from '@/Components/UI/PageHeader';
+import StatusBadge from '@/Components/UI/StatusBadge';
+import { translateFreightStatus, getFreightStatusTone } from '@/Features/Freight/utils/freightPresentation';
 import { Head, router } from '@inertiajs/react';
 
-const STATUS_LABELS = {
-  reserved: { label: 'Reservado', class: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  loading: { label: 'Carregando', class: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  unloading: { label: 'Descarregando', class: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-  completed: { label: 'Concluído', class: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-  cancelled: { label: 'Cancelado', class: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-};
-
 const OP_LABELS = { load: 'Carga', unload: 'Descarga' };
-
-function StatusBadge({ status }) {
-  const normalised = status || 'reserved';
-  const cfg = STATUS_LABELS[normalised] || { label: normalised, class: 'bg-gray-100 text-gray-600' };
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${cfg.class}`}>
-      {cfg.label}
-    </span>
-  );
-}
 
 export default function ClientReservationsReport({ freights, filters }) {
   const { data: items, current_page, last_page, links } = freights;
@@ -177,7 +161,7 @@ export default function ClientReservationsReport({ freights, filters }) {
                         {fr.net_weight ? `${Number(fr.net_weight).toLocaleString('pt-BR')} kg` : '—'}
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={fr.status} />
+                        <StatusBadge label={translateFreightStatus(fr.status)} tone={getFreightStatusTone(fr.status)} />
                       </td>
                     </tr>
                   ))}

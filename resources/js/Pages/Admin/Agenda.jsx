@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import StatusBadge from '@/Components/UI/StatusBadge';
+import { translateFreightStatus, getFreightStatusTone } from '@/Features/Freight/utils/freightPresentation';
+import { translateTimeslotStatus, getTimeslotStatusTone } from '@/Features/Timeslot/utils/timeslotPresentation';
+import { Head, router } from '@inertiajs/react';
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -30,18 +33,6 @@ export default function Agenda({ timeslots }) {
   const [monthCursor, setMonthCursor] = useState(() => new Date());
   const [selectedDayKey, setSelectedDayKey] = useState(null);
 
-  const translateStatus = (status) => {
-    const map = {
-      available: 'Disponível',
-      full: 'Lotado',
-      closed: 'Fechado',
-      pending: 'Pendente',
-      approved: 'Aprovado',
-      completed: 'Concluído',
-      cancelled: 'Cancelado',
-    };
-    return map[status] || status;
-  };
 
   const formatTime = (value) =>
     new Date(value).toLocaleTimeString([], {
@@ -147,16 +138,9 @@ export default function Agenda({ timeslots }) {
     return { totalSlots, totalCapacity, totalReservations };
   };
 
-  const statusPill = (status) => {
-    const base = 'inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold';
-    if (status === 'available') return `${base} bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400`;
-    if (status === 'full') return `${base} bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400`;
-    if (status === 'closed') return `${base} bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400`;
-    if (status === 'approved') return `${base} bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400`;
-    if (status === 'pending') return `${base} bg-yellow-50 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400`;
-    if (status === 'completed') return `${base} bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400`;
-    if (status === 'cancelled') return `${base} bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400`;
-    return `${base} bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400`;
+
+  const handleDayDoubleClick = (dayKey) => {
+    router.get(route('timeslots.create'), { date: dayKey });
   };
 
   const prevMonth = () => {
@@ -230,6 +214,10 @@ export default function Agenda({ timeslots }) {
                 ))}
               </div>
 
+              <p className="mb-3 text-xs text-gray-400 dark:text-gray-500">
+                Clique para ver os detalhes do dia · <span className="font-medium">Duplo clique para adicionar uma cota</span>
+              </p>
+
               <div className="grid grid-cols-7 gap-2">
                 {monthGrid.map((cell) => {
                   const { totalSlots, totalCapacity, totalReservations } = dayCounts(cell.key);
@@ -240,6 +228,7 @@ export default function Agenda({ timeslots }) {
                       key={cell.key}
                       type="button"
                       onClick={() => setSelectedDayKey(cell.key)}
+                      onDoubleClick={() => handleDayDoubleClick(cell.key)}
                       className={[
                         'rounded-lg border p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition',
                         cell.inMonth ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900/50',
@@ -312,9 +301,10 @@ export default function Agenda({ timeslots }) {
                               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                 {formatRange(slot)}
                               </p>
-                              <span className={statusPill(slot.status)}>
-                                {translateStatus(slot.status)}
-                              </span>
+                              <StatusBadge
+                                label={translateTimeslotStatus(slot.status)}
+                                tone={getTimeslotStatusTone(slot.status)}
+                              />
                             </div>
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                               Capacidade: {slot.current_reservations}/{slot.capacity}
@@ -340,9 +330,10 @@ export default function Agenda({ timeslots }) {
                                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                                       {freight.user?.name || 'Cliente não informado'}
                                     </p>
-                                    <span className={statusPill(freight.status)}>
-                                      {translateStatus(freight.status)}
-                                    </span>
+                                    <StatusBadge
+                                      label={translateFreightStatus(freight.status)}
+                                      tone={getFreightStatusTone(freight.status)}
+                                    />
                                   </div>
 
                                   <div className="mt-2 space-y-1">

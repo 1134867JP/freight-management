@@ -9,6 +9,7 @@ export default function AuthenticatedLayout({ header, children }) {
   const { auth } = usePage().props;
   const user = auth.user;
   const company = auth.company;
+  const permissions = auth.permissions;
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
 
@@ -18,12 +19,16 @@ export default function AuthenticatedLayout({ header, children }) {
 
   const isPlatformAdmin = user?.role === 'platform_admin';
   const isCompanyAdmin = user?.role === 'company_admin';
+  const isCompanyEmployee = user?.role === 'company_employee';
+  const isAdmin = isCompanyAdmin || isCompanyEmployee;
   const logoUrl = company?.logo_url || '/storage/logo.png';
   const roleLabel = isPlatformAdmin
     ? 'Super Admin'
     : isCompanyAdmin
-      ? 'Administrador da empresa'
-      : 'Cliente';
+      ? 'Administrador'
+      : isCompanyEmployee
+        ? 'Funcionário'
+        : 'Cliente';
 
   const menuSections = useMemo(() => {
     if (isPlatformAdmin) {
@@ -37,7 +42,7 @@ export default function AuthenticatedLayout({ header, children }) {
       ];
     }
 
-    if (isCompanyAdmin) {
+    if (isAdmin) {
       return [
         {
           section: 'Operação',
@@ -49,17 +54,12 @@ export default function AuthenticatedLayout({ header, children }) {
           ],
         },
         {
-          section: 'Gestão',
-          items: [
-            { label: 'Clientes', href: route('clients.index'), active: route().current('clients.*'), icon: 'users' },
-          ],
-        },
-        {
           section: 'Cadastros',
           items: [
-            { label: 'Endereços', href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*'), sub: true },
-            { label: 'Produtos', href: route('produtos.index'), active: route().current('produtos.*'), sub: true },
-            { label: 'Docas', href: route('docas.index'), active: route().current('docas.*'), sub: true },
+            { label: 'Clientes', href: route('clients.index'), active: route().current('clients.*'), icon: 'users' },
+            { label: 'Endereços', href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*'), icon: 'location' },
+            { label: 'Produtos', href: route('produtos.index'), active: route().current('produtos.*'), icon: 'box' },
+            { label: 'Docas', href: route('docas.index'), active: route().current('docas.*'), icon: 'dock' },
           ],
         },
         {
@@ -106,7 +106,7 @@ export default function AuthenticatedLayout({ header, children }) {
         ],
       },
     ];
-  }, [isCompanyAdmin, isPlatformAdmin]);
+  }, [isAdmin, isPlatformAdmin]);
 
   const SideLink = ({ href, active, label, icon }) => (
     <Link
@@ -215,12 +215,17 @@ export default function AuthenticatedLayout({ header, children }) {
             )}
           </Link>
 
-          <div className="mt-4">
-            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{roleLabel}</p>
-            {company?.name && !isPlatformAdmin && (
-              <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">{company.name}</p>
-            )}
+          <div className="mt-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-600 text-sm font-bold text-white">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{roleLabel}</p>
+              {company?.name && !isPlatformAdmin && (
+                <p className="truncate text-xs text-gray-400 dark:text-gray-500">{company.name}</p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -268,24 +273,34 @@ export default function AuthenticatedLayout({ header, children }) {
                 Perfil
               </Link>
 
-              {isCompanyAdmin && (
-                <>
-                  <Link
-                    href={route('admins.index')}
-                    className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    Funcionários
-                  </Link>
+              {permissions?.manage_admins && (
+                <Link
+                  href={route('admins.index')}
+                  className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                  onClick={() => setShowAccountMenu(false)}
+                >
+                  Administradores
+                </Link>
+              )}
 
-                  <Link
-                    href={route('audit-logs.index')}
-                    className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    Logs
-                  </Link>
-                </>
+              {permissions?.manage_employees && (
+                <Link
+                  href={route('employees.index')}
+                  className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                  onClick={() => setShowAccountMenu(false)}
+                >
+                  Funcionários
+                </Link>
+              )}
+
+              {permissions?.view_audit_logs && (
+                <Link
+                  href={route('audit-logs.index')}
+                  className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                  onClick={() => setShowAccountMenu(false)}
+                >
+                  Logs
+                </Link>
               )}
 
               <Link
@@ -408,6 +423,10 @@ function MenuIcon({ name, className = '' }) {
       'M3 17l4-8 4 5 3-3 4 6M3 21h18',
     logs:
       'M9 12h6M9 16h4M7 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-4H7ZM13 4v4h4',
+    box:
+      'M21 8l-9-5-9 5v9l9 5 9-5V8ZM3 8l9 5 9-5M12 13v9',
+    dock:
+      'M2 20V9l10-6 10 6v11H2ZM9 20v-6h6v6',
   };
 
   const strPath = objPaths[name] || objPaths.dashboard;

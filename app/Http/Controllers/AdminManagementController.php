@@ -44,6 +44,7 @@ class AdminManagementController extends Controller
     {
         abort_unless($admin_user->role === User::ROLE_COMPANY_ADMIN, 403, 'Apenas administradores podem ser editados aqui.');
         abort_unless($admin_user->company_id === $request->user()->company_id, 403);
+        abort_unless($request->user()->hasPermission('manage_admins'), 403);
 
         $validated = $request->validated();
 
@@ -64,6 +65,7 @@ class AdminManagementController extends Controller
     {
         abort_unless($admin_user->role === User::ROLE_COMPANY_ADMIN, 403, 'Apenas administradores podem ser removidos aqui.');
         abort_unless($admin_user->company_id === $request->user()->company_id, 403);
+        abort_unless($request->user()->hasPermission('manage_admins'), 403);
         abort_if($admin_user->id === $request->user()->id, 403, 'Você não pode excluir sua própria conta aqui.');
 
         $admin_user->delete();

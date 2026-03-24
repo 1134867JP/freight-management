@@ -1,71 +1,127 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/UI/PageHeader';
 import { Head, Link } from '@inertiajs/react';
+
+const statCards = (stats) => [
+  {
+    label: 'Cotas anunciados',
+    value: stats?.total_timeslots ?? 0,
+    color: 'text-gray-800 dark:text-gray-100',
+    accent: 'border-gray-300 dark:border-gray-600',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M7 2v3M17 2v3M3.5 8.5h17M6 5.5h12a2.5 2.5 0 0 1 2.5 2.5v10a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 18V8A2.5 2.5 0 0 1 6 5.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+    ),
+    iconBg: 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
+  },
+  {
+    label: 'Disponíveis',
+    value: stats?.available_timeslots ?? 0,
+    color: 'text-green-700 dark:text-green-400',
+    accent: 'border-green-400 dark:border-green-600',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+    ),
+    iconBg: 'bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400',
+  },
+  {
+    label: 'Reservados',
+    value: stats?.reserved_timeslots ?? 0,
+    color: 'text-blue-700 dark:text-blue-400',
+    accent: 'border-blue-400 dark:border-blue-600',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M9 4.5h6m-5-2h4a1 1 0 0 1 1 1v1H9v-1a1 1 0 0 1 1-1Zm-2 3h8a2 2 0 0 1 2 2v10.5a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8.5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+    ),
+    iconBg: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400',
+  },
+  {
+    label: 'Lotados',
+    value: stats?.full_timeslots ?? 0,
+    color: 'text-orange-600 dark:text-orange-400',
+    accent: 'border-orange-400 dark:border-orange-600',
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+    ),
+    iconBg: 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400',
+  },
+];
+
+const quickLinks = [
+  {
+    label: 'Gerenciar Cotas',
+    description: 'Criar, editar e fechar Cotas da operação.',
+    routeName: 'timeslots.index',
+    icon: (
+      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none"><path d="M7 2v3M17 2v3M3.5 8.5h17M6 5.5h12a2.5 2.5 0 0 1 2.5 2.5v10a2.5 2.5 0 0 1-2.5 2.5H6A2.5 2.5 0 0 1 3.5 18V8A2.5 2.5 0 0 1 6 5.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+    ),
+    accent: 'border-t-teal-500',
+    iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400',
+  },
+  {
+    label: 'Agenda',
+    description: 'Ver Cotas anunciados e os clientes que reservaram.',
+    routeName: 'admin.agenda',
+    icon: (
+      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none"><path d="M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+    ),
+    accent: 'border-t-blue-500',
+    iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+  },
+  {
+    label: 'Fretes',
+    description: 'Gerenciar operações e reservas de frete.',
+    routeName: 'freights.approvalList',
+    icon: (
+      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none"><path d="M3 6h11v8H3V6Zm11 3h3l3 3v2h-6V9ZM7 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+    ),
+    accent: 'border-t-violet-500',
+    iconBg: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
+  },
+];
 
 export default function Dashboard({ stats }) {
   return (
     <AuthenticatedLayout
-      header={
-        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-100">
-          Painel do Administrador
-        </h2>
-      }
+      header={<PageHeader title="Painel do Administrador" subtitle="Visão geral das operações" />}
     >
       <Head title="Painel do Administrador" />
 
       <div className="py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Cotas anunciados</p>
-              <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">{stats?.total_timeslots ?? 0}</p>
-            </div>
-            <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Disponíveis</p>
-              <p className="mt-2 text-3xl font-bold text-green-700">
-                {stats?.available_timeslots ?? 0}
-              </p>
-            </div>
-            <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Reservados</p>
-              <p className="mt-2 text-3xl font-bold text-blue-700">
-                {stats?.reserved_timeslots ?? 0}
-              </p>
-            </div>
-            <div className="rounded-lg bg-white p-5 shadow-sm dark:bg-gray-800">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Lotados</p>
-              <p className="mt-2 text-3xl font-bold text-orange-600">
-                {stats?.full_timeslots ?? 0}
-              </p>
-            </div>
+            {statCards(stats).map((card) => (
+              <div
+                key={card.label}
+                className={`rounded-xl border-l-4 bg-white p-5 shadow-sm dark:bg-gray-800 ${card.accent}`}
+              >
+                <div className="flex items-start justify-between">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{card.label}</p>
+                  <span className={`rounded-lg p-1.5 ${card.iconBg}`}>{card.icon}</span>
+                </div>
+                <p className={`mt-3 text-3xl font-bold ${card.color}`}>{card.value}</p>
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Link
-              href={route('timeslots.index')}
-              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
-            >
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Gerenciar Cotas</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Criar, editar e fechar Cotas da operação.</p>
-            </Link>
-
-            <Link
-              href={route('admin.agenda')}
-              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
-            >
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Agenda</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Ver Cotas anunciados e os clientes que reservaram.
-              </p>
-            </Link>
-
-            <Link
-              href={route('freights.approvalList')}
-              className="rounded-lg bg-white p-6 shadow-sm transition hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
-            >
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Aprovação de Fretes</h3>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Aprovar ou rejeitar solicitações dos clientes.</p>
-            </Link>
+            {quickLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={route(link.routeName)}
+                className={`group rounded-xl border-t-4 bg-white p-6 shadow-sm transition hover:shadow-md dark:bg-gray-800 ${link.accent}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className={`rounded-lg p-2 ${link.iconBg}`}>{link.icon}</span>
+                  <svg className="h-4 w-4 text-gray-300 transition group-hover:translate-x-0.5 group-hover:text-gray-400 dark:text-gray-600 dark:group-hover:text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="mt-4 text-base font-semibold text-gray-900 dark:text-gray-100">{link.label}</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{link.description}</p>
+              </Link>
+            ))}
           </div>
+
         </div>
       </div>
     </AuthenticatedLayout>

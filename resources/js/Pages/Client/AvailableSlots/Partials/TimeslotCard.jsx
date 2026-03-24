@@ -23,12 +23,27 @@ function getModeloBadge(strModelo) {
   }
 }
 
+function formatDate(dt) {
+  return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function formatTime(dt) {
+  return dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function isSameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+}
+
 export default function TimeslotCard({ slot, selected, onReserve }) {
   const vlStart = new Date(slot.start_time);
   const vlEnd = new Date(slot.end_time);
   const nrOccupationPercent = getOccupationPercent(slot);
   const nrRemaining = Math.max(slot.capacity - slot.current_reservations, 0);
   const objModeloBadge = getModeloBadge(slot.modelo);
+  const blMultiDay = !isSameDay(vlStart, vlEnd);
 
   return (
     <article
@@ -38,14 +53,31 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {vlStart.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-            {' - '}
-            {vlEnd.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {vlStart.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-          </p>
+          {blMultiDay ? (
+            <>
+              <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                {formatDate(vlStart)}{' '}
+                <span className="font-normal text-gray-500 dark:text-gray-400">{formatTime(vlStart)}</span>
+                <span className="mx-1.5 text-gray-400">→</span>
+                {formatDate(vlEnd)}{' '}
+                <span className="font-normal text-gray-500 dark:text-gray-400">{formatTime(vlEnd)}</span>
+              </p>
+              <p className="mt-0.5 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                Operação de múltiplos dias
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {formatTime(vlStart)}
+                {' – '}
+                {formatTime(vlEnd)}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {formatDate(vlStart)}
+              </p>
+            </>
+          )}
         </div>
 
         <div className="flex flex-col items-end gap-1">

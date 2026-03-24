@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminManagementController;
+use App\Http\Controllers\EmployeeManagementController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ClientManagementController;
 use App\Http\Controllers\DocaController;
@@ -74,17 +75,30 @@ Route::middleware('auth')->group(function () {
         Route::delete('/docas/{doca}', [DocaController::class, 'destroy'])->name('docas.destroy');
 
         // Logs de auditoria
-        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::middleware('permission:view_audit_logs')->get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 
         // Relatórios
         Route::get('/reports/timeslots', [ReportController::class, 'adminTimeslots'])->name('reports.admin.timeslots');
+        Route::get('/reports/timeslots/export', [ReportController::class, 'exportTimeslotsXls'])->name('reports.admin.timeslots.export');
         Route::get('/reports/freights', [ReportController::class, 'adminFreights'])->name('reports.admin.freights');
+        Route::get('/reports/freights/export', [ReportController::class, 'exportFreightsXls'])->name('reports.admin.freights.export');
 
         // Gerenciamento de administradores
-        Route::get('/admins', [AdminManagementController::class, 'index'])->name('admins.index');
-        Route::post('/admins', [AdminManagementController::class, 'store'])->name('admins.store');
-        Route::patch('/admins/{admin_user}', [AdminManagementController::class, 'update'])->name('admins.update');
-        Route::delete('/admins/{admin_user}', [AdminManagementController::class, 'destroy'])->name('admins.destroy');
+        Route::middleware('permission:manage_admins')->group(function () {
+            Route::get('/admins', [AdminManagementController::class, 'index'])->name('admins.index');
+            Route::post('/admins', [AdminManagementController::class, 'store'])->name('admins.store');
+            Route::patch('/admins/{admin_user}', [AdminManagementController::class, 'update'])->name('admins.update');
+            Route::delete('/admins/{admin_user}', [AdminManagementController::class, 'destroy'])->name('admins.destroy');
+        });
+
+        // Gerenciamento de funcionários
+        Route::middleware('permission:manage_employees')->group(function () {
+            Route::get('/employees', [EmployeeManagementController::class, 'index'])->name('employees.index');
+            Route::post('/employees', [EmployeeManagementController::class, 'store'])->name('employees.store');
+            Route::patch('/employees/{employee_user}', [EmployeeManagementController::class, 'update'])->name('employees.update');
+            Route::delete('/employees/{employee_user}', [EmployeeManagementController::class, 'destroy'])->name('employees.destroy');
+            Route::patch('/employees/{employee_user}/permissions', [EmployeeManagementController::class, 'updatePermissions'])->name('employees.permissions');
+        });
     });
 
     // -------------------------

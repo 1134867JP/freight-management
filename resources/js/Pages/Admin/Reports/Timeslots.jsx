@@ -2,27 +2,14 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmptyState from '@/Components/UI/EmptyState';
 import PageHeader from '@/Components/UI/PageHeader';
+import StatusBadge from '@/Components/UI/StatusBadge';
+import { translateTimeslotStatus, getTimeslotStatusTone } from '@/Features/Timeslot/utils/timeslotPresentation';
 import { Head, router } from '@inertiajs/react';
-
-const STATUS_LABELS = {
-  available: { label: 'Disponível', class: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-  full: { label: 'Lotado', class: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  closed: { label: 'Encerrado', class: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' },
-};
 
 const OP_LABELS = {
   load: 'Carga',
   unload: 'Descarga',
 };
-
-function StatusBadge({ status }) {
-  const cfg = STATUS_LABELS[status] || { label: status, class: 'bg-gray-100 text-gray-600' };
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${cfg.class}`}>
-      {cfg.label}
-    </span>
-  );
-}
 
 export default function AdminTimeslotsReport({ timeslots, filters }) {
   const { data: items, current_page, last_page, links } = timeslots;
@@ -45,9 +32,30 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
     router.get(route('reports.admin.timeslots'), {}, { preserveScroll: true });
   };
 
+  const exportUrl = () => {
+    const params = new URLSearchParams(
+      Object.fromEntries(Object.entries(form).filter(([, v]) => v !== ''))
+    );
+    const qs = params.toString();
+    return route('reports.admin.timeslots.export') + (qs ? '?' + qs : '');
+  };
+
   return (
     <AuthenticatedLayout
-      header={<PageHeader title="Relatório de Cotas" subtitle="Cotas cadastrados no sistema" />}
+      header={
+        <PageHeader
+          title="Relatório de Cotas"
+          subtitle="Cotas cadastradas no sistema"
+          actions={
+            <a
+              href={exportUrl()}
+              className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+            >
+              Exportar XLS
+            </a>
+          }
+        />
+      }
     >
       <Head title="Relatório de Cotas" />
 
@@ -167,7 +175,7 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
                         {ts.active_reservations}
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={ts.status} />
+                        <StatusBadge label={translateTimeslotStatus(ts.status)} tone={getTimeslotStatusTone(ts.status)} />
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {ts.dropoff_address?.name || '—'}

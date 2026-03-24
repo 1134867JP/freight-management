@@ -59,13 +59,34 @@ class FreightController extends Controller
     // CLIENT: My reservations
     public function myReservations(Request $request)
     {
-        $freights = Freight::with(['timeslot', 'attachments'])
-            ->where('user_id', $request->user()->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Freight::with(['timeslot', 'attachments'])
+            ->where('user_id', $request->user()->id);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('operation_type')) {
+            $query->where('operation_type', $request->input('operation_type'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereHas('timeslot', fn ($q) =>
+                $q->whereDate('start_time', '>=', $request->input('date_from'))
+            );
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereHas('timeslot', fn ($q) =>
+                $q->whereDate('start_time', '<=', $request->input('date_to'))
+            );
+        }
+
+        $freights = $query->orderBy('created_at', 'desc')->get();
 
         return Inertia::render('Client/MyReservations', [
             'freights' => $freights,
+            'filters'  => $request->only(['status', 'operation_type', 'date_from', 'date_to']),
         ]);
     }
 

@@ -79,25 +79,22 @@ export default function FreightsTable({
             <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Cliente
             </th>
-            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[13%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Veículo
             </th>
-            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-              Operação
-            </th>
-            <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[11%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Agendamento
             </th>
-            <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[12%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Pesos
             </th>
-            <th className="w-[18%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Documentos
             </th>
             <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Status
             </th>
-            <th className="w-[18%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[24%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
               Ações
             </th>
           </tr>
@@ -105,42 +102,37 @@ export default function FreightsTable({
 
         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
           {freights.map((freight) => (
-            <tr key={freight.id} className="align-top transition hover:bg-gray-50/70 dark:hover:bg-gray-700/50">
-              <td className="w-[16%] px-4 py-4 align-top">
+            <tr key={freight.id} className="align-middle transition hover:bg-gray-50/70 dark:hover:bg-gray-700/50">
+              <td className="w-[16%] px-4 py-3">
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{freight.user?.name || '-'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{freight.driver_name || 'Motorista não informado'}</p>
-              </td>
-
-              <td className="w-[10%] px-4 py-4 align-top">
-                <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate}</p>
-              </td>
-
-              <td className="w-[10%] px-4 py-4 align-top">
-                <StatusBadge
-                  label={translateOperationType(freight.operation_type)}
-                  tone="neutral"
-                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
-                />
-              </td>
-
-              <td className="w-[14%] px-4 py-4 align-top text-sm">
-                {freight.timeslot ? (
-                  <div className="space-y-0.5">
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{formatDate(freight.timeslot.start_time)}</p>
-                    <p className="text-gray-600 dark:text-gray-400">{formatTime(freight.timeslot.start_time)}</p>
-                  </div>
-                ) : (
-                  <span className="text-gray-500 dark:text-gray-400">Não informado</span>
+                {freight.driver_name && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{freight.driver_name}</p>
                 )}
               </td>
 
-              <td className="w-[14%] px-4 py-4 align-top text-sm">
-                <p className="text-gray-700 dark:text-gray-300">
-                  Peso bruto: <span className="font-medium">{formatWeight(freight.gross_weight)}</span>
-                </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  Peso líquido: <span className="font-medium">{formatWeight(freight.net_weight)}</span>
-                </p>
+              <td className="w-[13%] px-4 py-3">
+                <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate}</p>
+                <StatusBadge
+                  label={translateOperationType(freight.operation_type)}
+                  tone="neutral"
+                  className="mt-1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
+                />
+              </td>
+
+              <td className="w-[11%] px-4 py-3 text-sm">
+                {freight.timeslot ? (
+                  <>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{formatDate(freight.timeslot.start_time)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{formatTime(freight.timeslot.start_time)}</p>
+                  </>
+                ) : (
+                  <span className="text-gray-400 dark:text-gray-500">—</span>
+                )}
+              </td>
+
+              <td className="w-[12%] px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
+                <p>B: <span className="font-medium text-gray-800 dark:text-gray-200">{freight.gross_weight ? `${freight.gross_weight} kg` : '—'}</span></p>
+                <p>L: <span className="font-medium text-gray-800 dark:text-gray-200">{freight.net_weight ? `${freight.net_weight} kg` : '—'}</span></p>
               </td>
 
               <FreightAttachmentsCell
@@ -148,11 +140,11 @@ export default function FreightsTable({
                 onOpenAttachmentModal={onOpenAttachmentModal}
               />
 
-              <td className="w-[10%] px-4 py-4 align-top">
+              <td className="w-[10%] px-4 py-3">
                 <StatusBadge
                   label={getStatusLabel(freight.status)}
                   tone={getStatusTone(freight.status)}
-                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+                  className="px-2 py-1 text-xs font-bold uppercase tracking-wide"
                 />
               </td>
 

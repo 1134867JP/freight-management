@@ -6,19 +6,19 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class IsAdmin
+class CheckPermission
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string $permission): Response
     {
         $objUser = $request->user();
 
-        if (! $objUser || ! $objUser->isAdmin() || ! filled($objUser->company_id)) {
-            abort(403, 'Acesso permitido apenas para Administradores e Funcionários.');
+        if (! $objUser || ! $objUser->hasPermission($permission)) {
+            abort(403, 'Sem permissão para esta ação.');
         }
 
         return $next($request);

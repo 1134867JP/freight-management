@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Http\Requests\Admin;
+namespace App\Http\Requests\Employee;
 
 use App\Models\User;
 use App\Support\WhatsAppPhone;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateAdminRequest extends FormRequest
+class UpdateEmployeeRequest extends FormRequest
 {
     public function authorize(): bool
     {
         $objUser = $this->user();
 
-        return $objUser && $objUser->hasPermission('manage_admins');
+        return $objUser && $objUser->hasPermission('manage_employees');
     }
 
     public function rules(): array
     {
-        $objRouteUser = $this->route('admin_user');
+        $objRouteUser = $this->route('employee_user');
         $idUser = $objRouteUser?->id;
 
         return [

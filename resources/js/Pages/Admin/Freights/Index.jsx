@@ -212,11 +212,11 @@ export default function Index({ freights }) {
                   value={filterSearch}
                   onChange={(event) => setFilterSearch(event.target.value)}
                   placeholder="Buscar cliente ou placa"
-                  className="rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
                 />
 
                 <select
-                  className="rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                   value={filterOp}
                   onChange={(event) => setFilterOp(event.target.value)}
                 >
@@ -226,7 +226,7 @@ export default function Index({ freights }) {
                 </select>
 
                 <select
-                  className="rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                   value={filterStatus}
                   onChange={(event) => setFilterStatus(event.target.value)}
                 >
@@ -242,7 +242,7 @@ export default function Index({ freights }) {
                   type="date"
                   value={filterDate}
                   onChange={(event) => setFilterDate(event.target.value)}
-                  className="rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
 
                 <button

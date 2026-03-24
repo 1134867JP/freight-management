@@ -5,7 +5,7 @@ import PageHeader from '@/Components/UI/PageHeader';
 import { Head, Link, useForm } from '@inertiajs/react';
 import TimeslotForm from './Partials/TimeslotForm';
 
-export default function Form({ timeslot, clients, addresses, produtos, docas }) {
+export default function Form({ timeslot, clients, addresses, produtos, docas, defaultDate }) {
   const isEditing = Boolean(timeslot?.id);
 
   const toDatetimeLocal = (value) => {
@@ -20,8 +20,8 @@ export default function Form({ timeslot, clients, addresses, produtos, docas }) 
   };
 
   const form = useForm({
-    start_time: toDatetimeLocal(timeslot?.start_time),
-    end_time: toDatetimeLocal(timeslot?.end_time),
+    start_time: toDatetimeLocal(timeslot?.start_time) || (defaultDate ? `${defaultDate}T00:00` : ''),
+    end_time: toDatetimeLocal(timeslot?.end_time) || (defaultDate ? `${defaultDate}T01:00` : ''),
     capacity: timeslot?.capacity ?? 1,
     status: timeslot?.status ?? 'available',
     description: timeslot?.description ?? '',

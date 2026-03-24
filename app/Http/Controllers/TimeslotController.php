@@ -11,6 +11,7 @@ use App\Models\Produto;
 use App\Models\Timeslot;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -58,7 +59,7 @@ class TimeslotController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $arrFormData = $this->buildTimeslotFormData();
 
@@ -68,6 +69,7 @@ class TimeslotController extends Controller
             'addresses' => $arrFormData['addresses'],
             'produtos' => $arrFormData['produtos'],
             'docas' => $arrFormData['docas'],
+            'defaultDate' => $request->query('date'),
         ]);
     }
 

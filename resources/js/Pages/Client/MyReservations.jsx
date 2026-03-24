@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmptyState from '@/Components/UI/EmptyState';
 import FlashMessages from '@/Components/UI/FlashMessages';
@@ -8,13 +8,103 @@ import { confirmAction } from '@/Components/UI/confirmAction';
 import {
   getFreightStatusTone,
   translateFreightStatus,
+  translateOperationType,
 } from '@/Features/Freight/utils/freightPresentation';
 import { Head, Link, router } from '@inertiajs/react';
 
-export default function MyReservations({ freights }) {
+const baseChip =
+  'inline-flex items-center rounded px-2 py-1 text-xs font-medium';
+
+function AttachmentsCell({ freight, onUploadNF }) {
+  const fileRef = useRef(null);
+  const invoiceAtt = freight.attachments?.find((a) => a.type === 'invoice');
+  const adminAtt = freight.attachments?.find((a) => a.type === 'attachment');
+  const showUpload =
+    freight.operation_type === 'unload' &&
+    !invoiceAtt &&
+    freight.status !== 'cancelled' &&
+    freight.status !== 'completed';
+
+  return (
+    <td className="w-[18%] px-4 py-3 align-middle">
+      <div className="flex flex-wrap gap-1.5">
+        {invoiceAtt ? (
+          <a
+            href={`/storage/${invoiceAtt.path}`}
+            target="_blank"
+            rel="noreferrer"
+            title="Ver nota fiscal"
+            className={`${baseChip} bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50`}
+          >
+            NF ↗
+          </a>
+        ) : (
+          <span className={`${baseChip} bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500`}>
+            NF
+          </span>
+        )}
+
+        {adminAtt ? (
+          <a
+            href={`/storage/${adminAtt.path}`}
+            target="_blank"
+            rel="noreferrer"
+            title="Ver anexo"
+            className={`${baseChip} bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50`}
+          >
+            Anexo ↗
+          </a>
+        ) : (
+          <span className={`${baseChip} bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500`}>
+            Anexo
+          </span>
+        )}
+
+        {showUpload && (
+          <>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              className="hidden"
+              onChange={(e) => onUploadNF(freight.id, e.target.files?.[0])}
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              title="Enviar nota fiscal"
+              className={`${baseChip} bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40`}
+            >
+              + NF
+            </button>
+          </>
+        )}
+      </div>
+    </td>
+  );
+}
+
+export default function MyReservations({ freights, filters = {} }) {
+  const [form, setForm] = useState({
+    date_from: filters.date_from || '',
+    date_to: filters.date_to || '',
+    operation_type: filters.operation_type || '',
+    status: filters.status || '',
+  });
+
+  const applyFilters = (e) => {
+    e.preventDefault();
+    router.get(route('client.reservations'), form, { preserveScroll: true });
+  };
+
+  const clearFilters = () => {
+    const empty = { date_from: '', date_to: '', operation_type: '', status: '' };
+    setForm(empty);
+    router.get(route('client.reservations'), {}, { preserveScroll: true });
+  };
+
   const uploadNotaFiscal = (freightId, file) => {
     if (!file) return;
-
     router.post(
       route('client.upload-invoice', freightId),
       { nota_fiscal: file },
@@ -22,16 +112,12 @@ export default function MyReservations({ freights }) {
     );
   };
 
-  const canUploadNotaFiscal = (freight) =>
-    freight.operation_type === 'unload' &&
-    !freight.attachments?.some((a) => a.type === 'invoice') &&
-    freight.status !== 'cancelled' &&
-    freight.status !== 'completed';
-
   const canCancel = (freight) => freight.status !== 'cancelled' && freight.status !== 'completed';
   const canReopen = (freight) => freight.status === 'cancelled';
-  const hasActions = (freight) =>
-    canUploadNotaFiscal(freight) || canCancel(freight) || canReopen(freight);
+  const hasActions = (freight) => canCancel(freight) || canReopen(freight);
+
+  const btnBase =
+    'inline-flex items-center justify-center rounded-md border px-2.5 py-1.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 whitespace-nowrap';
 
   return (
     <AuthenticatedLayout
@@ -40,159 +126,196 @@ export default function MyReservations({ freights }) {
       <Head title="Minhas Reservas" />
 
       <div className="py-12">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-4">
           <FlashMessages />
 
-          <div className="overflow-x-auto rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
-            {freights.length === 0 ? (
-              <EmptyState
-                title="Você não possui nenhuma reserva."
-                action={
-                  <Link href={route('client.available')} className="text-blue-600 underline">
-                    Solicitar um horário
-                  </Link>
-                }
-              />
-            ) : (
-              <table className="w-full border-collapse text-left">
-                <thead>
+          {/* Filtros */}
+          <form
+            onSubmit={applyFilters}
+            className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+          >
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">De</label>
+                <input
+                  type="date"
+                  value={form.date_from}
+                  onChange={(e) => setForm({ ...form, date_from: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Até</label>
+                <input
+                  type="date"
+                  value={form.date_to}
+                  onChange={(e) => setForm({ ...form, date_to: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Operação</label>
+                <select
+                  value={form.operation_type}
+                  onChange={(e) => setForm({ ...form, operation_type: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                >
+                  <option value="">Todas</option>
+                  <option value="load">Carga</option>
+                  <option value="unload">Descarga</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Status</label>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                >
+                  <option value="">Todos</option>
+                  <option value="reserved">Reservado</option>
+                  <option value="loading">Carregando</option>
+                  <option value="unloading">Descarregando</option>
+                  <option value="completed">Finalizado</option>
+                  <option value="cancelled">Cancelado</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="submit"
+                className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Filtrar
+              </button>
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="rounded-md border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              >
+                Limpar
+              </button>
+            </div>
+          </form>
+
+          {freights.length === 0 ? (
+            <EmptyState
+              title="Você não possui nenhuma reserva."
+              action={
+                <Link href={route('client.available')} className="text-blue-600 underline">
+                  Solicitar um horário
+                </Link>
+              }
+            />
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+              <table className="min-w-full table-fixed text-left">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Horário</th>
-                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Caminhão / Placa</th>
-                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Operação</th>
-                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Pesos</th>
-                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Anexos</th>
-                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Status</th>
-                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Observações</th>
-                    <th className="border-b py-2 dark:border-gray-700 dark:text-gray-300">Ações</th>
+                    <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Horário</th>
+                    <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Veículo</th>
+                    <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Pesos</th>
+                    <th className="w-[18%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Documentos</th>
+                    <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Status</th>
+                    <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Observações</th>
+                    <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Ações</th>
                   </tr>
                 </thead>
 
-                <tbody>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {freights.map((freight) => (
-                    <tr key={freight.id} className="align-top hover:bg-gray-50 dark:hover:bg-gray-700/50 dark:text-gray-300">
-                      <td className="py-2">
+                    <tr key={freight.id} className="align-middle transition hover:bg-gray-50/70 dark:hover:bg-gray-700/50">
+                      <td className="w-[16%] px-4 py-3 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
                         {freight.timeslot
-                          ? new Date(freight.timeslot.start_time).toLocaleString('pt-BR')
-                          : 'Horário Excluído'}
-                      </td>
-                      <td className="py-2">
-                        {freight.driver_name} - {freight.truck_plate}
-                      </td>
-                      <td className="py-2">
-                        {freight.operation_type === 'load' ? 'Carga' : 'Descarga'}
-                      </td>
-                      <td className="py-2 text-sm">
-                        <div>Bruto: {freight.gross_weight ?? '-'}</div>
-                        <div>Líquido: {freight.net_weight ?? '-'}</div>
-                      </td>
-                      <td className="space-y-1 py-2 text-sm">
-                        {(() => {
-                          const invoiceAtt = freight.attachments?.find((a) => a.type === 'invoice');
-                          const adminAtt = freight.attachments?.find((a) => a.type === 'attachment');
-                          return (
-                            <>
-                              <div>
-                                {invoiceAtt ? (
-                                  <a
-                                    href={`/storage/${invoiceAtt.path}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-blue-600 underline"
-                                  >
-                                    Nota Fiscal
-                                  </a>
-                                ) : (
-                                  <span className="text-gray-400 dark:text-gray-500">Sem NF</span>
-                                )}
-                              </div>
-                              <div>
-                                {adminAtt ? (
-                                  <a
-                                    href={`/storage/${adminAtt.path}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-blue-600 underline"
-                                  >
-                                    Anexo Admin
-                                  </a>
-                                ) : (
-                                  <span className="text-gray-400 dark:text-gray-500">Sem anexo</span>
-                                )}
-                              </div>
+                          ? <>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
+                                {new Date(freight.timeslot.start_time).toLocaleDateString('pt-BR')}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {new Date(freight.timeslot.start_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
                             </>
-                          );
-                        })()}
+                          : <span className="text-xs text-gray-400 dark:text-gray-500">Horário excluído</span>}
                       </td>
-                      <td className="py-2">
+
+                      <td className="w-[16%] px-4 py-3">
+                        <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate}</p>
+                        {freight.driver_name && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{freight.driver_name}</p>
+                        )}
+                        <StatusBadge
+                          label={translateOperationType(freight.operation_type)}
+                          tone="neutral"
+                          className="mt-1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
+                        />
+                      </td>
+
+                      <td className="w-[10%] px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
+                        <p>B: <span className="font-medium text-gray-800 dark:text-gray-200">{freight.gross_weight ? `${freight.gross_weight} kg` : '—'}</span></p>
+                        <p>L: <span className="font-medium text-gray-800 dark:text-gray-200">{freight.net_weight ? `${freight.net_weight} kg` : '—'}</span></p>
+                      </td>
+
+                      <AttachmentsCell freight={freight} onUploadNF={uploadNotaFiscal} />
+
+                      <td className="w-[10%] px-4 py-3">
                         <StatusBadge
                           label={translateFreightStatus(freight.status)}
                           tone={getFreightStatusTone(freight.status)}
+                          className="px-2 py-1 text-xs font-bold uppercase tracking-wide"
                         />
                       </td>
-                      <td className="py-2 text-sm text-gray-600 dark:text-gray-400">{freight.admin_notes || '-'}</td>
 
-                      <td className="space-y-2 py-2">
-                        {canUploadNotaFiscal(freight) && (
-                          <div>
-                            <label className="mb-1 block text-xs text-gray-600 dark:text-gray-400">Enviar NF</label>
-                            <input
-                              type="file"
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              className="text-xs"
-                              onChange={(event) =>
-                                uploadNotaFiscal(freight.id, event.target.files?.[0])
-                              }
-                            />
-                          </div>
-                        )}
+                      <td className="w-[16%] px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
+                        {freight.admin_notes || <span className="text-gray-400 dark:text-gray-500">—</span>}
+                      </td>
 
-                        {canCancel(freight) && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (confirmAction('Tem certeza que deseja cancelar esta reserva?')) {
-                                router.delete(route('client.reservations.cancel', freight.id), {
-                                  preserveScroll: true,
-                                });
-                              }
-                            }}
-                            className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-                          >
-                            Cancelar
-                          </button>
-                        )}
+                      <td className="w-[14%] px-4 py-3 align-middle">
+                        <div className="flex flex-wrap gap-2">
+                          {canCancel(freight) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirmAction('Tem certeza que deseja cancelar esta reserva?')) {
+                                  router.delete(route('client.reservations.cancel', freight.id), {
+                                    preserveScroll: true,
+                                  });
+                                }
+                              }}
+                              className={`${btnBase} border-red-600 bg-white text-red-600 hover:bg-red-50 focus:ring-red-500 dark:bg-transparent dark:hover:bg-red-950/40`}
+                            >
+                              Cancelar
+                            </button>
+                          )}
 
-                        {canReopen(freight) && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (confirmAction('Deseja reabrir esta reserva cancelada?')) {
-                                router.patch(
-                                  route('client.reservations.reopen', freight.id),
-                                  {},
-                                  { preserveScroll: true },
-                                );
-                              }
-                            }}
-                            className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-                          >
-                            Reabrir
-                          </button>
-                        )}
+                          {canReopen(freight) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirmAction('Deseja reabrir esta reserva cancelada?')) {
+                                  router.patch(
+                                    route('client.reservations.reopen', freight.id),
+                                    {},
+                                    { preserveScroll: true },
+                                  );
+                                }
+                              }}
+                              className={`${btnBase} border-blue-600 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500`}
+                            >
+                              Reabrir
+                            </button>
+                          )}
 
-                        {!hasActions(freight) && (
-                          <span className="text-xs italic text-gray-500 dark:text-gray-400">
-                            Sem ações disponíveis
-                          </span>
-                        )}
+                          {!hasActions(freight) && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">Sem ações</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </AuthenticatedLayout>

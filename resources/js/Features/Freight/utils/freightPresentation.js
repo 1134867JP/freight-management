@@ -1,5 +1,6 @@
 export function translateFreightStatus(status) {
   const arrTranslations = {
+    reserved: 'Reservado',
     cancelled: 'Cancelado',
     loading: 'Carregando',
     unloading: 'Descarregando',
@@ -20,6 +21,7 @@ export function translateOperationType(operationType) {
 }
 
 export function getFreightStatusTone(status) {
+  if (status === 'reserved') return 'info';
   if (status === 'loading') return 'warning';
   if (status === 'unloading') return 'info';
   if (status === 'completed') return 'success';

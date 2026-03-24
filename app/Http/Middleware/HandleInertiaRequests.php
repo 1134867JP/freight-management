@@ -43,11 +43,21 @@ class HandleInertiaRequests extends Middleware
             ];
         }
 
+        $permissions = null;
+        if ($user) {
+            $permissions = [
+                'view_audit_logs' => $user->hasPermission('view_audit_logs'),
+                'manage_admins' => $user->hasPermission('manage_admins'),
+                'manage_employees' => $user->hasPermission('manage_employees'),
+            ];
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $user,
                 'company' => $company,
+                'permissions' => $permissions,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

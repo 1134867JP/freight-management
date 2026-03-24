@@ -25,9 +25,11 @@ class DashboardController extends Controller
             return redirect()->route('platform.dashboard');
         }
 
-        return $user->isCompanyAdmin()
-            ? redirect()->route('admin.dashboard')
-            : redirect()->route('client.dashboard');
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('client.dashboard');
     }
 
     public function clientDashboard(): Response
