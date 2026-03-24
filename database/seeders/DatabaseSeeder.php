@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
                 'company_id' => null,
                 'name' => 'Platform Admin',
                 'role' => User::ROLE_PLATFORM_ADMIN,
-                'password' => bcrypt('password'),
+                'password' => 'password',
             ],
         );
 
@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
                 'company_id' => $company->id,
                 'name' => 'Admin User',
                 'role' => User::ROLE_COMPANY_ADMIN,
-                'password' => bcrypt('password'),
+                'password' => 'password',
             ],
         );
 
@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
                     'company_id' => $company->id,
                     'name' => "Cliente {$i}",
                     'role' => User::ROLE_CLIENT,
-                    'password' => bcrypt('password'),
+                    'password' => 'password',
                 ],
             );
         }
