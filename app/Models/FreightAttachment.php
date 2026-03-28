@@ -22,12 +22,40 @@ class FreightAttachment extends Model
         'mime_type',
     ];
 
+    protected $appends = ['admin_url', 'client_url'];
+
     protected $casts = [
         'size_bytes' => 'integer',
     ];
 
+    public function getAdminUrlAttribute(): string
+    {
+        if ($this->type === self::TYPE_INVOICE) {
+            return route('freights.download-invoice', $this->freight_id);
+        }
+
+        return route('freights.download-attachment', [$this->freight_id, $this->id]);
+    }
+
+    public function getClientUrlAttribute(): string
+    {
+        if ($this->type === self::TYPE_INVOICE) {
+            return route('client.download-invoice', $this->freight_id);
+        }
+
+        return '#';
+    }
+
+    /**
+     * @deprecated Use admin_url or client_url instead.
+     */
     public function getUrlAttribute(): string
     {
+        // Tenta disco local primeiro; cai no disco padrão para arquivos legados
+        if (Storage::disk('local')->exists($this->path)) {
+            return $this->admin_url;
+        }
+
         return Storage::url($this->path);
     }
 

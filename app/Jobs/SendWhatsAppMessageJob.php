@@ -15,6 +15,8 @@ class SendWhatsAppMessageJob implements ShouldQueue
 
     public int $tries = 3;
 
+    public int $timeout = 30;
+
     public function __construct(
         public readonly string $phone,
         public readonly string $text,

@@ -8,6 +8,7 @@ use App\Actions\Freight\FinalizeOperation;
 use App\Actions\Freight\ReopenReservation;
 use App\Actions\Freight\StartLoad;
 use App\Actions\Freight\StartUnload;
+use App\Enums\FreightStatus;
 use App\Http\Requests\Freight\AddAttachmentRequest;
 use App\Http\Requests\Freight\FinalizeOperationRequest;
 use App\Http\Requests\Freight\StoreFreightRequest;
@@ -97,7 +98,7 @@ class FreightController extends Controller
 
         $invoicePath = null;
         if ($validated['operation_type'] === 'unload' && $request->hasFile('invoice_path')) {
-            $invoicePath = $request->file('invoice_path')->store('invoices');
+            $invoicePath = $request->file('invoice_path')->store('notas_fiscais', 'local');
         }
 
         try {
@@ -233,12 +234,12 @@ class FreightController extends Controller
     public function startLoad(Request $request, Freight $freight)
     {
         try {
-            $shouldNotify = $freight->status !== Freight::STATUS_LOADING;
+            $shouldNotify = $freight->status !== FreightStatus::Loading;
 
             (new StartLoad)->execute($freight);
             $freight->refresh();
 
-            if ($shouldNotify && $freight->status === Freight::STATUS_LOADING) {
+            if ($shouldNotify && $freight->status === FreightStatus::Loading) {
                 $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
             }
 
@@ -252,12 +253,12 @@ class FreightController extends Controller
     public function startUnload(Request $request, Freight $freight)
     {
         try {
-            $shouldNotify = $freight->status !== Freight::STATUS_UNLOADING;
+            $shouldNotify = $freight->status !== FreightStatus::Unloading;
 
             (new StartUnload)->execute($freight);
             $freight->refresh();
 
-            if ($shouldNotify && $freight->status === Freight::STATUS_UNLOADING) {
+            if ($shouldNotify && $freight->status === FreightStatus::Unloading) {
                 $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
             }
 
@@ -267,18 +268,66 @@ class FreightController extends Controller
         }
     }
 
+    // ADMIN: Download nota fiscal
+    public function downloadInvoice(Request $request, Freight $freight)
+    {
+        abort_unless($request->user()->company_id === $freight->company_id, 403);
+
+        $attachment = $freight->attachments()->where('type', FreightAttachment::TYPE_INVOICE)->firstOrFail();
+
+        return $this->serveAttachment($attachment);
+    }
+
+    // ADMIN: Download attachment
+    public function downloadAttachment(Request $request, Freight $freight, FreightAttachment $attachment)
+    {
+        abort_unless($request->user()->company_id === $freight->company_id, 403);
+        abort_unless($attachment->freight_id === $freight->id, 404);
+
+        return $this->serveAttachment($attachment);
+    }
+
+    // CLIENT: Download nota fiscal (apenas o próprio cliente)
+    public function downloadInvoiceClient(Request $request, Freight $freight)
+    {
+        abort_unless($request->user()->id === $freight->user_id, 403);
+
+        $attachment = $freight->attachments()->where('type', FreightAttachment::TYPE_INVOICE)->firstOrFail();
+
+        return $this->serveAttachment($attachment);
+    }
+
+    private function serveAttachment(FreightAttachment $attachment)
+    {
+        // Tenta disco local primeiro; cai no disco padrão para arquivos legados
+        if (Storage::disk('local')->exists($attachment->path)) {
+            return Storage::disk('local')->download($attachment->path, $attachment->original_name ?? basename($attachment->path));
+        }
+
+        if (Storage::exists($attachment->path)) {
+            return Storage::download($attachment->path, $attachment->original_name ?? basename($attachment->path));
+        }
+
+        abort(404, 'Arquivo não encontrado.');
+    }
+
     private function storeAttachment(Freight $freight, UploadedFile $file, string $type, string $directory): void
     {
         $existing = $freight->attachments()->where('type', $type)->first();
         if ($existing) {
-            Storage::delete($existing->path);
+            // Tenta apagar do disco local primeiro; depois do disco padrão (legado)
+            if (Storage::disk('local')->exists($existing->path)) {
+                Storage::disk('local')->delete($existing->path);
+            } else {
+                Storage::delete($existing->path);
+            }
             $existing->delete();
         }
 
         $freight->attachments()->create([
             'company_id'    => $freight->company_id,
             'type'          => $type,
-            'path'          => $file->store($directory),
+            'path'          => $file->store($directory, 'local'),
             'original_name' => $file->getClientOriginalName(),
             'size_bytes'    => $file->getSize(),
             'mime_type'     => $file->getMimeType(),

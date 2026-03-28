@@ -7,12 +7,14 @@ use App\Http\Requests\Timeslot\StoreTimeslotRequest;
 use App\Http\Requests\Timeslot\UpdateTimeslotRequest;
 use App\Models\Doca;
 use App\Models\DropoffAddress;
+use App\Models\Freight;
 use App\Models\Produto;
 use App\Models\Timeslot;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,17 +22,43 @@ class TimeslotController extends Controller
 {
     public function dashboard(): Response
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         $arrStats = [
-            'total_timeslots' => Timeslot::count(),
-            'available_timeslots' => Timeslot::where('status', 'available')->count(),
-            'reserved_timeslots' => Timeslot::whereRaw(
+            'total_timeslots' => Timeslot::where('company_id', $user->company_id)->count(),
+            'available_timeslots' => Timeslot::where('company_id', $user->company_id)->where('status', 'available')->count(),
+            'reserved_timeslots' => Timeslot::where('company_id', $user->company_id)->whereRaw(
                 "(SELECT COUNT(*) FROM freights WHERE freights.timeslot_id = timeslots.id AND freights.status NOT IN ('cancelled')) > 0"
             )->count(),
-            'full_timeslots' => Timeslot::where('status', 'full')->count(),
+            'full_timeslots' => Timeslot::where('company_id', $user->company_id)->where('status', 'full')->count(),
         ];
+
+        // Ocupação dos timeslots nos próximos 7 dias
+        $today = now()->startOfDay();
+        $endDate = now()->addDays(6)->endOfDay();
+
+        $occupancyRaw = Freight::query()
+            ->join('timeslots', 'freights.timeslot_id', '=', 'timeslots.id')
+            ->where('freights.company_id', $user->company_id)
+            ->whereNotIn('freights.status', ['cancelled'])
+            ->whereBetween('timeslots.start_time', [$today, $endDate])
+            ->selectRaw("DATE(timeslots.start_time) as date, COUNT(*) as count")
+            ->groupByRaw("DATE(timeslots.start_time)")
+            ->pluck('count', 'date');
+
+        $arrOccupancy = [];
+        for ($i = 0; $i < 7; $i++) {
+            $strDate = now()->addDays($i)->format('Y-m-d');
+            $arrOccupancy[] = [
+                'date' => $strDate,
+                'count' => (int) ($occupancyRaw[$strDate] ?? 0),
+            ];
+        }
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => $arrStats,
+            'occupancy' => $arrOccupancy,
         ]);
     }
 

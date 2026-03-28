@@ -2,6 +2,8 @@
 
 namespace App\Actions\Freight;
 
+use App\Enums\FreightStatus;
+use App\Exceptions\Freight\FreightAlreadyCompletedException;
 use App\Models\Freight;
 use Illuminate\Support\Facades\DB;
 
@@ -19,50 +21,44 @@ class FinalizeOperation
         ?float $netWeight = null
     ): void {
         DB::transaction(function () use ($freight, $grossWeight, $netWeight) {
-            // Verificar status (não pode finalizar se estiver cancelled)
-            if ($freight->status === 'cancelled') {
-                throw new \Exception('Não é possível finalizar uma reserva cancelada.');
+            if ($freight->status === FreightStatus::Cancelled) {
+                throw new \RuntimeException('Não é possível finalizar uma reserva cancelada.');
             }
 
-            if ($freight->status === 'completed') {
-                throw new \Exception('Esta operação já foi finalizada.');
+            if ($freight->status === FreightStatus::Completed) {
+                throw new FreightAlreadyCompletedException();
             }
 
-            // Para descarga, pesos são obrigatórios
             if ($freight->operation_type === 'unload') {
                 if (! $grossWeight || ! $netWeight) {
-                    throw new \Exception('Para descarga, os pesos bruto e líquido são obrigatórios.');
+                    throw new \RuntimeException('Para descarga, os pesos bruto e líquido são obrigatórios.');
                 }
 
-                // Verificar se está em unloading
-                if ($freight->status !== 'unloading') {
-                    throw new \Exception("Para finalizar descarga, o status deve ser 'unloading'. Status atual: {$freight->status}");
+                if ($freight->status !== FreightStatus::Unloading) {
+                    throw new \RuntimeException("Para finalizar descarga, o status deve ser 'unloading'. Status atual: {$freight->status->value}");
                 }
 
-                // Atualizar pesos e status
                 $freight->update([
                     'gross_weight' => $grossWeight,
-                    'net_weight' => $netWeight,
-                    'status' => 'completed',
+                    'net_weight'   => $netWeight,
+                    'status'       => FreightStatus::Completed->value,
                 ]);
             } else {
-                // Para carga, verificar se está loading
-                if ($freight->status !== 'loading') {
-                    throw new \Exception("Para finalizar carga, o status deve ser 'loading'. Status atual: {$freight->status}");
+                if ($freight->status !== FreightStatus::Loading) {
+                    throw new \RuntimeException("Para finalizar carga, o status deve ser 'loading'. Status atual: {$freight->status->value}");
                 }
 
-                // Atualizar status e pesos (se fornecidos)
-                $updateData = ['status' => 'completed'];
+                $update = ['status' => FreightStatus::Completed->value];
 
                 if ($grossWeight !== null) {
-                    $updateData['gross_weight'] = $grossWeight;
+                    $update['gross_weight'] = $grossWeight;
                 }
 
                 if ($netWeight !== null) {
-                    $updateData['net_weight'] = $netWeight;
+                    $update['net_weight'] = $netWeight;
                 }
 
-                $freight->update($updateData);
+                $freight->update($update);
             }
         });
     }

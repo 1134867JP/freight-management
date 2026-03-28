@@ -12,33 +12,49 @@ return new class extends Migration
 
     public function up(): void
     {
-        try {
-            Schema::table('freights', function (Blueprint $table) {
-                $table->dropUnique('freights_timeslot_id_truck_plate_unique');
-            });
-        } catch (\Throwable $e) {
-            // índice legado pode não existir em ambientes novos
-        }
+        $driver = DB::connection()->getDriverName();
 
-        try {
+        if ($driver === 'sqlite') {
+            // SQLite: pula dropUnique (pode não existir) e cria o índice parcial de forma idempotente
             DB::statement("
-                CREATE UNIQUE INDEX freights_timeslot_id_truck_plate_active_unique
+                CREATE UNIQUE INDEX IF NOT EXISTS freights_timeslot_id_truck_plate_active_unique
                 ON freights (timeslot_id, truck_plate)
                 WHERE status != 'cancelled'
             ");
-        } catch (\Throwable $e) {
-            // índice já existe
+        } else {
+            // PostgreSQL e outros: fluxo original
+            try {
+                Schema::table('freights', function (Blueprint $table) {
+                    $table->dropUnique('freights_timeslot_id_truck_plate_unique');
+                });
+            } catch (\Throwable $e) {
+                // índice legado pode não existir em ambientes novos
+            }
+
+            try {
+                DB::statement("
+                    CREATE UNIQUE INDEX freights_timeslot_id_truck_plate_active_unique
+                    ON freights (timeslot_id, truck_plate)
+                    WHERE status != 'cancelled'
+                ");
+            } catch (\Throwable $e) {
+                // índice já existe
+            }
         }
     }
 
     public function down(): void
     {
-        DB::statement('
-            DROP INDEX IF EXISTS freights_timeslot_id_truck_plate_active_unique
-        ');
+        $driver = DB::connection()->getDriverName();
 
-        Schema::table('freights', function (Blueprint $table) {
-            $table->unique(['timeslot_id', 'truck_plate']);
-        });
+        if ($driver === 'sqlite') {
+            DB::statement('DROP INDEX IF EXISTS freights_timeslot_id_truck_plate_active_unique');
+        } else {
+            DB::statement('DROP INDEX IF EXISTS freights_timeslot_id_truck_plate_active_unique');
+
+            Schema::table('freights', function (Blueprint $table) {
+                $table->unique(['timeslot_id', 'truck_plate']);
+            });
+        }
     }
 };

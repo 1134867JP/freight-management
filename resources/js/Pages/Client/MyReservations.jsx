@@ -30,7 +30,7 @@ function AttachmentsCell({ freight, onUploadNF }) {
       <div className="flex flex-wrap gap-1.5">
         {invoiceAtt ? (
           <a
-            href={`/storage/${invoiceAtt.path}`}
+            href={invoiceAtt.client_url}
             target="_blank"
             rel="noreferrer"
             title="Ver nota fiscal"
@@ -46,7 +46,7 @@ function AttachmentsCell({ freight, onUploadNF }) {
 
         {adminAtt ? (
           <a
-            href={`/storage/${adminAtt.path}`}
+            href={adminAtt.admin_url}
             target="_blank"
             rel="noreferrer"
             title="Ver anexo"

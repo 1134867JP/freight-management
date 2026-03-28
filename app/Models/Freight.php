@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\FreightStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToCompany;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Produto;
-use App\Models\Doca;
 
 class Freight extends Model
 {
@@ -29,10 +29,29 @@ class Freight extends Model
     ];
 
     protected $casts = [
-        'weight' => 'decimal:2',
+        'weight'       => 'decimal:2',
         'gross_weight' => 'decimal:2',
-        'net_weight' => 'decimal:2',
+        'net_weight'   => 'decimal:2',
+        'status'       => FreightStatus::class,
     ];
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereNotIn('status', [
+            FreightStatus::Cancelled->value,
+            FreightStatus::Completed->value,
+        ]);
+    }
+
+    public function scopeCancelled(Builder $query): Builder
+    {
+        return $query->where('status', FreightStatus::Cancelled->value);
+    }
+
+    public function scopeCompleted(Builder $query): Builder
+    {
+        return $query->where('status', FreightStatus::Completed->value);
+    }
 
     public function user(): BelongsTo
     {

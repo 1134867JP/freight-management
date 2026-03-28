@@ -78,7 +78,106 @@ const quickLinks = [
   },
 ];
 
-export default function Dashboard({ stats }) {
+function OccupancyChart({ occupancy }) {
+  if (!occupancy || occupancy.length === 0) return null;
+
+  const maxCount = Math.max(...occupancy.map((d) => d.count), 1);
+  const chartHeight = 120;
+  const barWidth = 28;
+  const barGap = 12;
+  const chartWidth = occupancy.length * (barWidth + barGap) - barGap;
+  const paddingTop = 20;
+
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric' });
+  };
+
+  return (
+    <div className="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+      <div className="mb-4 flex items-center gap-2">
+        <span className="rounded-lg bg-indigo-100 p-1.5 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
+            <path d="M3 3v18h18M7 16v-4m4 4V9m4 7v-7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          </svg>
+        </span>
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Ocupação — próximos 7 dias</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Reservas ativas por dia</p>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <svg
+          width={chartWidth}
+          height={chartHeight + paddingTop + 32}
+          className="min-w-full"
+          style={{ minWidth: chartWidth }}
+        >
+          {/* Grid lines */}
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+            const y = paddingTop + chartHeight - ratio * chartHeight;
+            return (
+              <line
+                key={ratio}
+                x1={0}
+                y1={y}
+                x2={chartWidth}
+                y2={y}
+                stroke="currentColor"
+                strokeWidth="0.5"
+                className="text-gray-200 dark:text-gray-700"
+              />
+            );
+          })}
+
+          {occupancy.map((item, i) => {
+            const barHeight = maxCount > 0 ? (item.count / maxCount) * chartHeight : 0;
+            const x = i * (barWidth + barGap);
+            const y = paddingTop + chartHeight - barHeight;
+            const isEmpty = item.count === 0;
+
+            return (
+              <g key={item.date}>
+                <rect
+                  x={x}
+                  y={isEmpty ? paddingTop + chartHeight - 3 : y}
+                  width={barWidth}
+                  height={isEmpty ? 3 : barHeight}
+                  rx={4}
+                  className={isEmpty ? 'fill-gray-200 dark:fill-gray-700' : 'fill-indigo-500 dark:fill-indigo-400'}
+                />
+                {item.count > 0 && (
+                  <text
+                    x={x + barWidth / 2}
+                    y={y - 4}
+                    textAnchor="middle"
+                    className="fill-gray-700 dark:fill-gray-300"
+                    fontSize="10"
+                    fontWeight="600"
+                  >
+                    {item.count}
+                  </text>
+                )}
+                <text
+                  x={x + barWidth / 2}
+                  y={paddingTop + chartHeight + 18}
+                  textAnchor="middle"
+                  className="fill-gray-500 dark:fill-gray-400"
+                  fontSize="9"
+                >
+                  {formatDate(item.date)}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+export default function Dashboard({ stats, occupancy }) {
   return (
     <AuthenticatedLayout
       header={<PageHeader title="Painel do Administrador" subtitle="Visão geral das operações" />}
@@ -102,6 +201,8 @@ export default function Dashboard({ stats }) {
               </div>
             ))}
           </div>
+
+          <OccupancyChart occupancy={occupancy} />
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {quickLinks.map((link) => (

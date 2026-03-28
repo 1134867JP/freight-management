@@ -2,6 +2,10 @@
 
 namespace App\Actions\Freight;
 
+use App\Enums\FreightStatus;
+use App\Exceptions\Freight\DuplicateActivePlateException;
+use App\Exceptions\Freight\FreightAlreadyCompletedException;
+use App\Exceptions\Freight\TimeslotCapacityExceededException;
 use App\Models\Freight;
 use App\Models\Timeslot;
 use Illuminate\Support\Facades\DB;
@@ -15,60 +19,62 @@ class ReopenReservation
     public function execute(Freight $freight): void
     {
         DB::transaction(function () use ($freight) {
-            /** @var Freight $objFreight */
-            $objFreight = Freight::query()
+            /** @var Freight $locked */
+            $locked = Freight::query()
                 ->lockForUpdate()
                 ->findOrFail($freight->id);
 
-            if ($objFreight->status === 'completed') {
-                throw new \Exception('Não é possível reabrir uma reserva concluída.');
+            if ($locked->status === FreightStatus::Completed) {
+                throw new FreightAlreadyCompletedException();
             }
 
-            if ($objFreight->status !== 'cancelled') {
-                throw new \Exception('Apenas reservas canceladas podem ser reabertas.');
+            if ($locked->status !== FreightStatus::Cancelled) {
+                throw new \RuntimeException('Apenas reservas canceladas podem ser reabertas.');
             }
 
-            /** @var Timeslot|null $objTimeslot */
-            $objTimeslot = Timeslot::query()
+            /** @var Timeslot|null $timeslot */
+            $timeslot = Timeslot::query()
                 ->lockForUpdate()
-                ->find($objFreight->timeslot_id);
+                ->find($locked->timeslot_id);
 
-            if (! $objTimeslot) {
-                throw new \Exception('Timeslot não encontrado para esta reserva.');
+            if (! $timeslot) {
+                throw new \RuntimeException('Timeslot não encontrado para esta reserva.');
             }
 
-            if ($objTimeslot->status === 'closed') {
-                throw new \Exception('Não é possível reabrir reserva em um timeslot fechado.');
+            if ($timeslot->status === 'closed') {
+                throw new \RuntimeException('Não é possível reabrir reserva em um timeslot fechado.');
             }
 
-            if ($objTimeslot->current_reservations >= (int) $objTimeslot->capacity) {
-                throw new \Exception('Não há capacidade disponível para reabrir esta reserva.');
+            if ($timeslot->current_reservations >= (int) $timeslot->capacity) {
+                throw new TimeslotCapacityExceededException();
             }
 
             if (
-                $objTimeslot->operation_type !== 'both'
-                && $objTimeslot->operation_type !== $objFreight->operation_type
+                $timeslot->operation_type !== 'both'
+                && $timeslot->operation_type !== $locked->operation_type
             ) {
-                throw new \Exception('O timeslot não permite mais esta operação.');
+                throw new \RuntimeException('O timeslot não permite mais esta operação.');
             }
 
-            $blHasDuplicateActiveFreight = Freight::query()
-                ->where('timeslot_id', $objFreight->timeslot_id)
-                ->where('truck_plate', strtoupper($objFreight->truck_plate))
-                ->where('status', '!=', 'cancelled')
-                ->where('id', '!=', $objFreight->id)
+            $hasDuplicate = Freight::query()
+                ->where('timeslot_id', $locked->timeslot_id)
+                ->where('truck_plate', strtoupper($locked->truck_plate))
+                ->where('status', '!=', FreightStatus::Cancelled->value)
+                ->where('id', '!=', $locked->id)
                 ->exists();
 
-            if ($blHasDuplicateActiveFreight) {
-                throw new \Exception('Já existe uma reserva ativa para esta placa neste horário.');
+            if ($hasDuplicate) {
+                throw new DuplicateActivePlateException();
             }
 
-            $objFreight->update([
-                'status' => $objFreight->operation_type === 'load' ? 'loading' : 'unloading',
+            $locked->update([
+                'status' => $locked->operation_type === 'load'
+                    ? FreightStatus::Loading->value
+                    : FreightStatus::Unloading->value,
             ]);
 
-            $objTimeslot->clampReservations();
-            $objTimeslot->save();
+            $timeslot->clampReservations();
+            $timeslot->save();
         });
     }
 }

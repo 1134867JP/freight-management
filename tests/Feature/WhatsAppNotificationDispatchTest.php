@@ -99,7 +99,7 @@ class WhatsAppNotificationDispatchTest extends TestCase
             'status' => Freight::STATUS_LOADING,
         ]);
 
-        $response = $this->actingAs($admin)->patch(route('freights.finalizarOperacao', $freight), [
+        $response = $this->actingAs($admin)->patch(route('freights.finalize-operation', $freight), [
             'gross_weight' => '2500.50',
             'net_weight' => '1900.25',
             'admin_notes' => 'Operação concluída sem ressalvas.',

@@ -9,7 +9,7 @@ export default function FreightAttachmentsCell({ freight, onOpenAttachmentModal 
       <div className="flex flex-wrap gap-1.5">
         {invoiceAttachment ? (
           <a
-            href={`/storage/${invoiceAttachment.path}`}
+            href={invoiceAttachment.admin_url}
             target="_blank"
             rel="noreferrer"
             title="Ver nota fiscal"
@@ -25,7 +25,7 @@ export default function FreightAttachmentsCell({ freight, onOpenAttachmentModal 
 
         {adminAttachment ? (
           <a
-            href={`/storage/${adminAttachment.path}`}
+            href={adminAttachment.admin_url}
             target="_blank"
             rel="noreferrer"
             title="Ver anexo admin"

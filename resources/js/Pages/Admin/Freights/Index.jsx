@@ -143,6 +143,16 @@ export default function Index({ freights }) {
     setFilterDate('');
   };
 
+  const exportCsvUrl = () => {
+    const params = new URLSearchParams();
+    if (filterOp !== 'all') params.set('operation_type', filterOp);
+    if (filterStatus !== 'all') params.set('status', filterStatus);
+    if (filterDate) params.set('date_from', filterDate);
+    if (filterDate) params.set('date_to', filterDate);
+    const qs = params.toString();
+    return route('admin.freights.export') + (qs ? '?' + qs : '');
+  };
+
   const openAttachmentModal = (objFreight) => {
     setAttachmentModal({ open: true, freight: objFreight });
     setAttachmentFile(null);
@@ -245,13 +255,24 @@ export default function Index({ freights }) {
                   className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
 
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                >
-                  Limpar filtros
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  >
+                    Limpar filtros
+                  </button>
+                  <a
+                    href={exportCsvUrl()}
+                    className="flex items-center gap-1.5 rounded-md border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                    </svg>
+                    CSV
+                  </a>
+                </div>
               </div>
             </div>
 

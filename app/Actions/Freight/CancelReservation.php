@@ -2,6 +2,8 @@
 
 namespace App\Actions\Freight;
 
+use App\Enums\FreightStatus;
+use App\Exceptions\Freight\FreightAlreadyCancelledException;
 use App\Models\Freight;
 use Illuminate\Support\Facades\DB;
 
@@ -13,20 +15,20 @@ class CancelReservation
     public function execute(Freight $freight, ?string $adminNotes = null): bool
     {
         return DB::transaction(function () use ($freight, $adminNotes) {
-            if ($freight->status === 'completed') {
-                throw new \Exception('Não é possível cancelar uma operação já finalizada.');
+            if ($freight->status === FreightStatus::Completed) {
+                throw new FreightAlreadyCancelledException();
             }
 
-            if ($freight->status === 'cancelled') {
+            if ($freight->status === FreightStatus::Cancelled) {
                 return false;
             }
 
-            $arrUpdate = ['status' => 'cancelled'];
+            $update = ['status' => FreightStatus::Cancelled->value];
             if ($adminNotes) {
-                $arrUpdate['admin_notes'] = $adminNotes;
+                $update['admin_notes'] = $adminNotes;
             }
 
-            $freight->update($arrUpdate);
+            $freight->update($update);
 
             $timeslot = $freight->timeslot;
             if ($timeslot) {

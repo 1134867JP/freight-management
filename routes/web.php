@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FreightExportController;
 use App\Http\Controllers\AdminManagementController;
 use App\Http\Controllers\EmployeeManagementController;
 use App\Http\Controllers\AuditLogController;
@@ -50,11 +51,14 @@ Route::middleware('auth')->group(function () {
         ]);
 
         Route::get('/freights', [FreightController::class, 'approvalList'])->name('freights.approvalList');
+        Route::get('/freights/export', FreightExportController::class)->name('admin.freights.export');
         Route::patch('/freights/{freight}/reject', [FreightController::class, 'reject'])->name('freights.reject');
         Route::patch('/freights/{freight}/start-load', [FreightController::class, 'startLoad'])->name('freights.start-load');
         Route::patch('/freights/{freight}/start-unload', [FreightController::class, 'startUnload'])->name('freights.start-unload');
         Route::patch('/freights/{freight}/finalize-operation', [FreightController::class, 'finalizeOperation'])->name('freights.finalize-operation');
         Route::post('/freights/{freight}/add-attachment', [FreightController::class, 'addAttachment'])->name('freights.add-attachment');
+        Route::get('/freights/{freight}/nota-fiscal', [FreightController::class, 'downloadInvoice'])->name('freights.download-invoice');
+        Route::get('/freights/{freight}/attachments/{attachment}', [FreightController::class, 'downloadAttachment'])->name('freights.download-attachment');
 
         // Gerenciamento de clientes
         Route::get('/clients', [ClientManagementController::class, 'index'])->name('clients.index');
@@ -113,8 +117,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/my-reservations/{freight}', [FreightController::class, 'cancelMyReservation'])->name('client.reservations.cancel');
         Route::patch('/my-reservations/{freight}/reopen', [FreightController::class, 'reopenMyReservation'])->name('client.reservations.reopen');
 
-        // Upload de nota fiscal
+        // Upload e download de nota fiscal
         Route::post('/my-reservations/{freight}/upload-invoice', [FreightController::class, 'uploadInvoice'])->name('client.upload-invoice');
+        Route::get('/freights/{freight}/nota-fiscal', [FreightController::class, 'downloadInvoiceClient'])->name('client.download-invoice');
 
         // Relatórios do cliente
         Route::get('/reports/reservations', [ReportController::class, 'clientReservations'])->name('reports.client.reservations');

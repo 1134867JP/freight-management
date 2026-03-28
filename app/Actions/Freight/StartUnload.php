@@ -2,6 +2,8 @@
 
 namespace App\Actions\Freight;
 
+use App\Enums\FreightStatus;
+use App\Exceptions\Freight\FreightAlreadyCompletedException;
 use App\Models\Freight;
 use Illuminate\Support\Facades\DB;
 
@@ -13,34 +15,24 @@ class StartUnload
      */
     public function execute(Freight $freight): void
     {
-        $blStarted = DB::transaction(function () use ($freight) {
-            // Verificar se é unload
+        DB::transaction(function () use ($freight) {
             if ($freight->operation_type !== 'unload') {
-                throw new \Exception('Esta ação é válida apenas para operações de descarga.');
+                throw new \RuntimeException('Esta ação é válida apenas para operações de descarga.');
             }
 
-            // Verificar status (não pode iniciar se estiver cancelled ou completed)
-            if ($freight->status === 'cancelled') {
-                throw new \Exception('Não é possível iniciar uma reserva cancelada.');
+            if ($freight->status === FreightStatus::Cancelled) {
+                throw new \RuntimeException('Não é possível iniciar uma reserva cancelada.');
             }
 
-            if ($freight->status === 'completed') {
-                throw new \Exception('Esta operação já foi finalizada.');
+            if ($freight->status === FreightStatus::Completed) {
+                throw new FreightAlreadyCompletedException();
             }
 
-            // Se já está unloading, não fazer nada
-            if ($freight->status === 'unloading') {
-                return false;
+            if ($freight->status === FreightStatus::Unloading) {
+                return;
             }
 
-            // Atualizar status
-            $freight->update(['status' => 'unloading']);
-
-            return true;
+            $freight->update(['status' => FreightStatus::Unloading->value]);
         });
-
-        if (! $blStarted) {
-            return;
-        }
     }
 }
