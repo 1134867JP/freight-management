@@ -2,20 +2,22 @@
 
 use App\Http\Controllers\Admin\FreightExportController;
 use App\Http\Controllers\AdminManagementController;
-use App\Http\Controllers\EmployeeManagementController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ClientManagementController;
-use App\Http\Controllers\DocaController;
-use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocaController;
 use App\Http\Controllers\DropoffAddressController;
+use App\Http\Controllers\EmployeeManagementController;
 use App\Http\Controllers\FreightController;
+use App\Http\Controllers\GateController;
 use App\Http\Controllers\PlatformCompanyController;
 use App\Http\Controllers\PlatformCompanyInstanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TimeslotController;
 use App\Http\Controllers\TruckController;
+use App\Http\Controllers\YardBoardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'root'])->name('home');
@@ -23,6 +25,9 @@ Route::get('/', [DashboardController::class, 'root'])->name('home');
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
+    // -------------------------
+    // ROTAS DO PLATAFORMA
+    // -------------------------
     Route::middleware('platform_admin')->prefix('platform')->group(function () {
         Route::get('/', [PlatformCompanyController::class, 'index'])->name('platform.dashboard');
         Route::get('/companies', [PlatformCompanyController::class, 'index'])->name('platform.companies.index');
@@ -43,12 +48,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/agenda', [TimeslotController::class, 'agenda'])->name('admin.agenda');
 
         Route::resource('timeslots', TimeslotController::class)->except(['show']);
-        Route::resource('dropoff-addresses', DropoffAddressController::class)->only([
-            'index',
-            'store',
-            'update',
-            'destroy',
-        ]);
+        Route::resource('dropoff-addresses', DropoffAddressController::class)->only(['index', 'store', 'update', 'destroy']);
 
         Route::get('/freights', [FreightController::class, 'approvalList'])->name('freights.approvalList');
         Route::get('/freights/export', FreightExportController::class)->name('admin.freights.export');
@@ -60,26 +60,32 @@ Route::middleware('auth')->group(function () {
         Route::get('/freights/{freight}/nota-fiscal', [FreightController::class, 'downloadInvoice'])->name('freights.download-invoice');
         Route::get('/freights/{freight}/attachments/{attachment}', [FreightController::class, 'downloadAttachment'])->name('freights.download-attachment');
 
+        // Yard Board (painel em tempo real)
+        Route::get('/yard-board', [YardBoardController::class, 'index'])->name('admin.yard-board');
+        Route::get('/yard-board/data', [YardBoardController::class, 'data'])->name('admin.yard-board.data');
+
+        // Portaria (gate management)
+        Route::get('/gate', [GateController::class, 'index'])->name('admin.gate');
+        Route::patch('/freights/{freight}/gate-checkin', [GateController::class, 'checkIn'])->name('freights.gate-checkin');
+        Route::patch('/freights/{freight}/gate-checkout', [GateController::class, 'checkOut'])->name('freights.gate-checkout');
+
         // Gerenciamento de clientes
-        Route::get('/clients', [ClientManagementController::class, 'index'])->name('clients.index');
-        Route::post('/clients', [ClientManagementController::class, 'store'])->name('clients.store');
-        Route::patch('/clients/{user}', [ClientManagementController::class, 'update'])->name('clients.update');
-        Route::delete('/clients/{user}', [ClientManagementController::class, 'destroy'])->name('clients.destroy');
+        Route::resource('clients', ClientManagementController::class)
+            ->only(['index', 'store', 'update', 'destroy'])
+            ->parameters(['clients' => 'user']);
 
         // Produtos
-        Route::get('/produtos', [ProdutoController::class, 'index'])->name('produtos.index');
-        Route::post('/produtos', [ProdutoController::class, 'store'])->name('produtos.store');
-        Route::patch('/produtos/{produto}', [ProdutoController::class, 'update'])->name('produtos.update');
-        Route::delete('/produtos/{produto}', [ProdutoController::class, 'destroy'])->name('produtos.destroy');
+        Route::resource('produtos', ProdutoController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
 
         // Docas
-        Route::get('/docas', [DocaController::class, 'index'])->name('docas.index');
-        Route::post('/docas', [DocaController::class, 'store'])->name('docas.store');
-        Route::patch('/docas/{doca}', [DocaController::class, 'update'])->name('docas.update');
-        Route::delete('/docas/{doca}', [DocaController::class, 'destroy'])->name('docas.destroy');
+        Route::resource('docas', DocaController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
 
         // Logs de auditoria
-        Route::middleware('permission:view_audit_logs')->get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+        Route::middleware('permission:view_audit_logs')
+            ->get('/audit-logs', [AuditLogController::class, 'index'])
+            ->name('audit-logs.index');
 
         // Relatórios
         Route::get('/reports/timeslots', [ReportController::class, 'adminTimeslots'])->name('reports.admin.timeslots');
@@ -89,18 +95,16 @@ Route::middleware('auth')->group(function () {
 
         // Gerenciamento de administradores
         Route::middleware('permission:manage_admins')->group(function () {
-            Route::get('/admins', [AdminManagementController::class, 'index'])->name('admins.index');
-            Route::post('/admins', [AdminManagementController::class, 'store'])->name('admins.store');
-            Route::patch('/admins/{admin_user}', [AdminManagementController::class, 'update'])->name('admins.update');
-            Route::delete('/admins/{admin_user}', [AdminManagementController::class, 'destroy'])->name('admins.destroy');
+            Route::resource('admins', AdminManagementController::class)
+                ->only(['index', 'store', 'update', 'destroy'])
+                ->parameters(['admins' => 'admin_user']);
         });
 
         // Gerenciamento de funcionários
         Route::middleware('permission:manage_employees')->group(function () {
-            Route::get('/employees', [EmployeeManagementController::class, 'index'])->name('employees.index');
-            Route::post('/employees', [EmployeeManagementController::class, 'store'])->name('employees.store');
-            Route::patch('/employees/{employee_user}', [EmployeeManagementController::class, 'update'])->name('employees.update');
-            Route::delete('/employees/{employee_user}', [EmployeeManagementController::class, 'destroy'])->name('employees.destroy');
+            Route::resource('employees', EmployeeManagementController::class)
+                ->only(['index', 'store', 'update', 'destroy'])
+                ->parameters(['employees' => 'employee_user']);
             Route::patch('/employees/{employee_user}/permissions', [EmployeeManagementController::class, 'updatePermissions'])->name('employees.permissions');
         });
     });

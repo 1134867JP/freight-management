@@ -16,6 +16,7 @@ use App\Http\Requests\Freight\UploadInvoiceRequest;
 use App\Models\Freight;
 use App\Models\FreightAttachment;
 use App\Models\Timeslot;
+use App\Services\FreightEmailNotifier;
 use App\Services\WhatsApp\FreightWhatsAppNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -26,6 +27,7 @@ class FreightController extends Controller
 {
     public function __construct(
         private readonly FreightWhatsAppNotifier $whatsAppNotifier,
+        private readonly FreightEmailNotifier $emailNotifier,
     ) {}
 
     // ADMIN: List freights
@@ -49,6 +51,7 @@ class FreightController extends Controller
 
             if ($cancelled) {
                 $this->whatsAppNotifier->notifyClientReservationRejected($freight, $request->user());
+                $this->emailNotifier->notifyClientReservationRejected($freight, $request->user());
             }
 
             return redirect()->back()->with('success', 'Reserva rejeitada.');
@@ -126,6 +129,7 @@ class FreightController extends Controller
             }
 
             $this->whatsAppNotifier->notifyAdminReservationCreated($freight);
+            $this->emailNotifier->notifyAdminReservationCreated($freight);
 
             return redirect()->route('client.reservations')->with('success', 'Reserva criada com sucesso!');
         } catch (\Throwable $e) {
@@ -147,6 +151,7 @@ class FreightController extends Controller
             if ($cancelled) {
                 $freight->refresh();
                 $this->whatsAppNotifier->notifyAdminReservationCancelled($freight, $request->user());
+                $this->emailNotifier->notifyAdminReservationCancelled($freight, $request->user());
             }
 
             return redirect()->back()->with('success', 'Reserva cancelada com sucesso.');
@@ -164,6 +169,7 @@ class FreightController extends Controller
             (new ReopenReservation)->execute($freight);
             $freight->refresh();
             $this->whatsAppNotifier->notifyAdminReservationReopened($freight, $request->user());
+            $this->emailNotifier->notifyAdminReservationReopened($freight, $request->user());
 
             return redirect()->back()->with('success', 'Reserva reaberta com sucesso.');
         } catch (\Throwable $e) {
@@ -190,6 +196,7 @@ class FreightController extends Controller
 
         $freight->refresh();
         $this->whatsAppNotifier->notifyAdminNotaFiscalUploaded($freight, $request->user());
+        $this->emailNotifier->notifyAdminNotaFiscalUploaded($freight, $request->user());
 
         return redirect()->back()->with('success', 'Nota fiscal enviada com sucesso!');
     }
@@ -212,6 +219,7 @@ class FreightController extends Controller
 
             $freight->refresh();
             $this->whatsAppNotifier->notifyClientOperationFinished($freight, $request->user());
+            $this->emailNotifier->notifyClientOperationFinished($freight, $request->user());
 
             return redirect()->back()->with('success', 'Operação finalizada com sucesso!');
         } catch (\Throwable $e) {
@@ -226,6 +234,7 @@ class FreightController extends Controller
 
         $freight->refresh();
         $this->whatsAppNotifier->notifyClientAttachmentAdded($freight, $request->user());
+        $this->emailNotifier->notifyClientAttachmentAdded($freight, $request->user());
 
         return redirect()->back()->with('success', 'Anexo adicionado com sucesso!');
     }
@@ -241,6 +250,7 @@ class FreightController extends Controller
 
             if ($shouldNotify && $freight->status === FreightStatus::Loading) {
                 $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
+                $this->emailNotifier->notifyClientOperationStarted($freight, $request->user());
             }
 
             return redirect()->back()->with('success', 'Carregamento iniciado!');
@@ -260,6 +270,7 @@ class FreightController extends Controller
 
             if ($shouldNotify && $freight->status === FreightStatus::Unloading) {
                 $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
+                $this->emailNotifier->notifyClientOperationStarted($freight, $request->user());
             }
 
             return redirect()->back()->with('success', 'Descarga iniciada!');

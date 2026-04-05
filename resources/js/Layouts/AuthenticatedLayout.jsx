@@ -48,6 +48,8 @@ export default function AuthenticatedLayout({ header, children }) {
           section: 'Operação',
           items: [
             { label: 'Painel', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
+            { label: 'Painel do Pátio', href: route('admin.yard-board'), active: route().current('admin.yard-board'), icon: 'yardboard' },
+            { label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' },
             { label: 'Cotas', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
             { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda'), icon: 'schedule' },
             { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
@@ -427,6 +429,10 @@ function MenuIcon({ name, className = '' }) {
       'M21 8l-9-5-9 5v9l9 5 9-5V8ZM3 8l9 5 9-5M12 13v9',
     dock:
       'M2 20V9l10-6 10 6v11H2ZM9 20v-6h6v6',
+    yardboard:
+      'M3 3h7v7H3V3Zm0 11h7v7H3v-7Zm11-11h7v7h-7V3Zm0 11h7v7h-7v-7Z',
+    gate:
+      'M3 12h18M3 12V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7M3 12v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M9 12v4m6-4v4',
   };
 
   const strPath = objPaths[name] || objPaths.dashboard;

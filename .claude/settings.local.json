@@ -8,7 +8,10 @@
       "Bash(docker exec:*)",
       "Bash(MSYS_NO_PATHCONV=1 docker exec freight-management-app-fpm-1 ls //var/www/html/public/hot)",
       "Bash(MSYS_NO_PATHCONV=1 docker exec freight-management-app-fpm-1 rm -f //var/www/html/public/hot)",
-      "Bash(MSYS_NO_PATHCONV=1 docker exec freight-management-web-1 rm -f //var/www/html/public/hot)"
+      "Bash(MSYS_NO_PATHCONV=1 docker exec freight-management-web-1 rm -f //var/www/html/public/hot)",
+      "Bash(find c:UsersjoperOneDriveDocumentosfreight-managementappNotifications -type f -name *.php)",
+      "Bash(npm run:*)",
+      "Bash(php -r \"require ''vendor/autoload.php''; $app = require ''bootstrap/app.php''; $app->make\\(\\\\Illuminate\\\\Contracts\\\\Console\\\\Kernel::class\\)->bootstrap\\(\\); echo ''OK'';\")"
     ]
   }
 }

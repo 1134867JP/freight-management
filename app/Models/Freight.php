@@ -25,7 +25,7 @@ class Freight extends Model
     protected $fillable = [
         'company_id', 'user_id', 'timeslot_id', 'produto_id', 'doca_id', 'truck_id', 'operation_type',
         'truck_plate', 'driver_name', 'cargo_description', 'weight', 'gross_weight', 'net_weight',
-        'status', 'admin_notes',
+        'status', 'admin_notes', 'arrived_at', 'departed_at',
     ];
 
     protected $casts = [
@@ -33,6 +33,8 @@ class Freight extends Model
         'gross_weight' => 'decimal:2',
         'net_weight'   => 'decimal:2',
         'status'       => FreightStatus::class,
+        'arrived_at'   => 'datetime',
+        'departed_at'  => 'datetime',
     ];
 
     public function scopeActive(Builder $query): Builder
