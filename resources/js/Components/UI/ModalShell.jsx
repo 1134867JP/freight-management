@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 function XIcon() {
   return (
@@ -16,11 +16,41 @@ export default function ModalShell({
   footer = null,
   maxWidthClass = 'max-w-md',
 }) {
-  if (!show) return null;
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (show) {
+      setMounted(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setVisible(true));
+      });
+    } else {
+      setVisible(false);
+      const t = setTimeout(() => setMounted(false), 200);
+      return () => clearTimeout(t);
+    }
+  }, [show]);
+
+  if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className={`w-full rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800 ${maxWidthClass}`}>
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-200 ease-out ${
+        visible ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <div
+        className={`relative w-full rounded-xl border border-gray-200 bg-white shadow-2xl transition-all duration-200 ease-out dark:border-gray-700 dark:bg-gray-800 ${maxWidthClass} ${
+          visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+        }`}
+      >
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
           <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
           <button
