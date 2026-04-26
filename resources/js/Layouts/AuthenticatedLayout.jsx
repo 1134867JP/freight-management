@@ -113,10 +113,10 @@ export default function AuthenticatedLayout({ header, children }) {
   const SideLink = ({ href, active, label, icon }) => (
     <Link
       href={href}
-      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
         active
-          ? 'bg-teal-700 text-white'
-          : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+          ? 'border-l-2 border-teal-400 bg-teal-700 pl-[10px] text-white'
+          : 'border-l-2 border-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
       }`}
     >
       {icon && <MenuIcon name={icon} className="h-4 w-4 shrink-0" />}
