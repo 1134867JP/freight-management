@@ -202,7 +202,7 @@ class FreightActionsTest extends TestCase
 
         $countBefore = $this->timeslot->fresh()->current_reservations;
 
-        $result = (new CancelReservation)->execute($freight);
+        $result = app(CancelReservation::class)->execute($freight);
 
         $this->assertTrue($result);
         $this->assertDatabaseHas('freights', ['id' => $freight->id, 'status' => 'cancelled']);
@@ -226,7 +226,7 @@ class FreightActionsTest extends TestCase
 
         $this->expectException(\Exception::class);
 
-        (new CancelReservation)->execute($freight);
+        app(CancelReservation::class)->execute($freight);
     }
 
     // ──────────────────────────────────────────────────────────────────
@@ -374,7 +374,7 @@ class FreightActionsTest extends TestCase
             'status' => 'unloading',
         ]);
 
-        (new FinalizeOperation)->execute($freight, 2500.50, 1900.25);
+        app(FinalizeOperation::class)->execute($freight, 2500.50, 1900.25);
 
         $this->assertDatabaseHas('freights', [
             'id' => $freight->id,
@@ -399,6 +399,6 @@ class FreightActionsTest extends TestCase
 
         $this->expectException(\Exception::class);
 
-        (new FinalizeOperation)->execute($freight);
+        app(FinalizeOperation::class)->execute($freight);
     }
 }

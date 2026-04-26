@@ -82,6 +82,12 @@ Route::middleware('auth')->group(function () {
         Route::resource('docas', DocaController::class)
             ->only(['index', 'store', 'update', 'destroy']);
 
+        Route::patch('/freights/{freight}/assign-doca', [DocaController::class, 'assign'])
+            ->name('freights.assignDoca');
+
+        Route::patch('/freights/{freight}/release-doca', [DocaController::class, 'release'])
+            ->name('freights.releaseDoca');
+
         // Logs de auditoria
         Route::middleware('permission:view_audit_logs')
             ->get('/audit-logs', [AuditLogController::class, 'index'])

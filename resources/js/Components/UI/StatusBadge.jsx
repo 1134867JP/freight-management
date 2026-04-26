@@ -6,6 +6,7 @@ const arrToneClasses = {
   success: 'bg-green-50 text-green-700 ring-green-200 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-800',
   warning: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:ring-amber-800',
   danger: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-800',
+  violet: 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:ring-violet-800',
 };
 
 const arrDotClasses = {
@@ -14,6 +15,7 @@ const arrDotClasses = {
   success: 'bg-green-500 dark:bg-green-400',
   warning: 'bg-amber-500 dark:bg-amber-400',
   danger: 'bg-red-500 dark:bg-red-400',
+  violet: 'bg-violet-500 dark:bg-violet-400',
 };
 
 export default function StatusBadge({ label, tone = 'neutral', className = '' }) {

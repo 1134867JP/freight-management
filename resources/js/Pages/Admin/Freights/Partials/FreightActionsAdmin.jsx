@@ -1,7 +1,6 @@
 import React from 'react';
-import { getFinalizeButtonLabel, getStartButtonLabel } from '@/Features/Freight/utils/freightPresentation';
 
-export default function FreightActionsAdmin({ freight, onCancel, onStart, onOpenFinalize }) {
+export default function FreightActionsAdmin({ freight, onCancel, onStart, onOpenFinalize, onOpenAssignDoca }) {
   const strStatus = freight.status;
   const blInProgress = strStatus === 'loading' || strStatus === 'unloading';
   const blTerminal = strStatus === 'completed' || strStatus === 'cancelled';
@@ -10,7 +9,8 @@ export default function FreightActionsAdmin({ freight, onCancel, onStart, onOpen
   const canStart = blReserved;
   const canFinalize = blInProgress;
   const canCancel = blReserved || blInProgress;
-  const hasOperationalActions = canStart || canFinalize || canCancel;
+  const canAssignDoca = blInProgress;
+  const hasOperationalActions = canStart || canFinalize || canCancel || canAssignDoca;
 
   const baseButtonClass =
     'inline-flex items-center justify-center rounded-md border px-2.5 py-1.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 whitespace-nowrap';
@@ -38,6 +38,16 @@ export default function FreightActionsAdmin({ freight, onCancel, onStart, onOpen
             className={`${baseButtonClass} border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500`}
           >
             {finalizeLabel}
+          </button>
+        )}
+
+        {canAssignDoca && (
+          <button
+            type="button"
+            onClick={() => onOpenAssignDoca(freight)}
+            className={`${baseButtonClass} border-teal-500 bg-white text-teal-700 hover:bg-teal-50 focus:ring-teal-500 dark:bg-transparent dark:text-teal-400 dark:hover:bg-teal-950/40`}
+          >
+            {freight.doca ? `Doca: ${freight.doca.codigo || freight.doca.nome}` : 'Atribuir doca'}
           </button>
         )}
 

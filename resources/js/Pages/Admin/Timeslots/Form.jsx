@@ -52,13 +52,14 @@ export default function Form({ timeslot, clients, addresses, produtos, docas, de
     <AuthenticatedLayout
       header={
         <PageHeader
-          title={isEditing ? 'Editar Horario' : 'Novo Horario'}
+          title={isEditing ? 'Editar Horário' : 'Novo Horário'}
+          subtitle={isEditing ? 'Altere os dados do horário e salve' : 'Preencha os dados para criar um novo horário'}
           actions={
             <Link
               href={route('timeslots.index')}
-              className="rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             >
-              Voltar
+              ← Voltar
             </Link>
           }
         />
@@ -70,7 +71,7 @@ export default function Form({ timeslot, clients, addresses, produtos, docas, de
         <div className="mx-auto max-w-5xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <TimeslotForm
               form={form}
               clients={clients}

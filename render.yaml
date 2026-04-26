@@ -26,7 +26,7 @@ envVarGroups:
       - key: DB_CONNECTION
         value: pgsql
       - key: SESSION_DRIVER
-        value: database
+        value: redis
       - key: SESSION_LIFETIME
         value: "120"
       - key: SESSION_SECURE_COOKIE
@@ -36,9 +36,11 @@ envVarGroups:
       - key: SESSION_SAME_SITE
         value: lax
       - key: QUEUE_CONNECTION
-        value: database
+        value: redis
       - key: CACHE_STORE
-        value: database
+        value: redis
+      - key: REDIS_CLIENT
+        value: predis
       - key: FILESYSTEM_DISK
         value: public
       - key: MAIL_MAILER
@@ -79,6 +81,24 @@ services:
         fromDatabase:
           name: freight-management-db
           property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: freight-management-redis
+          property: connectionString
+      # Variáveis Reverb (definir manualmente no dashboard do Render após reverb:install)
+      - key: REVERB_APP_ID
+        sync: false
+      - key: REVERB_APP_KEY
+        sync: false
+      - key: REVERB_APP_SECRET
+        sync: false
+      - key: REVERB_HOST
+        sync: false
+      - key: REVERB_PORT
+        value: "8080"
+      - key: REVERB_SCHEME
+        value: https
 
   - type: worker
     name: freight-management-worker
@@ -96,6 +116,41 @@ services:
         fromDatabase:
           name: freight-management-db
           property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: freight-management-redis
+          property: connectionString
+
+  - type: worker
+    name: freight-management-reverb
+    runtime: docker
+    dockerfilePath: ./infra/render/Dockerfile.worker
+    dockerContext: .
+    plan: starter
+    region: ohio
+    autoDeploy: true
+    # Comando sobrescrito pelo render; alterar o entrypoint ou usar CMD no Dockerfile.worker
+    startCommand: php artisan reverb:start --host=0.0.0.0 --port=8080
+    envVars:
+      - fromGroup: freight-management-shared
+      - key: APP_KEY
+        sync: false
+      - key: DB_URL
+        fromDatabase:
+          name: freight-management-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: freight-management-redis
+          property: connectionString
+      - key: REVERB_APP_ID
+        sync: false
+      - key: REVERB_APP_KEY
+        sync: false
+      - key: REVERB_APP_SECRET
+        sync: false
 
 databases:
   - name: freight-management-db
@@ -104,4 +159,11 @@ databases:
     postgresMajorVersion: "16"
     databaseName: freight_management
     user: freight_management
+    ipAllowList: []
+
+  - type: redis
+    name: freight-management-redis
+    plan: free
+    region: ohio
+    maxmemoryPolicy: allkeys-lru
     ipAllowList: []

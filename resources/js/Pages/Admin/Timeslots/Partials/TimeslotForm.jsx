@@ -224,7 +224,8 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
               <button
                 type="button"
                 onClick={() => setShowAddressModal(true)}
-                className="rounded-md bg-green-600 px-4 py-2 font-bold text-white hover:bg-green-700"
+                title="Adicionar novo endereço"
+                className="inline-flex items-center justify-center rounded-md border border-green-600 bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700"
               >
                 +
               </button>
@@ -246,21 +247,29 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
               Visibilidade do Horário
             </label>
 
-            <div className="rounded-md border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
-              <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
-                <strong>Nenhum cliente selecionado</strong> = Horário PÚBLICO
-                <br />
-                <strong>Clientes selecionados</strong> = Horário RESTRITO
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/40">
+              <div className="mb-3 flex flex-wrap gap-2">
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${
+                  form.data.client_ids.length === 0
+                    ? 'bg-green-50 text-green-700 ring-green-200 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-800'
+                    : 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:ring-indigo-800'
+                }`}>
+                  {form.data.client_ids.length === 0 ? 'Público — visível para todos' : `Restrito — ${form.data.client_ids.length} cliente(s) selecionado(s)`}
+                </span>
+              </div>
+
+              <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                Deixe sem selecionar para tornar o horário <strong>público</strong>. Selecione um ou mais clientes para <strong>restringir</strong> o acesso.
               </p>
 
               {arrClients.length === 0 ? (
                 <p className="italic text-sm text-gray-500 dark:text-gray-400">Nenhum cliente cadastrado</p>
               ) : (
-                <div className="grid max-h-48 grid-cols-1 gap-2 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid max-h-48 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
                   {arrClients.map((objClient) => (
                     <label
                       key={objClient.id}
-                      className="flex cursor-pointer items-center space-x-2 rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600"
+                      className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
                     >
                       <input
                         type="checkbox"
@@ -268,34 +277,28 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
                         onChange={() => toggleClient(objClient.id)}
                         className="rounded border-gray-300 text-blue-600 dark:border-gray-500"
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {objClient.name} ({objClient.email})
+                      <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                        {objClient.name}
                       </span>
                     </label>
                   ))}
                 </div>
               )}
-
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                {form.data.client_ids.length === 0
-                  ? 'Horário PÚBLICO - Visível para TODOS os clientes'
-                  : `Horário RESTRITO - Visível para ${form.data.client_ids.length} cliente(s)`}
-              </p>
             </div>
 
             {allErrors.client_ids && (
-              <span className="text-sm text-red-500">{allErrors.client_ids}</span>
+              <span className="mt-1 block text-sm text-red-500">{allErrors.client_ids}</span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 border-t border-gray-100 pt-4 dark:border-gray-700">
           <button
             type="submit"
             disabled={form.processing}
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            {isEditing ? 'Atualizar' : 'Criar'}
+            {isEditing ? 'Salvar alterações' : 'Criar Horário'}
           </button>
         </div>
       </form>

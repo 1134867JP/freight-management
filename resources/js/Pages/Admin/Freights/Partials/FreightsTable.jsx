@@ -11,8 +11,10 @@ export default function FreightsTable({
   onStartOperation,
   onOpenFinalizeModal,
   onOpenAttachmentModal,
+  onOpenAssignDocaModal,
 }) {
   const getNormalizedStatus = (status) => {
+    if (status === 'arrived') return 'arrived';
     if (status === 'loading') return 'loading';
     if (status === 'unloading') return 'unloading';
     if (status === 'completed') return 'completed';
@@ -24,6 +26,7 @@ export default function FreightsTable({
     const strStatus = getNormalizedStatus(status);
     const arrLabels = {
       reserved: 'RESERVADO',
+      arrived: 'NO PÁTIO',
       loading: 'CARREGANDO',
       unloading: 'DESCARREGANDO',
       completed: 'FINALIZADO',
@@ -37,6 +40,7 @@ export default function FreightsTable({
     const strStatus = getNormalizedStatus(status);
     const arrTones = {
       reserved: 'neutral',
+      arrived: 'violet',
       loading: 'warning',
       unloading: 'info',
       completed: 'success',
@@ -153,6 +157,7 @@ export default function FreightsTable({
                 onCancel={onCancelReservation}
                 onStart={onStartOperation}
                 onOpenFinalize={onOpenFinalizeModal}
+                onOpenAssignDoca={onOpenAssignDocaModal}
               />
             </tr>
           ))}

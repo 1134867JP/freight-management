@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\FreightStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToCompany;
 use App\Models\Doca;
@@ -43,7 +44,11 @@ class Timeslot extends Model
         'created_by',
     ];
 
-    protected $appends = ['current_reservations'];
+    // Não usar $appends aqui: adicionaria current_reservations a toda serialização
+    // de Timeslot, disparando uma query COUNT por registro (N+1).
+    // Use sempre ->withCount(['freights as current_reservations' => ...]) nas queries de listagem.
+    // O accessor abaixo existe para lógica de negócio (ex: validação de capacidade no update).
+    protected $appends = [];
 
     protected $casts = [
         'start_time' => 'datetime',
@@ -56,7 +61,9 @@ class Timeslot extends Model
             return (int) $this->attributes['current_reservations'];
         }
 
-        return $this->freights()->whereNotIn('status', ['cancelled'])->count();
+        // Fallback live-count — aceitável em lógica de negócio pontual (ex: validação de capacidade).
+        // Nunca chamar em listagens: usar withCount(['freights as current_reservations' => occupying]).
+        return $this->freights()->occupying()->count();
     }
 
     public function dropoffAddress(): BelongsTo
@@ -94,7 +101,7 @@ class Timeslot extends Model
 
     public function clampReservations(): void
     {
-        $count = $this->freights()->whereNotIn('status', ['cancelled'])->count();
+        $count = $this->freights()->occupying()->count();
 
         if ($count >= $this->capacity) {
             $this->status = self::STATUS_FULL;
@@ -118,7 +125,8 @@ class Timeslot extends Model
             ->where('end_time', '>=', now())
             ->where('status', '!=', self::STATUS_CLOSED)
             ->whereRaw(
-                "(SELECT COUNT(*) FROM freights WHERE freights.timeslot_id = timeslots.id AND freights.status NOT IN ('cancelled')) < timeslots.capacity"
+                '(SELECT COUNT(*) FROM freights WHERE freights.timeslot_id = timeslots.id AND freights.status != ?) < timeslots.capacity',
+                [FreightStatus::Cancelled->value]
             )
             ->where(function ($q) use ($userId) {
                 // Público: sem clientes vinculados

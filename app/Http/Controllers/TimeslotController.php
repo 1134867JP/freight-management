@@ -28,9 +28,9 @@ class TimeslotController extends Controller
         $arrStats = [
             'total_timeslots' => Timeslot::where('company_id', $user->company_id)->count(),
             'available_timeslots' => Timeslot::where('company_id', $user->company_id)->where('status', 'available')->count(),
-            'reserved_timeslots' => Timeslot::where('company_id', $user->company_id)->whereRaw(
-                "(SELECT COUNT(*) FROM freights WHERE freights.timeslot_id = timeslots.id AND freights.status NOT IN ('cancelled')) > 0"
-            )->count(),
+            'reserved_timeslots' => Timeslot::where('company_id', $user->company_id)
+                ->whereHas('freights', fn ($q) => $q->occupying())
+                ->count(),
             'full_timeslots' => Timeslot::where('company_id', $user->company_id)->where('status', 'full')->count(),
         ];
 
@@ -65,7 +65,7 @@ class TimeslotController extends Controller
     public function agenda(): Response
     {
         $arrTimeslots = Timeslot::with(['freights.user'])
-            ->withCount(['freights as current_reservations' => fn ($q) => $q->whereNotIn('status', ['cancelled'])])
+            ->withCount(['freights as current_reservations' => fn ($q) => $q->occupying()])
             ->orderBy('start_time', 'asc')
             ->get();
 
@@ -77,7 +77,7 @@ class TimeslotController extends Controller
     public function index(): Response
     {
         $arrTimeslots = Timeslot::with(['clients', 'dropoffAddress'])
-            ->withCount(['freights as current_reservations' => fn ($q) => $q->whereNotIn('status', ['cancelled'])])
+            ->withCount(['freights as current_reservations' => fn ($q) => $q->occupying()])
             ->orderBy('start_time', 'desc')
             ->paginate(10)
             ->withQueryString();
@@ -195,7 +195,7 @@ class TimeslotController extends Controller
 
         $arrTimeslots = Timeslot::visibleForClient($idUser)
             ->with(['clients', 'dropoffAddress', 'produto', 'doca'])
-            ->withCount(['freights as current_reservations' => fn ($q) => $q->whereNotIn('status', ['cancelled'])])
+            ->withCount(['freights as current_reservations' => fn ($q) => $q->occupying()])
             ->orderBy('start_time', 'asc')
             ->get();
 

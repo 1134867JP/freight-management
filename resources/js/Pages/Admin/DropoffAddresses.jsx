@@ -10,6 +10,26 @@ import { confirmAction } from '@/Components/UI/confirmAction';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { Head, useForm, router } from '@inertiajs/react';
 
+function IconEdit() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
+function IconTrash() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  );
+}
+
 export default function DropoffAddresses({ addresses }) {
   const [editingAddress, setEditingAddress] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -50,7 +70,19 @@ export default function DropoffAddresses({ addresses }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!validate(data)) return;
-    submit(event);
+
+    if (isEditing) {
+      patch(route('dropoff-addresses.update', editingAddress.id), {
+        onSuccess: () => resetForm(),
+        preserveScroll: true,
+      });
+      return;
+    }
+
+    post(route('dropoff-addresses.store'), {
+      onSuccess: () => resetForm(),
+      preserveScroll: true,
+    });
   };
 
   const startEdit = (address) => {
@@ -68,42 +100,30 @@ export default function DropoffAddresses({ addresses }) {
     });
   };
 
-  const submit = (event) => {
-    event.preventDefault();
-
-    if (isEditing) {
-      patch(route('dropoff-addresses.update', editingAddress.id), {
-        onSuccess: () => resetForm(),
-        preserveScroll: true,
-      });
-      return;
-    }
-
-    post(route('dropoff-addresses.store'), {
-      onSuccess: () => resetForm(),
-      preserveScroll: true,
-    });
-  };
-
   const deleteAddress = (id) => {
     if (confirmAction('Tem certeza que deseja excluir este endereço?')) {
       router.delete(route('dropoff-addresses.destroy', id), { preserveScroll: true });
     }
   };
 
+  const activeCount = addressesList.filter((a) => a.is_active).length;
+
   return (
     <AuthenticatedLayout
       header={
         <PageHeader
-          title="Gerenciar Endereços de Descarga"
+          title="Endereços de Descarga"
           subtitle="Cadastre e mantenha os pontos de descarga do pátio"
           actions={
             <button
               type="button"
               onClick={() => setShowCreateModal(true)}
-              className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              + Novo Endereço
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+              </svg>
+              Novo Endereço
             </button>
           }
         />
@@ -115,70 +135,98 @@ export default function DropoffAddresses({ addresses }) {
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
+          {addressesList.length > 0 && (
+            <div className="mb-6 flex items-center gap-4">
+              <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <span className="text-2xl font-black text-gray-900 dark:text-gray-100">{addressesList.length}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Total</span>
+              </div>
+              <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 shadow-sm dark:border-green-800 dark:bg-green-900/20">
+                <span className="text-2xl font-black text-green-700 dark:text-green-400">{activeCount}</span>
+                <span className="text-sm text-green-600 dark:text-green-500">Ativos</span>
+              </div>
+              {addressesList.length - activeCount > 0 && (
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm dark:border-gray-700 dark:bg-gray-700/40">
+                  <span className="text-2xl font-black text-gray-500 dark:text-gray-400">{addressesList.length - activeCount}</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Inativos</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             {addressesList.length === 0 ? (
-              <EmptyState title="Nenhum endereço cadastrado" />
+              <div className="p-8">
+                <EmptyState title="Nenhum endereço cadastrado." />
+              </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
+                <table className="min-w-full text-left">
+                  <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/60">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
-                        Nome
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Nome / Identificador
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Endereço
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
-                        Cidade/UF
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                        Cidade / UF
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                     {addressesList.map((address) => (
-                      <tr key={address.id}>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {address.name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          <div>
-                            {address.street}, {address.number}
-                          </div>
-                          {address.complement && (
-                            <div className="text-xs text-gray-400 dark:text-gray-500">({address.complement})</div>
+                      <tr key={address.id} className="transition hover:bg-gray-50/70 dark:hover:bg-gray-700/40">
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{address.name}</p>
+                          {address.notes && (
+                            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]" title={address.notes}>
+                              {address.notes}
+                            </p>
                           )}
-                          <div className="text-xs text-gray-400 dark:text-gray-500">{address.neighborhood}</div>
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {address.city}/{address.state}
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                          <p>{address.street}{address.number ? `, ${address.number}` : ''}</p>
+                          {address.complement && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500">({address.complement})</p>
+                          )}
+                          <p className="text-xs text-gray-400 dark:text-gray-500">{address.neighborhood}</p>
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4">
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                          {address.city} / {address.state}
+                        </td>
+                        <td className="px-6 py-4">
                           <StatusBadge
                             label={address.is_active ? 'Ativo' : 'Inativo'}
                             tone={address.is_active ? 'success' : 'neutral'}
                           />
                         </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => startEdit(address)}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteAddress(address.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Excluir
-                          </button>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(address)}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                            >
+                              <IconEdit />
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteAddress(address.id)}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                            >
+                              <IconTrash />
+                              Excluir
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -199,7 +247,7 @@ export default function DropoffAddresses({ addresses }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField
-              label="Nome/Identificador"
+              label="Nome / Identificador"
               error={allErrors.name}
               required
               className="md:col-span-2"
@@ -235,7 +283,6 @@ export default function DropoffAddresses({ addresses }) {
                 error={allErrors.number}
                 value={data.number}
                 onChange={(event) => setData('number', event.target.value)}
-                required
               />
             </FormField>
 
@@ -292,7 +339,6 @@ export default function DropoffAddresses({ addresses }) {
             <FormField label="Observações" error={allErrors.notes} className="md:col-span-2">
               <textarea
                 className={`mt-1 block w-full ${FormField.inputClass(allErrors.notes)}`}
-                aria-invalid={Boolean(allErrors.notes)}
                 rows="3"
                 value={data.notes}
                 onChange={(event) => setData('notes', event.target.value)}
@@ -300,7 +346,7 @@ export default function DropoffAddresses({ addresses }) {
             </FormField>
 
             <div className="md:col-span-2">
-              <label className="flex cursor-pointer items-center space-x-2">
+              <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
                   className="rounded border-gray-300 text-blue-600"
@@ -316,14 +362,14 @@ export default function DropoffAddresses({ addresses }) {
             <button
               type="button"
               onClick={resetForm}
-              className="flex-1 rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={processing}
-              className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
             >
               {isEditing ? 'Atualizar' : 'Criar'}
             </button>

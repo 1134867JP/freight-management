@@ -3,6 +3,7 @@
 namespace App\Actions\Freight;
 
 use App\Enums\FreightStatus;
+use App\Events\YardBoardUpdated;
 use App\Exceptions\Freight\FreightAlreadyCompletedException;
 use App\Models\Freight;
 use RuntimeException;
@@ -33,5 +34,7 @@ class StartLoad
             'status'     => FreightStatus::Loading,
             'arrived_at' => $arrived_at,
         ]);
+
+        YardBoardUpdated::dispatch($freight->company_id);
     }
 }

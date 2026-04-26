@@ -13,6 +13,7 @@ use App\Http\Requests\Freight\AddAttachmentRequest;
 use App\Http\Requests\Freight\FinalizeOperationRequest;
 use App\Http\Requests\Freight\StoreFreightRequest;
 use App\Http\Requests\Freight\UploadInvoiceRequest;
+use App\Models\Doca;
 use App\Models\Freight;
 use App\Models\FreightAttachment;
 use App\Models\Timeslot;
@@ -20,6 +21,7 @@ use App\Services\FreightEmailNotifier;
 use App\Services\WhatsApp\FreightWhatsAppNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -28,25 +30,32 @@ class FreightController extends Controller
     public function __construct(
         private readonly FreightWhatsAppNotifier $whatsAppNotifier,
         private readonly FreightEmailNotifier $emailNotifier,
+        private readonly CancelReservation $cancelReservation,
+        private readonly FinalizeOperation $finalizeOperation,
     ) {}
 
     // ADMIN: List freights
     public function approvalList()
     {
-        $freights = Freight::with(['user', 'timeslot', 'attachments'])
+        $freights = Freight::with(['user', 'timeslot', 'attachments', 'doca'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
+        $docasDisponiveis = Doca::available()->orderBy('nome')->get(['id', 'nome', 'codigo']);
+
         return Inertia::render('Admin/Freights/Index', [
-            'freights' => $freights,
+            'freights'         => $freights,
+            'docasDisponiveis' => $docasDisponiveis,
         ]);
     }
 
     // ADMIN: Cancel/reject
     public function reject(Request $request, Freight $freight)
     {
+        $this->authorize('reject', $freight);
+
         try {
-            $cancelled = (new CancelReservation)->execute($freight, $request->input('notes', 'Rejeitado pelo admin.'));
+            $cancelled = $this->cancelReservation->execute($freight, $request->input('notes', 'Rejeitado pelo admin.'));
             $freight->refresh();
 
             if ($cancelled) {
@@ -144,10 +153,10 @@ class FreightController extends Controller
     // CLIENT: Cancel own reservation
     public function cancelMyReservation(Request $request, Freight $freight)
     {
-        abort_unless($request->user()->id === $freight->user_id, 403);
+        $this->authorize('cancel', $freight);
 
         try {
-            $cancelled = (new CancelReservation)->execute($freight);
+            $cancelled = $this->cancelReservation->execute($freight);
             if ($cancelled) {
                 $freight->refresh();
                 $this->whatsAppNotifier->notifyAdminReservationCancelled($freight, $request->user());
@@ -163,7 +172,7 @@ class FreightController extends Controller
     // CLIENT: Reopen reservation
     public function reopenMyReservation(Request $request, Freight $freight)
     {
-        abort_unless($request->user()->id === $freight->user_id, 403);
+        $this->authorize('reopen', $freight);
 
         try {
             (new ReopenReservation)->execute($freight);
@@ -180,7 +189,7 @@ class FreightController extends Controller
     // CLIENT: Upload invoice (nota fiscal)
     public function uploadInvoice(UploadInvoiceRequest $request, Freight $freight)
     {
-        abort_unless($request->user()->id === $freight->user_id, 403);
+        $this->authorize('uploadInvoice', $freight);
 
         if ($freight->operation_type !== 'unload') {
             return redirect()->back()->with('error', 'Nota fiscal é obrigatória apenas para operações de descarga.');
@@ -204,10 +213,12 @@ class FreightController extends Controller
     // ADMIN: Finalize operation
     public function finalizeOperation(FinalizeOperationRequest $request, Freight $freight)
     {
+        $this->authorize('finalizeOperation', $freight);
+
         $validated = $request->validated();
 
         try {
-            (new FinalizeOperation)->execute(
+            $this->finalizeOperation->execute(
                 freight: $freight,
                 grossWeight: (float) $validated['gross_weight'],
                 netWeight: (float) $validated['net_weight']
@@ -230,6 +241,8 @@ class FreightController extends Controller
     // ADMIN: Add attachment
     public function addAttachment(AddAttachmentRequest $request, Freight $freight)
     {
+        $this->authorize('addAttachment', $freight);
+
         $this->storeAttachment($freight, $request->file('attachment'), FreightAttachment::TYPE_ATTACHMENT, 'attachments');
 
         $freight->refresh();
@@ -242,6 +255,8 @@ class FreightController extends Controller
     // ADMIN: Start load
     public function startLoad(Request $request, Freight $freight)
     {
+        $this->authorize('startLoad', $freight);
+
         try {
             $shouldNotify = $freight->status !== FreightStatus::Loading;
 
@@ -262,6 +277,8 @@ class FreightController extends Controller
     // ADMIN: Start unload
     public function startUnload(Request $request, Freight $freight)
     {
+        $this->authorize('startUnload', $freight);
+
         try {
             $shouldNotify = $freight->status !== FreightStatus::Unloading;
 
@@ -282,7 +299,7 @@ class FreightController extends Controller
     // ADMIN: Download nota fiscal
     public function downloadInvoice(Request $request, Freight $freight)
     {
-        abort_unless($request->user()->company_id === $freight->company_id, 403);
+        $this->authorize('downloadInvoice', $freight);
 
         $attachment = $freight->attachments()->where('type', FreightAttachment::TYPE_INVOICE)->firstOrFail();
 
@@ -292,7 +309,7 @@ class FreightController extends Controller
     // ADMIN: Download attachment
     public function downloadAttachment(Request $request, Freight $freight, FreightAttachment $attachment)
     {
-        abort_unless($request->user()->company_id === $freight->company_id, 403);
+        $this->authorize('downloadAttachment', $freight);
         abort_unless($attachment->freight_id === $freight->id, 404);
 
         return $this->serveAttachment($attachment);
@@ -301,7 +318,7 @@ class FreightController extends Controller
     // CLIENT: Download nota fiscal (apenas o próprio cliente)
     public function downloadInvoiceClient(Request $request, Freight $freight)
     {
-        abort_unless($request->user()->id === $freight->user_id, 403);
+        $this->authorize('downloadInvoiceClient', $freight);
 
         $attachment = $freight->attachments()->where('type', FreightAttachment::TYPE_INVOICE)->firstOrFail();
 
@@ -324,24 +341,41 @@ class FreightController extends Controller
 
     private function storeAttachment(Freight $freight, UploadedFile $file, string $type, string $directory): void
     {
-        $existing = $freight->attachments()->where('type', $type)->first();
-        if ($existing) {
-            // Tenta apagar do disco local primeiro; depois do disco padrão (legado)
-            if (Storage::disk('local')->exists($existing->path)) {
-                Storage::disk('local')->delete($existing->path);
-            } else {
-                Storage::delete($existing->path);
-            }
-            $existing->delete();
-        }
+        // Salva o novo arquivo ANTES da transação para evitar I/O dentro da tx.
+        // Se a tx falhar, deletamos o arquivo recém-salvo no catch.
+        $newPath = $file->store($directory, 'local');
 
-        $freight->attachments()->create([
-            'company_id'    => $freight->company_id,
-            'type'          => $type,
-            'path'          => $file->store($directory, 'local'),
-            'original_name' => $file->getClientOriginalName(),
-            'size_bytes'    => $file->getSize(),
-            'mime_type'     => $file->getMimeType(),
-        ]);
+        try {
+            $oldPath = DB::transaction(function () use ($freight, $file, $type, $newPath) {
+                $existing = $freight->attachments()->where('type', $type)->first();
+                $oldPath  = $existing?->path;
+
+                $existing?->delete();
+
+                $freight->attachments()->create([
+                    'company_id'    => $freight->company_id,
+                    'type'          => $type,
+                    'path'          => $newPath,
+                    'original_name' => $file->getClientOriginalName(),
+                    'size_bytes'    => $file->getSize(),
+                    'mime_type'     => $file->getMimeType(),
+                ]);
+
+                return $oldPath;
+            });
+
+            // Transação confirmada: remove o arquivo antigo do disco
+            if ($oldPath) {
+                if (Storage::disk('local')->exists($oldPath)) {
+                    Storage::disk('local')->delete($oldPath);
+                } else {
+                    Storage::delete($oldPath);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Transação falhou: remove o arquivo recém-salvo para não deixar órfão
+            Storage::disk('local')->delete($newPath);
+            throw $e;
+        }
     }
 }

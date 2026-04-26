@@ -4,11 +4,12 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
 import { confirmAction } from '@/Components/UI/confirmAction';
 import { Head, router } from '@inertiajs/react';
+import AssignDocaModal from './Partials/AssignDocaModal';
 import FinalizeFreightModal from './Partials/FinalizeFreightModal';
 import FreightsTable from './Partials/FreightsTable';
 import UploadAttachmentModal from './Partials/UploadAttachmentModal';
 
-export default function Index({ freights }) {
+export default function Index({ freights, docasDisponiveis }) {
   const list = useMemo(() => freights?.data || [], [freights]);
   const [filterSearch, setFilterSearch] = useState('');
   const [filterOp, setFilterOp] = useState('all');
@@ -21,8 +22,10 @@ export default function Index({ freights }) {
   const [attachmentModal, setAttachmentModal] = useState({ open: false, freight: null });
   const [attachmentFile, setAttachmentFile] = useState(null);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const [assignDocaModal, setAssignDocaModal] = useState({ open: false, freight: null });
 
   const normalizeStatus = (status) => {
+    if (status === 'arrived') return 'arrived';
     if (status === 'loading') return 'loading';
     if (status === 'unloading') return 'unloading';
     if (status === 'completed') return 'completed';
@@ -44,11 +47,12 @@ export default function Index({ freights }) {
       list.reduce(
         (arrAccumulator, objFreight) => {
           const strStatus = normalizeStatus(objFreight.status);
-          arrAccumulator[strStatus] += 1;
+          arrAccumulator[strStatus] = (arrAccumulator[strStatus] || 0) + 1;
           return arrAccumulator;
         },
         {
           reserved: 0,
+          arrived: 0,
           loading: 0,
           unloading: 0,
           completed: 0,
@@ -192,10 +196,14 @@ export default function Index({ freights }) {
           <FlashMessages />
 
           <div className="rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
-            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
+            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-6">
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-700/40">
                 <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Reservados</p>
                 <p className="mt-1 text-2xl font-semibold text-gray-800 dark:text-gray-200">{statusSummary.reserved}</p>
+              </div>
+              <div className="rounded-lg border border-violet-200 bg-violet-50 p-3 dark:border-violet-800 dark:bg-violet-900/20">
+                <p className="text-xs uppercase tracking-wide text-violet-700 dark:text-violet-400">No Pátio</p>
+                <p className="mt-1 text-2xl font-semibold text-violet-800 dark:text-violet-300">{statusSummary.arrived}</p>
               </div>
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
                 <p className="text-xs uppercase tracking-wide text-amber-700 dark:text-amber-400">Carregando</p>
@@ -242,6 +250,7 @@ export default function Index({ freights }) {
                 >
                   <option value="all">Status: Todos</option>
                   <option value="reserved">Status: Reservado</option>
+                  <option value="arrived">Status: No Pátio</option>
                   <option value="loading">Status: Carregando</option>
                   <option value="unloading">Status: Descarregando</option>
                   <option value="completed">Status: Finalizado</option>
@@ -284,6 +293,9 @@ export default function Index({ freights }) {
                 setFinalizeModal({ open: true, freight: objFreight })
               }
               onOpenAttachmentModal={openAttachmentModal}
+              onOpenAssignDocaModal={(objFreight) =>
+                setAssignDocaModal({ open: true, freight: objFreight })
+              }
             />
           </div>
         </div>
@@ -310,6 +322,13 @@ export default function Index({ freights }) {
         onChangeFile={setAttachmentFile}
         onSubmit={submitAttachment}
         onClose={closeAttachmentModal}
+      />
+
+      <AssignDocaModal
+        open={assignDocaModal.open}
+        freight={assignDocaModal.freight}
+        docasDisponiveis={docasDisponiveis}
+        onClose={() => setAssignDocaModal({ open: false, freight: null })}
       />
     </AuthenticatedLayout>
   );

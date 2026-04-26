@@ -3,6 +3,7 @@
 namespace App\Actions\Freight;
 
 use App\Enums\FreightStatus;
+use App\Events\YardBoardUpdated;
 use App\Models\Freight;
 use RuntimeException;
 
@@ -30,5 +31,7 @@ class GateCheckIn
             'status'     => FreightStatus::Arrived,
             'arrived_at' => now(),
         ]);
+
+        YardBoardUpdated::dispatch($freight->company_id);
     }
 }

@@ -2,21 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Doca\AssignDoca;
+use App\Actions\Doca\ReleaseDoca;
+use App\Enums\DocaStatus;
 use App\Http\Requests\Doca\StoreDocaRequest;
 use App\Http\Requests\Doca\UpdateDocaRequest;
 use App\Models\Doca;
+use App\Models\Freight;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DocaController extends Controller
 {
+    public function __construct(
+        private readonly AssignDoca $assignDoca,
+        private readonly ReleaseDoca $releaseDoca,
+    ) {}
+
     public function index(): Response
     {
-        $arrDocas = Doca::orderBy('nome')->get();
+        $docas = Doca::orderBy('nome')->get();
 
         return Inertia::render('Admin/Docas', [
-            'docas' => $arrDocas,
+            'docas' => $docas,
         ]);
     }
 
@@ -36,14 +46,40 @@ class DocaController extends Controller
 
     public function destroy(Doca $doca): RedirectResponse
     {
-        $blTemTimeslots = $doca->timeslots()->exists();
-
-        if ($blTemTimeslots) {
-            return redirect()->back()->with('error', 'Doca não pode ser excluída pois está vinculada a cotas.');
+        if ($doca->status === DocaStatus::Occupied) {
+            return redirect()->back()->with('error', "A doca \"{$doca->nome}\" está ocupada e não pode ser desativada.");
         }
 
-        $doca->delete();
+        $doca->update(['is_active' => false]);
 
-        return redirect()->back()->with('success', 'Doca excluída com sucesso.');
+        return redirect()->back()->with('success', 'Doca desativada com sucesso.');
+    }
+
+    public function assign(Request $request, Freight $freight): RedirectResponse
+    {
+        $request->validate([
+            'doca_id' => ['required', 'integer', 'exists:docas,id'],
+        ]);
+
+        $doca = Doca::findOrFail($request->integer('doca_id'));
+
+        $this->authorize('assignDoca', $freight);
+
+        try {
+            $this->assignDoca->execute($freight, $doca);
+
+            return redirect()->back()->with('success', "Doca \"{$doca->nome}\" atribuída com sucesso.");
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function release(Freight $freight): RedirectResponse
+    {
+        $this->authorize('releaseDoca', $freight);
+
+        $this->releaseDoca->execute($freight);
+
+        return redirect()->back()->with('success', 'Doca liberada com sucesso.');
     }
 }

@@ -57,17 +57,20 @@ export default function ReservationForm({
   const nrRemaining = Math.max(selectedSlot.capacity - selectedSlot.current_reservations, 0);
 
   return (
-    <div className={`h-fit w-full bg-white dark:bg-gray-800 p-6 shadow sm:rounded-lg ${className}`}>
-      <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">
-        Reservar para {new Date(selectedSlot.start_time).toLocaleString('pt-BR')}
-      </h3>
+    <div className={`h-fit w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 ${className}`}>
+      <div className="mb-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Confirmação de Reserva</p>
+        <h3 className="mt-0.5 text-lg font-semibold text-gray-900 dark:text-gray-100">
+          {new Date(selectedSlot.start_time).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+        </h3>
+      </div>
 
-      <div className="mb-4 rounded border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 p-3">
-        <p className="text-sm font-medium text-emerald-900 dark:text-emerald-300">Resumo da cota</p>
-        <p className="text-sm text-emerald-800 dark:text-emerald-400">
-          Ocupação: {selectedSlot.current_reservations} / {selectedSlot.capacity}
-        </p>
-        <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-400">Vagas restantes: {nrRemaining}</p>
+      <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-900/20">
+        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Disponibilidade</p>
+        <div className="mt-1.5 flex items-baseline gap-1.5">
+          <span className="text-2xl font-bold text-emerald-800 dark:text-emerald-300">{nrRemaining}</span>
+          <span className="text-sm text-emerald-700 dark:text-emerald-400">vaga(s) de {selectedSlot.capacity}</span>
+        </div>
       </div>
 
       {/* Badge do modelo */}
@@ -140,8 +143,8 @@ export default function ReservationForm({
             <button
               type="button"
               onClick={onOpenTruckModal}
-              className="rounded-md bg-green-600 px-4 py-2 font-bold text-white hover:bg-green-700"
               title="Adicionar novo caminhão"
+              className="inline-flex items-center justify-center rounded-md border border-green-600 bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700"
             >
               +
             </button>
@@ -209,9 +212,9 @@ export default function ReservationForm({
 
         <button
           disabled={processing}
-          className="mt-4 w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+          className="mt-4 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          Confirmar Solicitação
+          {processing ? 'Enviando...' : 'Confirmar Reserva'}
         </button>
       </form>
     </div>

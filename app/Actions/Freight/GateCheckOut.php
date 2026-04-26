@@ -3,6 +3,7 @@
 namespace App\Actions\Freight;
 
 use App\Enums\FreightStatus;
+use App\Events\YardBoardUpdated;
 use App\Models\Freight;
 use RuntimeException;
 
@@ -19,5 +20,7 @@ class GateCheckOut
         }
 
         $freight->update(['departed_at' => now()]);
+
+        YardBoardUpdated::dispatch($freight->company_id);
     }
 }

@@ -37,6 +37,16 @@ class Freight extends Model
         'departed_at'  => 'datetime',
     ];
 
+    /**
+     * Fretes que ocupam capacidade do timeslot (todos exceto cancelados).
+     * Fonte única de verdade para contagem de capacidade — usar este scope
+     * em vez de replicar whereNotIn('status', ['cancelled']) pelo código.
+     */
+    public function scopeOccupying(Builder $query): Builder
+    {
+        return $query->where('status', '!=', FreightStatus::Cancelled->value);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereNotIn('status', [

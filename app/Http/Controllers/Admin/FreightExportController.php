@@ -38,11 +38,10 @@ class FreightExportController extends Controller
             );
         }
 
-        $freights = $query->get();
-
         $filename = 'fretes-' . now()->format('Y-m-d') . '.csv';
 
-        return response()->streamDownload(function () use ($freights) {
+        // lazy() busca 1000 registros por vez — sem acumular tudo em memória.
+        return response()->streamDownload(function () use ($query) {
             $handle = fopen('php://output', 'w');
 
             // BOM para compatibilidade com Excel
@@ -64,7 +63,7 @@ class FreightExportController extends Controller
                 'Data Criação',
             ], ';');
 
-            foreach ($freights as $freight) {
+            foreach ($query->lazy() as $freight) {
                 fputcsv($handle, [
                     $freight->id,
                     $freight->truck_plate,

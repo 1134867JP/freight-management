@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
 import { translateFreightStatus, getFreightStatusTone } from '@/Features/Freight/utils/freightPresentation';
 import { translateTimeslotStatus, getTimeslotStatusTone } from '@/Features/Timeslot/utils/timeslotPresentation';
@@ -170,7 +171,7 @@ export default function Agenda({ timeslots }) {
 
   return (
     <AuthenticatedLayout
-      header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-100">Agenda</h2>}
+      header={<PageHeader title="Agenda" subtitle="Visualize e gerencie os horários do pátio" />}
     >
       <Head title="Agenda" />
 

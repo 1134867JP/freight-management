@@ -107,40 +107,44 @@ class ReportController extends Controller
             });
         }
 
-        $freights = $query->get();
-
-        $opLabels = ['load' => 'Carga', 'unload' => 'Descarga'];
+        $opLabels     = ['load' => 'Carga', 'unload' => 'Descarga'];
         $statusLabels = [
             'reserved' => 'Reservado', 'loading' => 'Carregando',
             'unloading' => 'Descarregando', 'completed' => 'Concluído', 'cancelled' => 'Cancelado',
         ];
-
-        $rows = $freights->map(fn ($fr) => [
-            $fr->timeslot ? $fr->timeslot->start_time->format('d/m/Y H:i') : '',
-            e($fr->user?->name ?? ''),
-            e($fr->user?->email ?? ''),
-            e($fr->driver_name ?? ''),
-            strtoupper($fr->truck_plate ?? ''),
-            $opLabels[$fr->operation_type] ?? $fr->operation_type,
-            e($fr->cargo_description ?? ''),
-            $fr->gross_weight !== null ? number_format($fr->gross_weight, 2, ',', '.') : '',
-            $fr->net_weight !== null ? number_format($fr->net_weight, 2, ',', '.') : '',
-            $statusLabels[$fr->status] ?? $fr->status,
-        ]);
-
-        $headers = ['Horário', 'Cliente', 'Email', 'Motorista', 'Placa', 'Operação', 'Carga', 'Peso Bruto (kg)', 'Peso Líquido (kg)', 'Status'];
-        $html = $this->buildXlsHtml('Fretes', $headers, $rows);
-
+        $headers  = ['Horário', 'Cliente', 'Email', 'Motorista', 'Placa', 'Operação', 'Carga', 'Peso Bruto (kg)', 'Peso Líquido (kg)', 'Status'];
         $filename = 'fretes_' . now()->format('Y-m-d') . '.xls';
 
-        return response($html)
-            ->header('Content-Type', 'application/vnd.ms-excel; charset=utf-8')
-            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+        return response()->streamDownload(function () use ($query, $headers, $opLabels, $statusLabels) {
+            echo $this->xlsStreamHeader('Fretes', $headers);
+
+            foreach ($query->lazy() as $fr) {
+                $cols = [
+                    $fr->timeslot ? $fr->timeslot->start_time->format('d/m/Y H:i') : '',
+                    e($fr->user?->name ?? ''),
+                    e($fr->user?->email ?? ''),
+                    e($fr->driver_name ?? ''),
+                    strtoupper($fr->truck_plate ?? ''),
+                    $opLabels[$fr->operation_type] ?? $fr->operation_type,
+                    e($fr->cargo_description ?? ''),
+                    $fr->gross_weight !== null ? number_format($fr->gross_weight, 2, ',', '.') : '',
+                    $fr->net_weight !== null ? number_format($fr->net_weight, 2, ',', '.') : '',
+                    $statusLabels[$fr->status->value ?? $fr->status] ?? ($fr->status->value ?? $fr->status),
+                ];
+                echo '<tr>' . implode('', array_map(fn ($c) => "<td style=\"border:1px solid #ccc;padding:5px 10px\">{$c}</td>", $cols)) . '</tr>';
+            }
+
+            echo '</tbody></table></body></html>';
+        }, $filename, [
+            'Content-Type'        => 'application/vnd.ms-excel; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
     }
 
     public function exportTimeslotsXls(Request $request)
     {
         $query = Timeslot::with(['dropoffAddress:id,name', 'creator:id,name'])
+            ->withCount(['freights as active_reservations' => fn ($q) => $q->occupying()])
             ->where('company_id', $request->user()->company_id)
             ->orderByDesc('start_time');
 
@@ -157,42 +161,45 @@ class ReportController extends Controller
             $query->where('status', $request->status);
         }
 
-        $timeslots = $query->withCount([
-            'freights as active_reservations' => fn ($q) => $q->whereNotIn('status', ['cancelled']),
-        ])->get();
-
-        $opLabels = ['load' => 'Carga', 'unload' => 'Descarga'];
+        $opLabels     = ['load' => 'Carga', 'unload' => 'Descarga'];
         $statusLabels = ['available' => 'Disponível', 'full' => 'Lotado', 'closed' => 'Encerrado'];
+        $headers      = ['Início', 'Fim', 'Operação', 'Capacidade', 'Reservas', 'Status', 'Endereço', 'Criado por'];
+        $filename     = 'cotas_' . now()->format('Y-m-d') . '.xls';
 
-        $rows = $timeslots->map(fn ($ts) => [
-            $ts->start_time->format('d/m/Y H:i'),
-            $ts->end_time->format('d/m/Y H:i'),
-            $opLabels[$ts->operation_type] ?? $ts->operation_type,
-            $ts->capacity,
-            $ts->active_reservations,
-            $statusLabels[$ts->status] ?? $ts->status,
-            e($ts->dropoffAddress?->name ?? ''),
-            e($ts->creator?->name ?? ''),
+        return response()->streamDownload(function () use ($query, $headers, $opLabels, $statusLabels) {
+            echo $this->xlsStreamHeader('Cotas', $headers);
+
+            foreach ($query->lazy() as $ts) {
+                $cols = [
+                    $ts->start_time->format('d/m/Y H:i'),
+                    $ts->end_time->format('d/m/Y H:i'),
+                    $opLabels[$ts->operation_type] ?? $ts->operation_type,
+                    $ts->capacity,
+                    $ts->active_reservations,
+                    $statusLabels[$ts->status] ?? $ts->status,
+                    e($ts->dropoffAddress?->name ?? ''),
+                    e($ts->creator?->name ?? ''),
+                ];
+                echo '<tr>' . implode('', array_map(fn ($c) => "<td style=\"border:1px solid #ccc;padding:5px 10px\">{$c}</td>", $cols)) . '</tr>';
+            }
+
+            echo '</tbody></table></body></html>';
+        }, $filename, [
+            'Content-Type'        => 'application/vnd.ms-excel; charset=utf-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
-
-        $headers = ['Início', 'Fim', 'Operação', 'Capacidade', 'Reservas', 'Status', 'Endereço', 'Criado por'];
-        $html = $this->buildXlsHtml('Cotas', $headers, $rows);
-
-        $filename = 'cotas_' . now()->format('Y-m-d') . '.xls';
-
-        return response($html)
-            ->header('Content-Type', 'application/vnd.ms-excel; charset=utf-8')
-            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
     }
 
-    private function buildXlsHtml(string $title, array $headers, \Illuminate\Support\Collection $rows): string
+    /**
+     * Emite o cabeçalho do documento XLS (HTML-in-Excel).
+     * O corpo das linhas é emitido incrementalmente pelo caller; fechar com </tbody></table></body></html>.
+     */
+    private function xlsStreamHeader(string $title, array $headers): string
     {
-        $th = implode('', array_map(fn ($h) => "<th style=\"background:#f0f0f0;font-weight:bold;border:1px solid #ccc;padding:6px 10px\">{$h}</th>", $headers));
-
-        $tbody = $rows->map(function ($cols) {
-            $tds = implode('', array_map(fn ($c) => "<td style=\"border:1px solid #ccc;padding:5px 10px\">{$c}</td>", $cols));
-            return "<tr>{$tds}</tr>";
-        })->implode('');
+        $th = implode('', array_map(
+            fn ($h) => "<th style=\"background:#f0f0f0;font-weight:bold;border:1px solid #ccc;padding:6px 10px\">{$h}</th>",
+            $headers
+        ));
 
         return <<<HTML
         <html xmlns:o="urn:schemas-microsoft-com:office:office"
@@ -205,9 +212,7 @@ class ReportController extends Controller
         <h3>{$title}</h3>
         <table>
           <thead><tr>{$th}</tr></thead>
-          <tbody>{$tbody}</tbody>
-        </table>
-        </body></html>
+          <tbody>
         HTML;
     }
 

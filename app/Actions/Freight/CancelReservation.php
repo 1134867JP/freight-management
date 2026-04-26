@@ -2,6 +2,7 @@
 
 namespace App\Actions\Freight;
 
+use App\Actions\Doca\ReleaseDoca;
 use App\Enums\FreightStatus;
 use App\Exceptions\Freight\FreightAlreadyCancelledException;
 use App\Models\Freight;
@@ -9,6 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 class CancelReservation
 {
+    public function __construct(
+        private readonly ReleaseDoca $releaseDoca,
+    ) {}
+
     /**
      * Cancela uma reserva (Freight). Retorna true se cancelou, false se já estava cancelada.
      */
@@ -35,6 +40,8 @@ class CancelReservation
                 $timeslot->clampReservations();
                 $timeslot->save();
             }
+
+            $this->releaseDoca->execute($freight);
 
             return true;
         });

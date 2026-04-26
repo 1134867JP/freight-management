@@ -2,13 +2,19 @@
 
 namespace App\Actions\Freight;
 
+use App\Actions\Doca\ReleaseDoca;
 use App\Enums\FreightStatus;
+use App\Events\YardBoardUpdated;
 use App\Exceptions\Freight\FreightAlreadyCompletedException;
 use App\Models\Freight;
 use Illuminate\Support\Facades\DB;
 
 class FinalizeOperation
 {
+    public function __construct(
+        private readonly ReleaseDoca $releaseDoca,
+    ) {}
+
     /**
      * Finaliza a operação (carga ou descarga).
      * Para descarga: admin informa peso bruto e peso líquido OBRIGATÓRIOS.
@@ -61,5 +67,10 @@ class FinalizeOperation
                 $freight->update($update);
             }
         });
+
+        $this->releaseDoca->execute($freight);
+
+        // Dispara fora da transação para garantir que o DB já foi commitado
+        YardBoardUpdated::dispatch($freight->company_id);
     }
 }
