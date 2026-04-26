@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 // ─── stat cards ──────────────────────────────────────────────────────────────
 
@@ -140,6 +140,15 @@ const QUICK_LINKS = [
   },
 ];
 
+// ─── greeting helper ──────────────────────────────────────────────────────────
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Bom dia';
+  if (h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
 // ─── occupancy chart ──────────────────────────────────────────────────────────
 
 function OccupancyChart({ occupancy }) {
@@ -225,6 +234,9 @@ function OccupancyChart({ occupancy }) {
 // ─── main ─────────────────────────────────────────────────────────────────────
 
 export default function Dashboard({ stats, occupancy }) {
+  const { auth } = usePage().props;
+  const firstName = auth.user.name.split(' ')[0];
+
   return (
     <AuthenticatedLayout
       header={
@@ -233,6 +245,9 @@ export default function Dashboard({ stats, occupancy }) {
             <div className="flex items-center gap-2 mb-0.5">
               <span className="text-xs font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">CargoHub</span>
             </div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {greeting()}, <span className="font-semibold text-gray-700 dark:text-gray-200">{firstName}</span>
+            </p>
             <h2 className="text-xl font-black text-gray-900 dark:text-gray-100">Painel do Administrador</h2>
             <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Visão geral das operações</p>
           </div>
