@@ -122,7 +122,8 @@ class FreightController extends Controller
                 cargoDescription: $validated['cargo_description'] ?? null,
                 operationType: $validated['operation_type'],
                 weight: $validated['weight'] ?? null,
-                invoicePath: $invoicePath
+                invoicePath: $invoicePath,
+                driverPhone: $validated['driver_phone'] ?? null,
             );
 
             if ($invoicePath) {
@@ -138,6 +139,7 @@ class FreightController extends Controller
             }
 
             $this->whatsAppNotifier->notifyAdminReservationCreated($freight);
+            $this->whatsAppNotifier->notifyDriverFreightConfirmed($freight);
             $this->emailNotifier->notifyAdminReservationCreated($freight);
 
             return redirect()->route('client.reservations')->with('success', 'Reserva criada com sucesso!');

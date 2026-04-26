@@ -15,6 +15,7 @@ export default function Index({ timeslots, trucks }) {
   const { data, setData, post, processing, errors, reset } = useForm({
     truck_plate: '',
     driver_name: '',
+    driver_phone: '',
     cargo_description: '',
     weight: '',
     operation_type: 'load',

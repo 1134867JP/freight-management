@@ -47,40 +47,58 @@ export default function AuthenticatedLayout({ header, children }) {
         {
           section: 'Operação',
           items: [
-            { label: 'Painel', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
-            { label: 'Painel do Pátio', href: route('admin.yard-board'), active: route().current('admin.yard-board'), icon: 'yardboard' },
-            { label: 'Mapa do Pátio', href: route('admin.yard-map'), active: route().current('admin.yard-map'), icon: 'map' },
-            { label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' },
+            { label: 'Painel',    href: route('admin.dashboard'),       active: route().current('admin.dashboard'), icon: 'dashboard' },
+            { label: 'Portaria',  href: route('admin.gate'),            active: route().current('admin.gate'),      icon: 'gate'      },
+            { label: 'Fretes',    href: route('freights.approvalList'), active: route().current('freights.*'),      icon: 'freight'   },
+          ],
+        },
+        {
+          section: 'Pátio',
+          items: [
+            { label: 'Painel do Pátio',        href: route('admin.yard-board'),  active: route().current('admin.yard-board'),  icon: 'yardboard' },
+            { label: 'Mapa do Pátio',          href: route('admin.yard-map'),    active: route().current('admin.yard-map'),    icon: 'map'       },
             { label: 'Ordens de Movimentação', href: route('admin.move-orders'), active: route().current('admin.move-orders*'), icon: 'moveorder' },
-            { label: 'Cotas', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
-            { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda'), icon: 'schedule' },
-            { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
+            { label: 'KPIs',                   href: route('admin.kpi'),         active: route().current('admin.kpi'),         icon: 'kpi'       },
+          ],
+        },
+        {
+          section: 'Agendamento',
+          items: [
+            { label: 'Cotas',  href: route('timeslots.index'), active: route().current('timeslots.*'),  icon: 'calendar' },
+            { label: 'Agenda', href: route('admin.agenda'),    active: route().current('admin.agenda'), icon: 'schedule' },
           ],
         },
         {
           section: 'Cadastros',
           items: [
-            { label: 'Clientes', href: route('clients.index'), active: route().current('clients.*'), icon: 'users' },
+            { label: 'Clientes',  href: route('clients.index'),          active: route().current('clients.*'),          icon: 'users'    },
             { label: 'Endereços', href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*'), icon: 'location' },
-            { label: 'Produtos', href: route('produtos.index'), active: route().current('produtos.*'), icon: 'box' },
-            { label: 'Docas', href: route('docas.index'), active: route().current('docas.*'), icon: 'dock' },
-            { label: 'Zonas do Pátio', href: route('yard-zones.index'), active: route().current('yard-zones.*'), icon: 'zones' },
-            { label: 'Vagas do Pátio', href: route('yard-spots.index'), active: route().current('yard-spots.*'), icon: 'spot' },
-            { label: 'Cavalos Mecânicos', href: route('yard-trucks.index'), active: route().current('yard-trucks.*'), icon: 'yardtruck' },
+            { label: 'Produtos',  href: route('produtos.index'),          active: route().current('produtos.*'),          icon: 'box'      },
+            {
+              label: 'Estrutura do Pátio',
+              icon: 'zones',
+              group: 'yard-structure',
+              active: route().current('docas.*') || route().current('yard-zones.*') || route().current('yard-spots.*') || route().current('yard-trucks.*'),
+              children: [
+                { label: 'Docas',             href: route('docas.index'),       active: route().current('docas.*')       },
+                { label: 'Zonas do Pátio',    href: route('yard-zones.index'),  active: route().current('yard-zones.*')  },
+                { label: 'Vagas do Pátio',    href: route('yard-spots.index'),  active: route().current('yard-spots.*')  },
+                { label: 'Cavalos Mecânicos', href: route('yard-trucks.index'), active: route().current('yard-trucks.*') },
+              ],
+            },
           ],
         },
         {
           section: 'Dados',
           items: [
-            { label: 'KPIs do Pátio', href: route('admin.kpi'), active: route().current('admin.kpi'), icon: 'kpi' },
             {
               label: 'Relatórios',
               icon: 'chart',
               group: 'reports-admin',
               active: route().current('reports.admin.*'),
               children: [
-                { label: 'Cotas', href: route('reports.admin.timeslots'), active: route().current('reports.admin.timeslots') },
-                { label: 'Fretes', href: route('reports.admin.freights'), active: route().current('reports.admin.freights') },
+                { label: 'Cotas',   href: route('reports.admin.timeslots'), active: route().current('reports.admin.timeslots') },
+                { label: 'Fretes',  href: route('reports.admin.freights'),  active: route().current('reports.admin.freights')  },
               ],
             },
           ],

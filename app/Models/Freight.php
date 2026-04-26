@@ -25,7 +25,7 @@ class Freight extends Model
 
     protected $fillable = [
         'company_id', 'user_id', 'timeslot_id', 'produto_id', 'doca_id', 'truck_id', 'current_spot_id', 'operation_type',
-        'truck_plate', 'driver_name', 'cargo_description', 'weight', 'gross_weight', 'net_weight',
+        'truck_plate', 'driver_name', 'driver_phone', 'cargo_description', 'weight', 'gross_weight', 'net_weight',
         'status', 'admin_notes', 'arrived_at', 'departed_at',
         'qr_token', 'dwell_limit_minutos', 'detention_valor_hora',
     ];

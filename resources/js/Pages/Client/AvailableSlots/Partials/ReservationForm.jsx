@@ -164,6 +164,23 @@ export default function ReservationForm({
           />
         </FormField>
 
+        <FormField
+          label="WhatsApp do Motorista"
+          error={allErrors.driver_phone}
+          hint="O QR Code de entrada será enviado automaticamente para este número"
+        >
+          <FormField.Input
+            type="tel"
+            error={allErrors.driver_phone}
+            value={data.driver_phone}
+            onChange={(event) => {
+              setData('driver_phone', event.target.value);
+              clearClientError('driver_phone');
+            }}
+            placeholder="Ex: 11999990000"
+          />
+        </FormField>
+
         {/* Descrição da carga: apenas no modelo aberta */}
         {blModeloAberta && (
           <FormField label="Carga (Descrição)" error={allErrors.cargo_description} required>

@@ -31,7 +31,8 @@ class StoreFreightRequest extends FormRequest
         return [
             'operation_type' => ['required', 'in:load,unload'],
             'truck_plate' => ['required', 'string', 'max:10'],
-            'driver_name' => ['required', 'string', 'max:100'],
+            'driver_name'  => ['required', 'string', 'max:100'],
+            'driver_phone' => ['nullable', 'string', 'max:20'],
             'cargo_description' => $blCargoRequired
                 ? ['required', 'string', 'max:500']
                 : ['nullable', 'string', 'max:500'],
