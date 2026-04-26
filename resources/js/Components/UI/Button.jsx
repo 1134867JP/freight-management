@@ -47,14 +47,17 @@ export default function Button({
   children,
   className = '',
   type = 'button',
+  onClick,
   ...props
 }) {
   const isDisabled = disabled || loading;
 
   return (
     <button
+      {...props}
       type={type}
       disabled={isDisabled}
+      aria-busy={loading}
       className={[
         'inline-flex items-center justify-center rounded-lg border font-semibold',
         'transition-colors duration-150',
@@ -66,7 +69,6 @@ export default function Button({
       ]
         .filter(Boolean)
         .join(' ')}
-      {...props}
     >
       {loading && <Spinner />}
       {children}
