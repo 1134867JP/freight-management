@@ -9,6 +9,7 @@ import { confirmAction } from '@/Components/UI/confirmAction';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { isValidEmail, isValidWhatsApp } from '@/utils/validation';
 import { Head, useForm, router } from '@inertiajs/react';
+import Button from '@/Components/UI/Button';
 
 const AVATAR_COLORS = [
   'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
@@ -136,16 +137,12 @@ export default function Admins({ admins, currentUserId }) {
           title="Administradores"
           subtitle="Gerencie os administradores desta empresa"
           actions={
-            <button
-              type="button"
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
+            <Button onClick={() => setShowCreateModal(true)}>
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M12 5v14M5 12h14" strokeLinecap="round" />
               </svg>
               Novo Administrador
-            </button>
+            </Button>
           }
         />
       }
@@ -314,20 +311,8 @@ export default function Admins({ admins, currentUserId }) {
           </FormField>
 
           <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={processing}
-              className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isEditing ? 'Atualizar' : 'Criar'}
-            </button>
+            <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
+            <Button type="submit" variant="primary" className="flex-1" loading={processing}>{isEditing ? 'Atualizar' : 'Criar'}</Button>
           </div>
         </form>
       </ModalShell>
