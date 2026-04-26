@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import PageHeader from '@/Components/UI/PageHeader';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 const statCards = (stats) => [
   {
@@ -98,10 +98,27 @@ const quickLinks = [
   },
 ];
 
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Bom dia';
+  if (h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
 export default function Dashboard({ stats }) {
+  const { auth } = usePage().props;
+  const firstName = auth.user.name.split(' ')[0];
   return (
     <AuthenticatedLayout
-      header={<PageHeader title="Meu Painel" subtitle="Resumo das suas operações de frete" />}
+      header={
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {greeting()}, <span className="font-semibold text-gray-700 dark:text-gray-200">{firstName}</span>
+          </p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Meu Painel</h2>
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Resumo das suas operações de frete</p>
+        </div>
+      }
     >
       <Head title="Meu Painel" />
 
