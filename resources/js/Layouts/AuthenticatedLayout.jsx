@@ -49,7 +49,9 @@ export default function AuthenticatedLayout({ header, children }) {
           items: [
             { label: 'Painel', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
             { label: 'Painel do Pátio', href: route('admin.yard-board'), active: route().current('admin.yard-board'), icon: 'yardboard' },
+            { label: 'Mapa do Pátio', href: route('admin.yard-map'), active: route().current('admin.yard-map'), icon: 'map' },
             { label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' },
+            { label: 'Ordens de Movimentação', href: route('admin.move-orders'), active: route().current('admin.move-orders*'), icon: 'moveorder' },
             { label: 'Cotas', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
             { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda'), icon: 'schedule' },
             { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
@@ -62,11 +64,15 @@ export default function AuthenticatedLayout({ header, children }) {
             { label: 'Endereços', href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*'), icon: 'location' },
             { label: 'Produtos', href: route('produtos.index'), active: route().current('produtos.*'), icon: 'box' },
             { label: 'Docas', href: route('docas.index'), active: route().current('docas.*'), icon: 'dock' },
+            { label: 'Zonas do Pátio', href: route('yard-zones.index'), active: route().current('yard-zones.*'), icon: 'zones' },
+            { label: 'Vagas do Pátio', href: route('yard-spots.index'), active: route().current('yard-spots.*'), icon: 'spot' },
+            { label: 'Cavalos Mecânicos', href: route('yard-trucks.index'), active: route().current('yard-trucks.*'), icon: 'yardtruck' },
           ],
         },
         {
           section: 'Dados',
           items: [
+            { label: 'KPIs do Pátio', href: route('admin.kpi'), active: route().current('admin.kpi'), icon: 'kpi' },
             {
               label: 'Relatórios',
               icon: 'chart',
@@ -433,6 +439,18 @@ function MenuIcon({ name, className = '' }) {
       'M3 3h7v7H3V3Zm0 11h7v7H3v-7Zm11-11h7v7h-7V3Zm0 11h7v7h-7v-7Z',
     gate:
       'M3 12h18M3 12V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7M3 12v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M9 12v4m6-4v4',
+    map:
+      'M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3ZM9 3v15M15 6v15',
+    moveorder:
+      'M5 12h14M12 5l7 7-7 7',
+    zones:
+      'M3 3h8v8H3V3Zm10 0h8v8h-8V3ZM3 13h8v8H3v-8Zm13 4a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+    spot:
+      'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z',
+    yardtruck:
+      'M1 3h15v13H1V3Zm15 5 5 3v5h-5V8ZM5.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
+    kpi:
+      'M18 20V10M12 20V4M6 20v-6',
   };
 
   const strPath = objPaths[name] || objPaths.dashboard;
