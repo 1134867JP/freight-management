@@ -204,9 +204,15 @@ class TimeslotController extends Controller
             ->orderBy('plate')
             ->get();
 
+        $arrDrivers = $objUser->drivers()
+            ->orderByDesc('is_active')
+            ->orderBy('nome')
+            ->get();
+
         return Inertia::render('Client/AvailableSlots/Index', [
             'timeslots' => $arrTimeslots,
-            'trucks' => $arrTrucks,
+            'trucks'    => $arrTrucks,
+            'drivers'   => $arrDrivers,
         ]);
     }
 

@@ -16,6 +16,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TimeslotController;
+use App\Http\Controllers\DriverController;
 use App\Http\Controllers\TruckController;
 use App\Http\Controllers\KpiController;
 use App\Http\Controllers\MoveOrderController;
@@ -169,11 +170,17 @@ Route::middleware('auth')->group(function () {
         // Relatórios do cliente
         Route::get('/reports/reservations', [ReportController::class, 'clientReservations'])->name('reports.client.reservations');
 
-        // Caminhões (dentro do grupo client para manter padrão)
+        // Caminhões
         Route::get('/trucks', [TruckController::class, 'index'])->name('client.trucks');
         Route::post('/trucks', [TruckController::class, 'store'])->name('client.trucks.store');
         Route::patch('/trucks/{truck}', [TruckController::class, 'update'])->name('client.trucks.update');
         Route::delete('/trucks/{truck}', [TruckController::class, 'destroy'])->name('client.trucks.destroy');
+
+        // Motoristas
+        Route::get('/drivers', [DriverController::class, 'index'])->name('client.drivers');
+        Route::post('/drivers', [DriverController::class, 'store'])->name('client.drivers.store');
+        Route::patch('/drivers/{driver}', [DriverController::class, 'update'])->name('client.drivers.update');
+        Route::delete('/drivers/{driver}', [DriverController::class, 'destroy'])->name('client.drivers.destroy');
     });
 
     // -------------------------

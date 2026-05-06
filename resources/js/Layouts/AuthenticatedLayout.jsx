@@ -115,6 +115,7 @@ export default function AuthenticatedLayout({ header, children }) {
           { label: 'Cotas Disponíveis', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
           { label: 'Minhas Reservas', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'clipboard' },
           { label: 'Caminhões', href: route('client.trucks'), active: route().current('client.trucks'), icon: 'truck' },
+          { label: 'Motoristas', href: route('client.drivers'), active: route().current('client.drivers'), icon: 'driver' },
         ],
       },
       {
@@ -469,6 +470,8 @@ function MenuIcon({ name, className = '' }) {
       'M1 3h15v13H1V3Zm15 5 5 3v5h-5V8ZM5.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
     kpi:
       'M18 20V10M12 20V4M6 20v-6',
+    driver:
+      'M12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 13a7 7 0 0 1 14 0',
   };
 
   const strPath = objPaths[name] || objPaths.dashboard;
