@@ -7,7 +7,7 @@ import ReservationForm from './Partials/ReservationForm';
 import TimeslotList from './Partials/TimeslotList';
 import TruckQuickCreateModal from './Partials/TruckQuickCreateModal';
 
-export default function Index({ timeslots, trucks }) {
+export default function Index({ timeslots, trucks, drivers }) {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showTruckModal, setShowTruckModal] = useState(false);
   const hasSelectedSlot = Boolean(selectedSlot);
@@ -15,6 +15,7 @@ export default function Index({ timeslots, trucks }) {
   const { data, setData, post, processing, errors, reset } = useForm({
     truck_plate: '',
     driver_name: '',
+    driver_phone: '',
     cargo_description: '',
     weight: '',
     operation_type: 'load',
@@ -111,6 +112,7 @@ export default function Index({ timeslots, trucks }) {
                 errors={errors}
                 processing={processing}
                 trucks={trucks}
+                drivers={drivers}
                 onSubmit={submitReservation}
                 onOpenTruckModal={() => setShowTruckModal(true)}
                 className="xl:w-5/12"

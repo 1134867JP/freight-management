@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { getTruckTypeLabel, normalizeTruckPlate } from '@/Features/Truck/utils/truckTypes';
 import FormField from '@/Components/UI/FormField';
 import { useClientValidation } from '@/hooks/useClientValidation';
@@ -12,6 +12,7 @@ export default function ReservationForm({
   errors,
   processing,
   trucks,
+  drivers,
   onSubmit,
   onOpenTruckModal,
   className = '',
@@ -21,6 +22,8 @@ export default function ReservationForm({
   const blModeloAberta = !selectedSlot.modelo || selectedSlot.modelo === 'aberta';
   const blTemProduto = selectedSlot.modelo === 'por_produto' || selectedSlot.modelo === 'por_produto_doca';
   const blTemDoca = selectedSlot.modelo === 'por_produto_doca';
+
+  const activeDrivers = Array.isArray(drivers) ? drivers.filter((d) => d.is_active) : [];
 
   const { clientErrors, validate, clearClientError } = useClientValidation({
     truck_plate: (value) => {
@@ -33,7 +36,7 @@ export default function ReservationForm({
         return 'Nome do motorista deve ter ao menos 3 caracteres.';
       return null;
     },
-    cargo_description: (value, formData) => {
+    cargo_description: (value) => {
       if (!blModeloAberta) return null;
       if (!value || value.trim().length < 3)
         return 'Descrição da carga deve ter ao menos 3 caracteres.';
@@ -52,6 +55,19 @@ export default function ReservationForm({
     event.preventDefault();
     if (!validate(data)) return;
     onSubmit(event);
+  };
+
+  const handleDriverSelect = (driverId) => {
+    if (!driverId) return;
+    const driver = activeDrivers.find((d) => String(d.id) === String(driverId));
+    if (!driver) return;
+    setData((prev) => ({
+      ...prev,
+      driver_name: driver.nome,
+      driver_phone: driver.phone ?? '',
+    }));
+    clearClientError('driver_name');
+    clearClientError('driver_phone');
   };
 
   const nrRemaining = Math.max(selectedSlot.capacity - selectedSlot.current_reservations, 0);
@@ -73,7 +89,6 @@ export default function ReservationForm({
         </div>
       </div>
 
-      {/* Badge do modelo */}
       {blTemProduto && (
         <div className="mb-4 flex flex-wrap gap-2">
           <span className="inline-flex items-center rounded-full bg-purple-100 dark:bg-purple-900/30 px-3 py-1 text-xs font-semibold text-purple-800 dark:text-purple-300">
@@ -151,6 +166,23 @@ export default function ReservationForm({
           </div>
         </FormField>
 
+        {/* Driver quick-select: only shown when the client has registered drivers */}
+        {activeDrivers.length > 0 && (
+          <FormField label="Selecionar motorista cadastrado" hint="Preenche automaticamente nome e WhatsApp">
+            <FormField.Select
+              value=""
+              onChange={(event) => handleDriverSelect(event.target.value)}
+            >
+              <option value="">— escolha para preencher —</option>
+              {activeDrivers.map((driver) => (
+                <option key={driver.id} value={driver.id}>
+                  {driver.nome}{driver.phone ? ` · ${driver.phone}` : ''}
+                </option>
+              ))}
+            </FormField.Select>
+          </FormField>
+        )}
+
         <FormField label="Nome do Motorista" error={allErrors.driver_name} required>
           <FormField.Input
             type="text"
@@ -161,6 +193,23 @@ export default function ReservationForm({
               clearClientError('driver_name');
             }}
             required
+          />
+        </FormField>
+
+        <FormField
+          label="WhatsApp do Motorista"
+          error={allErrors.driver_phone}
+          hint="O QR Code de entrada será enviado automaticamente para este número"
+        >
+          <FormField.Input
+            type="tel"
+            error={allErrors.driver_phone}
+            value={data.driver_phone}
+            onChange={(event) => {
+              setData('driver_phone', event.target.value);
+              clearClientError('driver_phone');
+            }}
+            placeholder="Ex: 11999990000"
           />
         </FormField>
 

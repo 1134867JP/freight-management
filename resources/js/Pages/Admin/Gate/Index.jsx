@@ -1,8 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import PageHeader from '@/Components/UI/PageHeader';
 import FlashMessages from '@/Components/UI/FlashMessages';
+import ModalShell from '@/Components/UI/ModalShell';
 import { Head, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -378,6 +379,85 @@ function QueueCard({ freight, now }) {
 
 // ─── main ────────────────────────────────────────────────────────────────────
 
+function QrLookupPanel() {
+  const [token, setToken]     = useState('');
+  const [result, setResult]   = useState(null);
+  const [error, setError]     = useState(null);
+  const [loading, setLoading] = useState(false);
+  const inputRef              = useRef(null);
+
+  const lookup = async (e) => {
+    e?.preventDefault();
+    if (!token.trim()) return;
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch(route('admin.gate.qr-lookup'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' },
+        body: JSON.stringify({ token: token.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'QR não encontrado.'); return; }
+      setResult(data);
+    } catch {
+      setError('Erro de conexão.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const doCheckIn = () => {
+    if (!result) return;
+    router.patch(route('freights.gate-checkin', result.id), {}, {
+      onSuccess: () => { setResult(null); setToken(''); inputRef.current?.focus(); },
+      preserveScroll: true,
+    });
+  };
+
+  return (
+    <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 dark:border-teal-800 dark:bg-teal-950/20">
+      <h3 className="mb-3 text-sm font-bold text-teal-700 dark:text-teal-400">Check-in por QR Code</h3>
+      <form onSubmit={lookup} className="flex gap-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={token}
+          onChange={e => { setToken(e.target.value); setResult(null); setError(null); }}
+          placeholder="Escaneie ou cole o token do QR Code..."
+          className="flex-1 rounded-lg border border-teal-300 bg-white px-3 py-2 text-sm font-mono focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-teal-700 dark:bg-gray-800 dark:text-gray-100"
+          autoFocus
+        />
+        <button type="submit" disabled={loading} className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50">
+          {loading ? '...' : 'Buscar'}
+        </button>
+      </form>
+
+      {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+      {result && (
+        <div className="mt-3 flex items-center justify-between rounded-lg border border-teal-200 bg-white p-3 dark:border-teal-800 dark:bg-gray-800">
+          <div>
+            <p className="font-mono font-bold text-gray-900 dark:text-gray-100">{result.truck_plate}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{result.driver_name}</p>
+            <p className="mt-0.5 text-xs text-gray-400">{result.status_label}</p>
+          </div>
+          {result.status === 'reserved' ? (
+            <button onClick={doCheckIn} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+              ✓ Check-in
+            </button>
+          ) : (
+            <span className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+              {result.status_label}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function GateIndex({ expected, waiting, inProgress, completedToday }) {
   const now = useNow();
   const totalOps = inProgress.length;
@@ -396,6 +476,8 @@ export default function GateIndex({ expected, waiting, inProgress, completedToda
       <div className="py-8">
         <div className="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
           <FlashMessages />
+
+          <QrLookupPanel />
 
           {/* ── stat cards ── */}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

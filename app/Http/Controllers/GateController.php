@@ -95,4 +95,41 @@ class GateController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
+
+    public function qrLookup(Request $request)
+    {
+        $request->validate(['token' => ['required', 'string']]);
+
+        $freight = Freight::where('qr_token', $request->input('token'))
+            ->where('company_id', auth()->user()->company_id)
+            ->with(['user', 'timeslot', 'doca'])
+            ->first();
+
+        if (! $freight) {
+            return response()->json(['error' => 'QR Code não encontrado.'], 404);
+        }
+
+        return response()->json($this->serialize($freight));
+    }
+
+    private function serialize(Freight $freight): array
+    {
+        return [
+            'id'             => $freight->id,
+            'truck_plate'    => $freight->truck_plate,
+            'driver_name'    => $freight->driver_name,
+            'operation_type' => $freight->operation_type,
+            'status'         => $freight->status->value,
+            'status_label'   => $freight->status->label(),
+            'arrived_at'     => $freight->arrived_at?->toIso8601String(),
+            'departed_at'    => $freight->departed_at?->toIso8601String(),
+            'dwell_minutes'  => $freight->dwellMinutes(),
+            'is_detaining'   => $freight->isDetaining(),
+            'detention_amount' => $freight->detentionAmount(),
+            'qr_token'       => $freight->qr_token,
+            'user'           => $freight->user ? ['name' => $freight->user->name] : null,
+            'timeslot'       => $freight->timeslot ? ['start_time' => $freight->timeslot->start_time?->toIso8601String()] : null,
+            'doca'           => $freight->doca ? ['nome' => $freight->doca->nome] : null,
+        ];
+    }
 }

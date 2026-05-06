@@ -29,7 +29,8 @@ class CreateReservation
         ?string $cargoDescription,
         string $operationType,
         ?float $weight = null,
-        ?string $invoicePath = null
+        ?string $invoicePath = null,
+        ?string $driverPhone = null,
     ): Freight {
         return DB::transaction(function () use (
             $user,
@@ -39,7 +40,8 @@ class CreateReservation
             $cargoDescription,
             $operationType,
             $weight,
-            $invoicePath
+            $invoicePath,
+            $driverPhone,
         ) {
             if ((int) $user->company_id !== (int) $timeslot->company_id) {
                 throw new \RuntimeException('O horário selecionado não pertence à empresa do cliente.');
@@ -87,6 +89,7 @@ class CreateReservation
                 'truck_id'         => $truck?->id,
                 'truck_plate'      => strtoupper($truckPlate),
                 'driver_name'      => $driverName,
+                'driver_phone'     => $driverPhone ? preg_replace('/\D/', '', $driverPhone) : null,
                 'cargo_description'=> $cargoDescription,
                 'operation_type'   => $operationType,
                 'weight'           => $weight,

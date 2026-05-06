@@ -8,6 +8,46 @@ use App\Models\User;
 
 class FreightWhatsAppNotifier
 {
+    public function notifyDriverFreightConfirmed(Freight $freight): void
+    {
+        if (blank($freight->driver_phone)) {
+            return;
+        }
+
+        $freight->loadMissing(['timeslot.dropoffAddress']);
+
+        $lines = [
+            "Olá, {$freight->driver_name}! Sua reserva de frete foi confirmada.",
+            '',
+            'Placa: '.$freight->truck_plate,
+            'Operação: '.$this->operationLabel($freight->operation_type),
+            'Horário: '.$this->timeslotLabel($freight),
+        ];
+
+        $location = $this->locationLabel($freight);
+        if ($location !== 'Não informado') {
+            $lines[] = 'Local: '.$location;
+        }
+
+        $lines[] = '';
+        $lines[] = '📱 Código de entrada na portaria:';
+        $lines[] = $freight->qr_token;
+        $lines[] = '';
+        $lines[] = 'Apresente este código ao porteiro para check-in rápido.';
+
+        SendWhatsAppMessageJob::dispatch(
+            $freight->driver_phone,
+            implode("\n", $lines),
+            [
+                'company_id'     => $freight->company_id,
+                'event'          => 'driver_freight_confirmed',
+                'recipient_role' => 'driver',
+                'freight_id'     => $freight->id,
+            ],
+            $freight->company_id,
+        )->afterCommit();
+    }
+
     public function notifyAdminReservationCreated(Freight $freight): void
     {
         $freight->loadMissing(['user', 'timeslot.creator', 'timeslot.dropoffAddress']);

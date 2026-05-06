@@ -16,8 +16,15 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TimeslotController;
+use App\Http\Controllers\DriverController;
 use App\Http\Controllers\TruckController;
+use App\Http\Controllers\KpiController;
+use App\Http\Controllers\MoveOrderController;
 use App\Http\Controllers\YardBoardController;
+use App\Http\Controllers\YardMapController;
+use App\Http\Controllers\YardSpotController;
+use App\Http\Controllers\YardTruckController;
+use App\Http\Controllers\YardZoneController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'root'])->name('home');
@@ -68,6 +75,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/gate', [GateController::class, 'index'])->name('admin.gate');
         Route::patch('/freights/{freight}/gate-checkin', [GateController::class, 'checkIn'])->name('freights.gate-checkin');
         Route::patch('/freights/{freight}/gate-checkout', [GateController::class, 'checkOut'])->name('freights.gate-checkout');
+        Route::post('/gate/qr-lookup', [GateController::class, 'qrLookup'])->name('admin.gate.qr-lookup');
 
         // Gerenciamento de clientes
         Route::resource('clients', ClientManagementController::class)
@@ -87,6 +95,34 @@ Route::middleware('auth')->group(function () {
 
         Route::patch('/freights/{freight}/release-doca', [DocaController::class, 'release'])
             ->name('freights.releaseDoca');
+
+        // Mapa do Pátio
+        Route::get('/yard-map', [YardMapController::class, 'index'])->name('admin.yard-map');
+        Route::get('/yard-map/data', [YardMapController::class, 'data'])->name('admin.yard-map.data');
+
+        // Zonas do Pátio
+        Route::resource('yard-zones', YardZoneController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
+
+        // Vagas do Pátio
+        Route::resource('yard-spots', YardSpotController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
+        Route::patch('/freights/{freight}/assign-spot', [YardSpotController::class, 'assign'])->name('freights.assign-spot');
+        Route::patch('/freights/{freight}/release-spot', [YardSpotController::class, 'release'])->name('freights.release-spot');
+
+        // Cavalos Mecânicos de Pátio
+        Route::resource('yard-trucks', YardTruckController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
+
+        // Ordens de Movimentação
+        Route::get('/move-orders', [MoveOrderController::class, 'index'])->name('admin.move-orders');
+        Route::post('/move-orders', [MoveOrderController::class, 'store'])->name('admin.move-orders.store');
+        Route::patch('/move-orders/{moveOrder}/start', [MoveOrderController::class, 'start'])->name('admin.move-orders.start');
+        Route::patch('/move-orders/{moveOrder}/complete', [MoveOrderController::class, 'complete'])->name('admin.move-orders.complete');
+        Route::patch('/move-orders/{moveOrder}/cancel', [MoveOrderController::class, 'cancel'])->name('admin.move-orders.cancel');
+
+        // KPIs
+        Route::get('/kpi', [KpiController::class, 'index'])->name('admin.kpi');
 
         // Logs de auditoria
         Route::middleware('permission:view_audit_logs')
@@ -134,11 +170,17 @@ Route::middleware('auth')->group(function () {
         // Relatórios do cliente
         Route::get('/reports/reservations', [ReportController::class, 'clientReservations'])->name('reports.client.reservations');
 
-        // Caminhões (dentro do grupo client para manter padrão)
+        // Caminhões
         Route::get('/trucks', [TruckController::class, 'index'])->name('client.trucks');
         Route::post('/trucks', [TruckController::class, 'store'])->name('client.trucks.store');
         Route::patch('/trucks/{truck}', [TruckController::class, 'update'])->name('client.trucks.update');
         Route::delete('/trucks/{truck}', [TruckController::class, 'destroy'])->name('client.trucks.destroy');
+
+        // Motoristas
+        Route::get('/drivers', [DriverController::class, 'index'])->name('client.drivers');
+        Route::post('/drivers', [DriverController::class, 'store'])->name('client.drivers.store');
+        Route::patch('/drivers/{driver}', [DriverController::class, 'update'])->name('client.drivers.update');
+        Route::delete('/drivers/{driver}', [DriverController::class, 'destroy'])->name('client.drivers.destroy');
     });
 
     // -------------------------

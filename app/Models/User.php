@@ -124,6 +124,11 @@ class User extends Authenticatable
         return $this->hasMany(Truck::class);
     }
 
+    public function drivers(): HasMany
+    {
+        return $this->hasMany(Driver::class);
+    }
+
     public function createdTimeslots(): HasMany
     {
         return $this->hasMany(Timeslot::class, 'created_by');

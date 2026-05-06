@@ -2,8 +2,10 @@ import React, { useRef, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmptyState from '@/Components/UI/EmptyState';
 import FlashMessages from '@/Components/UI/FlashMessages';
+import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import QrCodeDisplay from '@/Components/UI/QrCodeDisplay';
 import { confirmAction } from '@/Components/UI/confirmAction';
 import {
   getFreightStatusTone,
@@ -111,6 +113,8 @@ export default function MyReservations({ freights, filters = {} }) {
       { forceFormData: true, preserveScroll: true },
     );
   };
+
+  const [qrFreight, setQrFreight] = useState(null);
 
   const canCancel = (freight) => freight.status !== 'cancelled' && freight.status !== 'completed';
   const canReopen = (freight) => freight.status === 'cancelled';
@@ -305,7 +309,17 @@ export default function MyReservations({ freights, filters = {} }) {
                             </button>
                           )}
 
-                          {!hasActions(freight) && (
+                          {freight.qr_token && (
+                            <button
+                              type="button"
+                              onClick={() => setQrFreight(freight)}
+                              className={`${btnBase} border-teal-600 bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500`}
+                            >
+                              QR
+                            </button>
+                          )}
+
+                          {!hasActions(freight) && !freight.qr_token && (
                             <span className="text-xs text-gray-400 dark:text-gray-500">Sem ações</span>
                           )}
                         </div>
@@ -318,6 +332,36 @@ export default function MyReservations({ freights, filters = {} }) {
           )}
         </div>
       </div>
+
+      <ModalShell
+        show={Boolean(qrFreight)}
+        title="QR Code de Entrada"
+        onClose={() => setQrFreight(null)}
+      >
+        {qrFreight && (
+          <div className="flex flex-col items-center gap-4 py-2">
+            <QrCodeDisplay
+              value={qrFreight.qr_token}
+              size={200}
+              label="Mostre este código na portaria para check-in rápido"
+            />
+            <div className="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800">
+              <p className="text-center text-sm font-bold text-gray-800 dark:text-gray-200">
+                {qrFreight.truck_plate}
+              </p>
+              <p className="text-center text-xs text-gray-500 dark:text-gray-400">{qrFreight.driver_name}</p>
+              {qrFreight.timeslot && (
+                <p className="mt-1 text-center text-xs text-gray-500 dark:text-gray-400">
+                  {new Date(qrFreight.timeslot.start_time).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                </p>
+              )}
+            </div>
+            <p className="text-center text-xs text-gray-400 dark:text-gray-500">
+              O porteiro escaneia este QR para fazer o check-in automaticamente.
+            </p>
+          </div>
+        )}
+      </ModalShell>
     </AuthenticatedLayout>
   );
 }
