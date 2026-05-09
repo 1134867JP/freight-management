@@ -33,7 +33,7 @@
     "vite": "^7.0.7"
   },
   "dependencies": {
-    "laravel-echo": "^2.3.3",
+    "laravel-echo": "^2.3.4",
     "pusher-js": "^8.5.0",
     "qrcode": "^1.5.4"
   }

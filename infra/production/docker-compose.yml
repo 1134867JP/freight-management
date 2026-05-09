@@ -64,30 +64,6 @@ services:
         condition: service_healthy
     volumes:
       - app_storage:/var/www/html/storage
-    env_file:
-      - ./.env
-    environment:
-      APP_URL: ${APP_PUBLIC_URL}
-      DB_CONNECTION: pgsql
-      DB_HOST: app-postgres
-      DB_PORT: 5432
-      TRUSTED_PROXIES: ${TRUSTED_PROXIES}
-      EVOLUTION_BASE_URL: http://evolution-api:8080
-      WAIT_FOR_DB: "true"
-      APP_RUN_OPTIMIZE: "true"
-      REDIS_HOST: app-redis
-      REDIS_PORT: 6379
-      REDIS_CLIENT: phpredis
-      SESSION_DRIVER: redis
-      CACHE_STORE: redis
-      QUEUE_CONNECTION: redis
-    depends_on:
-      app-postgres:
-        condition: service_healthy
-      app-redis:
-        condition: service_healthy
-    volumes:
-      - app_storage:/var/www/html/storage
 
   app-postgres:
     image: postgres:16-alpine
