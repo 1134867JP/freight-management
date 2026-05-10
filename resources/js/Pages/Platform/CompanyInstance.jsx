@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 
 export default function CompanyInstance({ company, instance }) {
   const { data, setData, patch, post, processing, errors } = useForm({
@@ -33,6 +33,18 @@ export default function CompanyInstance({ company, instance }) {
     });
   };
 
+  const deleteInstance = () => {
+    if (
+      confirm(
+        'Tem certeza que deseja excluir esta instância? Isso removerá a conexão no provedor do WhatsApp e deletará a configuração local.',
+      )
+    ) {
+      router.delete(route('platform.companies.instance.destroy', company.id), {
+        preserveScroll: true,
+      });
+    }
+  };
+
   return (
     <AuthenticatedLayout
       header={
@@ -61,7 +73,8 @@ export default function CompanyInstance({ company, instance }) {
               <div className="border-b border-slate-100 bg-slate-950 p-6 text-white">
                 <h2 className="text-lg font-semibold">Configuração da instância</h2>
                 <p className="mt-1 text-sm text-slate-300">
-                  Salve a configuração primeiro. Depois use os botões de sincronização para criar ou reconectar a instância na Evolution.
+                  Salve a configuração primeiro. Depois use os botões de sincronização para criar ou
+                  reconectar a instância na Evolution.
                 </p>
               </div>
 
@@ -102,7 +115,9 @@ export default function CompanyInstance({ company, instance }) {
 
                   <Field
                     label="API Key"
-                    hint={instance?.has_api_key ? 'Deixe em branco para manter a chave atual.' : null}
+                    hint={
+                      instance?.has_api_key ? 'Deixe em branco para manter a chave atual.' : null
+                    }
                     error={errors.instance_api_key}
                   >
                     <input
@@ -171,13 +186,21 @@ export default function CompanyInstance({ company, instance }) {
 
           <aside className="space-y-6">
             <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Empresa</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Empresa
+              </p>
               <div className="mt-4 flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
                   {company.logo_url ? (
-                    <img src={company.logo_url} alt={company.name} className="h-full w-full object-cover" />
+                    <img
+                      src={company.logo_url}
+                      alt={company.name}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
-                    <span className="text-lg font-bold text-slate-700">{company.name.slice(0, 2).toUpperCase()}</span>
+                    <span className="text-lg font-bold text-slate-700">
+                      {company.name.slice(0, 2).toUpperCase()}
+                    </span>
                   )}
                 </div>
                 <div>
@@ -188,21 +211,47 @@ export default function CompanyInstance({ company, instance }) {
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Status</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Status
+              </p>
               <div className="mt-4 space-y-3">
                 <StatusRow label="Estado atual" value={formatState(instance?.connection_state)} />
                 <StatusRow label="Instância salva" value={instance ? 'Sim' : 'Não'} />
-                <StatusRow label="API Key" value={instance?.has_api_key ? 'Configurada' : 'Pendente'} />
+                <StatusRow
+                  label="API Key"
+                  value={instance?.has_api_key ? 'Configurada' : 'Pendente'}
+                />
                 <StatusRow label="Ativa" value={instance?.is_active ? 'Sim' : 'Não'} />
                 <StatusRow
                   label="Última sincronização"
-                  value={instance?.last_synced_at ? new Date(instance.last_synced_at).toLocaleString('pt-BR') : 'Nunca'}
+                  value={
+                    instance?.last_synced_at
+                      ? new Date(instance.last_synced_at).toLocaleString('pt-BR')
+                      : 'Nunca'
+                  }
                 />
               </div>
+
+              {instance && (
+                <div className="mt-6 border-t border-slate-200 pt-4">
+                  <button
+                    type="button"
+                    onClick={deleteInstance}
+                    className="flex w-full items-center justify-center rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-100 hover:text-red-700"
+                  >
+                    Excluir Instância
+                  </button>
+                  <p className="mt-2 text-center text-xs text-slate-500 text-balance">
+                    Essa ação é permanente.
+                  </p>
+                </div>
+              )}
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">QR Code</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                QR Code
+              </p>
               <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
                 {instance?.qr_code ? (
                   <div className="mx-auto flex aspect-square w-full max-w-[280px] items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
@@ -215,7 +264,9 @@ export default function CompanyInstance({ company, instance }) {
                 ) : (
                   <div className="space-y-2 text-sm text-slate-500">
                     <p>Nenhum QR Code disponível.</p>
-                    <p>Salve a configuração e clique em <strong>Gerar QR Code / Conectar</strong>.</p>
+                    <p>
+                      Salve a configuração e clique em <strong>Gerar QR Code / Conectar</strong>.
+                    </p>
                   </div>
                 )}
               </div>

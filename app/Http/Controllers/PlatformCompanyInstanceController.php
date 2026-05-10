@@ -58,6 +58,25 @@ class PlatformCompanyInstanceController extends Controller
             ->with('success', 'Configuração da instância salva com sucesso.');
     }
 
+    public function destroy(Company $company, EvolutionInstanceManager $manager): RedirectResponse
+    {
+        $instance = $company->whatsappInstance;
+
+        if ($instance) {
+            try {
+                $manager->delete($instance);
+            } catch (\Throwable $exception) {
+                // Ignore failure on API, we still want to delete the local register
+            }
+
+            $instance->delete();
+        }
+
+        return redirect()
+            ->route('platform.companies.instance.edit', $company)
+            ->with('success', 'Instância do WhatsApp excluída com sucesso.');
+    }
+
     public function sync(Company $company, EvolutionInstanceManager $manager): RedirectResponse
     {
         $instance = $company->whatsappInstance;

@@ -75,6 +75,41 @@ class EvolutionInstanceManager
         ];
     }
 
+    public function logout(WhatsAppInstance $instance): void
+    {
+        if (! $this->isReady($instance)) {
+            return;
+        }
+
+        $response = $this->request($instance)
+            ->delete('/instance/logout/'.rawurlencode($instance->instance_name));
+
+        if ($response->failed() && $response->status() !== 404) {
+            $response->throw();
+        }
+    }
+
+    public function delete(WhatsAppInstance $instance): void
+    {
+        if (! $this->isReady($instance)) {
+            return;
+        }
+
+        // Tentar realizar logout antes para evitar que a sessão fique presa
+        try {
+            $this->logout($instance);
+        } catch (\Exception $e) {
+            // Ignora erro no logout para tentar excluir a instância
+        }
+
+        $response = $this->request($instance)
+            ->delete('/instance/delete/'.rawurlencode($instance->instance_name));
+
+        if ($response->failed() && $response->status() !== 404) {
+            $response->throw();
+        }
+    }
+
     private function ensureExists(WhatsAppInstance $instance): void
     {
         $response = $this->request($instance)->post('/instance/create', [
@@ -89,6 +124,16 @@ class EvolutionInstanceManager
 
         if (in_array($response->status(), [400, 409, 422], true)) {
             return;
+        }
+
+        // Evolution API returns 403 with "already in use" when the instance name exists
+        if ($response->status() === 403) {
+            $messages = Arr::get($response->json() ?? [], 'response.message', []);
+            foreach ((array) $messages as $msg) {
+                if (str_contains(strtolower((string) $msg), 'already in use')) {
+                    return;
+                }
+            }
         }
 
         try {
