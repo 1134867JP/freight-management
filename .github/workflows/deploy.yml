@@ -1,0 +1,47 @@
+name: Deploy Freight Management
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            set -e
+            cd /opt/apps/outro-site/freight-management
+
+            echo "==> Atualizando codigo..."
+            git pull origin main
+
+            echo "==> Buildando imagem Docker..."
+            docker build -t freight-management-app:latest -f Dockerfile .
+
+            echo "==> Reiniciando servicos..."
+            cd infra/production
+            docker compose up -d --force-recreate app-fpm app-queue app-scheduler
+
+            echo "==> Aguardando app subir..."
+            sleep 5
+
+            echo "==> Rodando migrations e caches..."
+            docker exec freight-app php artisan migrate --force
+            docker exec freight-app php artisan config:cache
+            docker exec freight-app php artisan route:cache
+            docker exec freight-app php artisan view:cache
+
+            echo "==> Deploy concluido com sucesso!"
