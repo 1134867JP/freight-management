@@ -23,16 +23,17 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             set -e
-            cd /opt/apps/outro-site/freight-management
+            APP_DIR=/opt/apps/outro-site/freight-management
+            cd $APP_DIR
 
             echo "==> Atualizando codigo..."
             git pull origin main
 
             echo "==> Buildando imagem Docker..."
-            docker build -t freight-management-app:latest -f Dockerfile .
+            docker build -t freight-management-app:latest -f $APP_DIR/Dockerfile $APP_DIR
 
             echo "==> Reiniciando servicos..."
-            cd infra/production
+            cd $APP_DIR/infra/production
             docker compose up -d --force-recreate app-fpm app-queue app-scheduler
 
             echo "==> Aguardando app subir..."
