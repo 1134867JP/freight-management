@@ -30,7 +30,9 @@ jobs:
             git pull origin main
 
             echo "==> Buildando imagem Docker..."
-            docker build -t freight-management-app:latest -f $APP_DIR/Dockerfile $APP_DIR
+            docker build -t freight-management-app:latest \
+              -f $APP_DIR/infra/production/images/Dockerfile \
+              $APP_DIR
 
             echo "==> Reiniciando servicos..."
             cd $APP_DIR/infra/production
