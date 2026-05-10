@@ -98,6 +98,31 @@ const quickLinks = [
   },
 ];
 
+function StatCard({ label, value, color }) {
+  const border = {
+    gray: 'border-gray-400',
+    green: 'border-green-500',
+    blue: 'border-blue-500',
+    orange: 'border-orange-500',
+    red: 'border-red-500',
+  }[color] || 'border-gray-400';
+
+  const text = {
+    gray: 'text-gray-900',
+    green: 'text-green-700',
+    blue: 'text-blue-700',
+    orange: 'text-orange-600',
+    red: 'text-red-700',
+  }[color] || 'text-gray-900';
+
+  return (
+    <div className={`rounded-lg border-l-4 bg-white p-5 shadow-sm ${border}`}>
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className={`mt-2 text-3xl font-bold ${text}`}>{value}</p>
+    </div>
+  );
+}
+
 function greeting() {
   const h = new Date().getHours();
   if (h < 12) return 'Bom dia';
@@ -125,19 +150,11 @@ export default function Dashboard({ stats }) {
       <div className="py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-            {statCards(stats).map((card) => (
-              <div
-                key={card.label}
-                className={`rounded-xl border-l-4 bg-white p-5 shadow-sm dark:bg-gray-800 ${card.accent}`}
-              >
-                <div className="flex items-start justify-between">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{card.label}</p>
-                  <span className={`rounded-lg p-1.5 ${card.iconBg}`}>{card.icon}</span>
-                </div>
-                <p className={`mt-3 text-3xl font-bold ${card.color}`}>{card.value}</p>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+            <StatCard label="Minhas solicitações" value={stats?.total_my_freights ?? 0} color="gray" />
+            <StatCard label="Carregando" value={stats?.loading_my_freights ?? 0} color="orange" />
+            <StatCard label="Descarregando" value={stats?.unloading_my_freights ?? 0} color="blue" />
+            <StatCard label="Concluídas" value={stats?.completed_my_freights ?? 0} color="green" />
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -145,7 +162,7 @@ export default function Dashboard({ stats }) {
               <Link
                 key={link.label}
                 href={route(link.routeName)}
-                className={`group rounded-xl border-t-4 bg-white p-6 shadow-sm transition hover:shadow-md dark:bg-gray-800 ${link.accent}`}
+                className={`group rounded-xl border-t-4 bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:bg-gray-50 hover:ring-teal-200 dark:bg-gray-800 ${link.accent}`}
               >
                 <div className="flex items-center justify-between">
                   <span className={`rounded-lg p-2 ${link.iconBg}`}>{link.icon}</span>

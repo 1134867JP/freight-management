@@ -171,7 +171,7 @@ export default function Agenda({ timeslots }) {
 
   return (
     <AuthenticatedLayout
-      header={<PageHeader title="Agenda" subtitle="Visualize e gerencie os horários do pátio" />}
+      header={<PageHeader title="Agenda" subtitle="Horários anunciados e reservas por dia" />}
     >
       <Head title="Agenda" />
 

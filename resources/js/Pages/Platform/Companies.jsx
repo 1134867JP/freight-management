@@ -2,7 +2,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
+import Button from '@/Components/UI/Button';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -117,14 +118,15 @@ export default function Companies({ companies, summary }) {
     });
   };
 
-  const deleteCompany = (company) => {
+  const confirm = useConfirm();
+
+  const deleteCompany = async (company) => {
     if (!company.can_delete) {
       return;
     }
 
-    if (!confirmAction(`Tem certeza que deseja excluir a empresa ${company.name}? Esta ação removerá os dados vinculados.`)) {
-      return;
-    }
+    const ok = await confirm(`Tem certeza que deseja excluir a empresa ${company.name}? Esta ação removerá os dados vinculados.`);
+    if (!ok) return;
 
     router.delete(route('platform.companies.destroy', company.id), {
       preserveScroll: true,
@@ -412,13 +414,9 @@ export default function Companies({ companies, summary }) {
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              disabled={processing}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-            >
+            <Button type="submit" disabled={processing} variant="primary">
               {editingCompany ? 'Salvar alterações' : 'Criar empresa'}
-            </button>
+            </Button>
           </div>
         </form>
       </ModalShell>

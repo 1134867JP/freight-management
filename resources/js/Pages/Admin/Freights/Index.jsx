@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, router } from '@inertiajs/react';
 import AssignDocaModal from './Partials/AssignDocaModal';
 import FinalizeFreightModal from './Partials/FinalizeFreightModal';
@@ -91,8 +91,11 @@ export default function Index({ freights, docasDisponiveis }) {
     });
   }, [list, filterSearch, filterOp, filterStatus, filterDate]);
 
-  const cancelReservation = (id) => {
-    if (!confirmAction('Cancelar esta reserva?')) return;
+  const confirm = useConfirm();
+
+  const cancelReservation = async (id) => {
+    const ok = await confirm('Cancelar esta reserva?');
+    if (!ok) return;
 
     router.patch(
       route('freights.reject', id),
@@ -191,7 +194,7 @@ export default function Index({ freights, docasDisponiveis }) {
     >
       <Head title="Fretes" />
 
-      <div className="py-12">
+      <div className="py-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 

@@ -24,7 +24,7 @@ function Spinner() {
 
 const VARIANT_CLASSES = {
   primary:
-    'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 border-transparent',
+    'bg-teal-700 text-white hover:bg-teal-800 focus:ring-teal-500 border-transparent',
   secondary:
     'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600',
   danger:

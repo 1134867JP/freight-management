@@ -5,7 +5,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { isValidEmail, isValidWhatsApp } from '@/utils/validation';
 import { Head, useForm, router } from '@inertiajs/react';
@@ -68,6 +68,7 @@ export default function Clients({ clients }) {
     whatsapp_phone: '',
   });
 
+  const confirm = useConfirm();
   const isEditing = Boolean(editingClient?.id);
 
   const { clientErrors, validate, clearClientError } = useClientValidation({
@@ -131,8 +132,9 @@ export default function Clients({ clients }) {
     });
   };
 
-  const deleteClient = (id) => {
-    if (confirmAction('Tem certeza que deseja excluir este cliente?')) {
+  const deleteClient = async (id) => {
+    const ok = await confirm('Tem certeza que deseja excluir este cliente?');
+    if (ok) {
       router.delete(route('clients.destroy', id), { preserveScroll: true });
     }
   };
@@ -156,7 +158,7 @@ export default function Clients({ clients }) {
     >
       <Head title="Clientes" />
 
-      <div className="py-12">
+      <div className="py-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
@@ -215,7 +217,7 @@ export default function Clients({ clients }) {
                             <button
                               type="button"
                               onClick={() => startEdit(client)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
                             >
                               <IconEdit />
                               Editar

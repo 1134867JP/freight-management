@@ -5,7 +5,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import {
   TRUCK_TYPE_OPTIONS,
   getTruckTypeLabel,
@@ -61,6 +61,7 @@ export default function Trucks({ trucks }) {
     is_active: true,
   });
 
+  const confirm = useConfirm();
   const isEditing = Boolean(editingTruck?.id);
 
   const resetForm = () => {
@@ -112,8 +113,9 @@ export default function Trucks({ trucks }) {
     });
   };
 
-  const deleteTruck = (id) => {
-    if (confirmAction('Tem certeza que deseja excluir este caminhão?')) {
+  const deleteTruck = async (id) => {
+    const ok = await confirm('Tem certeza que deseja excluir este caminhão?');
+    if (ok) {
       router.delete(route('client.trucks.destroy', id), { preserveScroll: true });
     }
   };
@@ -139,7 +141,7 @@ export default function Trucks({ trucks }) {
     >
       <Head title="Caminhões" />
 
-      <div className="py-12">
+      <div className="py-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 

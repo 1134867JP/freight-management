@@ -1,4 +1,5 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { ConfirmProvider } from '@/Components/UI/ConfirmModal';
 import { useTheme } from '@/hooks/useTheme';
 import { Link, usePage } from '@inertiajs/react';
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
@@ -135,6 +136,11 @@ export default function AuthenticatedLayout({ header, children }) {
     ];
   }, [isAdmin, isPlatformAdmin]);
 
+  const mainLinks = useMemo(
+    () => menuSections.flatMap((s) => s.items.filter((i) => !i.children)),
+    [menuSections],
+  );
+
   const SideLink = ({ href, active, label, icon }) => (
     <Link
       href={href}
@@ -229,20 +235,21 @@ export default function AuthenticatedLayout({ header, children }) {
   }, [showAccountMenu]);
 
   return (
+    <ConfirmProvider>
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 lg:flex lg:h-screen lg:overflow-hidden">
       {/* SIDEBAR DESKTOP */}
       <aside className="hidden w-72 shrink-0 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 lg:flex lg:flex-col">
         {/* Header */}
-        <div className="border-b border-gray-200 dark:border-gray-700 p-6">
+        <div className="border-b border-gray-200 dark:border-gray-700 p-4">
           <Link href={route('dashboard')}>
             {company?.logo_url ? (
-              <img src={logoUrl} className="h-28 w-auto object-contain" alt={company.name || 'Logo'} />
+              <img src={logoUrl} className="h-12 w-auto object-contain" alt={company.name || 'Logo'} />
             ) : (
-              <ApplicationLogo className="h-14 w-auto fill-current text-gray-800" />
+              <ApplicationLogo className="h-8 w-auto fill-current text-gray-800" />
             )}
           </Link>
 
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-3 flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-600 text-sm font-bold text-white">
               {user.name.charAt(0).toUpperCase()}
             </div>
@@ -355,43 +362,44 @@ export default function AuthenticatedLayout({ header, children }) {
             <button
               type="button"
               onClick={() => setShowMobileMenu((state) => !state)}
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:text-gray-300"
+              className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+              aria-label={showMobileMenu ? 'Fechar menu' : 'Abrir menu'}
             >
-              Menu
+              {showMobileMenu ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+              )}
             </button>
           </div>
 
           {showMobileMenu && (
-            <div className="mt-3 space-y-4">
-              {menuSections.map((objSection) => (
-                <div key={objSection.section ?? '_main'}>
-                  {objSection.section && (
-                    <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                      {objSection.section}
-                    </p>
-                  )}
-                  <div className="space-y-0.5">
-                    {objSection.items.map((item) => {
-                      if (item.children) return <NavGroup key={item.label} item={item} />;
-                      if (item.sub) return <SubLink key={item.label} {...item} />;
-                      return <SideLink key={item.label} {...item} />;
-                    })}
-                  </div>
-                </div>
+            <div className="mt-3 space-y-1 border-t border-gray-200 pt-3">
+              {mainLinks.map((link) => (
+                <SideLink key={link.label} {...link} />
               ))}
-              <SideLink
-                href={route('profile.edit')}
-                active={route().current('profile.edit')}
-                label="Perfil"
-              />
-              <Link
-                href={route('logout')}
-                method="post"
-                as="button"
-                className="block w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-100"
-              >
-                Sair
-              </Link>
+              <div className="mt-2 border-t border-gray-200 pt-2">
+                <Link
+                  href={route('profile.edit')}
+                  className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Perfil
+                </Link>
+                <Link
+                  href={route('logout')}
+                  method="post"
+                  as="button"
+                  className="flex w-full items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Sair
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -405,6 +413,7 @@ export default function AuthenticatedLayout({ header, children }) {
         <main>{children}</main>
       </div>
     </div>
+    </ConfirmProvider>
   );
 }
 

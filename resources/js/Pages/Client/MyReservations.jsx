@@ -6,7 +6,7 @@ import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
 import QrCodeDisplay from '@/Components/UI/QrCodeDisplay';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import {
   getFreightStatusTone,
   translateFreightStatus,
@@ -114,6 +114,7 @@ export default function MyReservations({ freights, filters = {} }) {
     );
   };
 
+  const confirm = useConfirm();
   const [qrFreight, setQrFreight] = useState(null);
 
   const canCancel = (freight) => freight.status !== 'cancelled' && freight.status !== 'completed';
@@ -129,7 +130,7 @@ export default function MyReservations({ freights, filters = {} }) {
     >
       <Head title="Minhas Reservas" />
 
-      <div className="py-12">
+      <div className="py-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-4">
           <FlashMessages />
 
@@ -212,24 +213,25 @@ export default function MyReservations({ freights, filters = {} }) {
               }
             />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
               <table className="min-w-full table-fixed text-left">
-                <thead className="bg-gray-50 dark:bg-gray-700">
+                <thead className="bg-gray-50">
                   <tr>
-                    <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Horário</th>
-                    <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Veículo</th>
-                    <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Pesos</th>
-                    <th className="w-[18%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Documentos</th>
-                    <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Status</th>
-                    <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Observações</th>
-                    <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Ações</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Horário</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Caminhão / Placa</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Operação</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Pesos</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Anexos</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Observações</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Ações</th>
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {freights.map((freight) => (
-                    <tr key={freight.id} className="align-middle transition hover:bg-gray-50/70 dark:hover:bg-gray-700/50">
-                      <td className="w-[16%] px-4 py-3 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                    <tr key={freight.id} className="align-top transition hover:bg-gray-50/70">
+                      <td className="px-4 py-4 align-top text-sm">
                         {freight.timeslot
                           ? <>
                               <p className="font-medium text-gray-900 dark:text-gray-100">
@@ -242,7 +244,7 @@ export default function MyReservations({ freights, filters = {} }) {
                           : <span className="text-xs text-gray-400 dark:text-gray-500">Horário excluído</span>}
                       </td>
 
-                      <td className="w-[16%] px-4 py-3">
+                      <td className="px-4 py-4 align-top text-sm">
                         <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate}</p>
                         {freight.driver_name && (
                           <p className="text-xs text-gray-500 dark:text-gray-400">{freight.driver_name}</p>
@@ -254,14 +256,14 @@ export default function MyReservations({ freights, filters = {} }) {
                         />
                       </td>
 
-                      <td className="w-[10%] px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
+                      <td className="px-4 py-4 align-top text-sm text-gray-600">
                         <p>B: <span className="font-medium text-gray-800 dark:text-gray-200">{freight.gross_weight ? `${freight.gross_weight} kg` : '—'}</span></p>
                         <p>L: <span className="font-medium text-gray-800 dark:text-gray-200">{freight.net_weight ? `${freight.net_weight} kg` : '—'}</span></p>
                       </td>
 
                       <AttachmentsCell freight={freight} onUploadNF={uploadNotaFiscal} />
 
-                      <td className="w-[10%] px-4 py-3">
+                      <td className="px-4 py-4 align-top text-sm">
                         <StatusBadge
                           label={translateFreightStatus(freight.status)}
                           tone={getFreightStatusTone(freight.status)}
@@ -269,17 +271,18 @@ export default function MyReservations({ freights, filters = {} }) {
                         />
                       </td>
 
-                      <td className="w-[16%] px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
+                      <td className="px-4 py-4 align-top text-sm text-gray-600">
                         {freight.admin_notes || <span className="text-gray-400 dark:text-gray-500">—</span>}
                       </td>
 
-                      <td className="w-[14%] px-4 py-3 align-middle">
+                      <td className="px-4 py-4 align-top text-sm">
                         <div className="flex flex-wrap gap-2">
                           {canCancel(freight) && (
                             <button
                               type="button"
-                              onClick={() => {
-                                if (confirmAction('Tem certeza que deseja cancelar esta reserva?')) {
+                              onClick={async () => {
+                                const ok = await confirm('Tem certeza que deseja cancelar esta reserva?');
+                                if (ok) {
                                   router.delete(route('client.reservations.cancel', freight.id), {
                                     preserveScroll: true,
                                   });
@@ -294,8 +297,9 @@ export default function MyReservations({ freights, filters = {} }) {
                           {canReopen(freight) && (
                             <button
                               type="button"
-                              onClick={() => {
-                                if (confirmAction('Deseja reabrir esta reserva cancelada?')) {
+                              onClick={async () => {
+                                const ok = await confirm('Deseja reabrir esta reserva cancelada?');
+                                if (ok) {
                                   router.patch(
                                     route('client.reservations.reopen', freight.id),
                                     {},
@@ -303,7 +307,7 @@ export default function MyReservations({ freights, filters = {} }) {
                                   );
                                 }
                               }}
-                              className={`${btnBase} border-blue-600 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500`}
+                              className={`${btnBase} border-teal-700 bg-teal-700 text-white hover:bg-teal-800 focus:ring-teal-500`}
                             >
                               Reabrir
                             </button>

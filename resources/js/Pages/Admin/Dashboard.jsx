@@ -231,6 +231,33 @@ function OccupancyChart({ occupancy }) {
   );
 }
 
+// ─── stat card ────────────────────────────────────────────────────────────────
+
+function StatCard({ label, value, color }) {
+  const border = {
+    gray: 'border-gray-400',
+    green: 'border-green-500',
+    blue: 'border-blue-500',
+    orange: 'border-orange-500',
+    red: 'border-red-500',
+  }[color] || 'border-gray-400';
+
+  const text = {
+    gray: 'text-gray-900',
+    green: 'text-green-700',
+    blue: 'text-blue-700',
+    orange: 'text-orange-600',
+    red: 'text-red-700',
+  }[color] || 'text-gray-900';
+
+  return (
+    <div className={`rounded-lg border-l-4 bg-white p-5 shadow-sm ${border}`}>
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className={`mt-2 text-3xl font-bold ${text}`}>{value}</p>
+    </div>
+  );
+}
+
 // ─── main ─────────────────────────────────────────────────────────────────────
 
 export default function Dashboard({ stats, occupancy }) {
@@ -282,18 +309,10 @@ export default function Dashboard({ stats, occupancy }) {
 
           {/* stat cards */}
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            {STAT_CARDS(stats).map((card) => (
-              <div
-                key={card.label}
-                className={`rounded-2xl border-l-4 bg-white p-5 shadow-sm ring-1 ring-gray-100 dark:bg-gray-800 dark:ring-gray-700/50 ${card.accent}`}
-              >
-                <div className="flex items-start justify-between">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{card.label}</p>
-                  <span className={`rounded-xl p-2 ${card.iconBg}`}>{card.icon}</span>
-                </div>
-                <p className={`mt-4 text-4xl font-black tabular-nums ${card.valueColor}`}>{card.value}</p>
-              </div>
-            ))}
+            <StatCard label="Horários anunciados" value={stats?.total_timeslots ?? 0} color="gray" />
+            <StatCard label="Disponíveis" value={stats?.available_timeslots ?? 0} color="green" />
+            <StatCard label="Reservados" value={stats?.reserved_timeslots ?? 0} color="blue" />
+            <StatCard label="Lotados" value={stats?.full_timeslots ?? 0} color="orange" />
           </div>
 
           {/* chart */}
@@ -307,7 +326,7 @@ export default function Dashboard({ stats, occupancy }) {
                 <Link
                   key={link.label}
                   href={route(link.routeName)}
-                  className={`group relative rounded-2xl border-t-4 bg-white p-5 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md hover:-translate-y-0.5 dark:bg-gray-800 dark:ring-gray-700/50 ${link.accent}`}
+                  className={`group relative rounded-2xl border-t-4 bg-white p-5 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md hover:-translate-y-0.5 hover:ring-teal-200 dark:bg-gray-800 dark:ring-gray-700/50 ${link.accent}`}
                 >
                   <div className="flex items-start justify-between">
                     <span className={`rounded-xl p-2.5 transition group-hover:scale-105 ${link.iconBg}`}>{link.icon}</span>

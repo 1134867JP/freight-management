@@ -6,7 +6,7 @@ import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
 import FormField from '@/Components/UI/FormField';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { Head, useForm, router } from '@inertiajs/react';
 import Button from '@/Components/UI/Button';
@@ -49,6 +49,7 @@ export default function DropoffAddresses({ addresses }) {
     is_active: true,
   });
 
+  const confirm = useConfirm();
   const isEditing = Boolean(editingAddress?.id);
 
   const { clientErrors, validate, clearClientError } = useClientValidation({
@@ -101,8 +102,9 @@ export default function DropoffAddresses({ addresses }) {
     });
   };
 
-  const deleteAddress = (id) => {
-    if (confirmAction('Tem certeza que deseja excluir este endereço?')) {
+  const deleteAddress = async (id) => {
+    const ok = await confirm('Tem certeza que deseja excluir este endereço?');
+    if (ok) {
       router.delete(route('dropoff-addresses.destroy', id), { preserveScroll: true });
     }
   };
@@ -128,7 +130,7 @@ export default function DropoffAddresses({ addresses }) {
     >
       <Head title="Endereços de Descarga" />
 
-      <div className="py-12">
+      <div className="py-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
@@ -210,7 +212,7 @@ export default function DropoffAddresses({ addresses }) {
                             <button
                               type="button"
                               onClick={() => startEdit(address)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
                             >
                               <IconEdit />
                               Editar
@@ -346,7 +348,7 @@ export default function DropoffAddresses({ addresses }) {
               <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-blue-600"
+                  className="rounded border-gray-300 text-teal-700"
                   checked={data.is_active}
                   onChange={(event) => setData('is_active', event.target.checked)}
                 />

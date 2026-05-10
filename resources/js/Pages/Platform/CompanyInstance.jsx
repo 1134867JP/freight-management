@@ -57,7 +57,7 @@ export default function CompanyInstance({ company, instance }) {
           <div className="space-y-6">
             <FlashMessages />
 
-            <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
               <div className="border-b border-slate-100 bg-slate-950 p-6 text-white">
                 <h2 className="text-lg font-semibold">Configuração da instância</h2>
                 <p className="mt-1 text-sm text-slate-300">
@@ -115,7 +115,7 @@ export default function CompanyInstance({ company, instance }) {
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 rounded-2xl border border-dashed border-slate-200 p-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 rounded-lg border border-dashed border-slate-200 p-4 md:grid-cols-2">
                   <label className="flex items-center gap-3 text-sm text-slate-700">
                     <input
                       type="checkbox"
@@ -160,7 +160,7 @@ export default function CompanyInstance({ company, instance }) {
                   <button
                     type="submit"
                     disabled={processing}
-                    className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                    className="rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-60"
                   >
                     Salvar configuração
                   </button>
@@ -170,10 +170,10 @@ export default function CompanyInstance({ company, instance }) {
           </div>
 
           <aside className="space-y-6">
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Empresa</p>
               <div className="mt-4 flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
                   {company.logo_url ? (
                     <img src={company.logo_url} alt={company.name} className="h-full w-full object-cover" />
                   ) : (
@@ -187,7 +187,7 @@ export default function CompanyInstance({ company, instance }) {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Status</p>
               <div className="mt-4 space-y-3">
                 <StatusRow label="Estado atual" value={formatState(instance?.connection_state)} />
@@ -201,11 +201,11 @@ export default function CompanyInstance({ company, instance }) {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">QR Code</p>
-              <div className="mt-4 rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-4">
+              <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
                 {instance?.qr_code ? (
-                  <div className="mx-auto flex aspect-square w-full max-w-[280px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <div className="mx-auto flex aspect-square w-full max-w-[280px] items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
                     <img
                       src={instance.qr_code}
                       alt="QR Code da instância"
@@ -240,7 +240,7 @@ function Field({ label, hint = null, error = null, children }) {
 
 function StatusRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-4 py-3">
       <span className="text-sm text-slate-500">{label}</span>
       <span className="text-sm font-medium text-slate-900">{value}</span>
     </div>
