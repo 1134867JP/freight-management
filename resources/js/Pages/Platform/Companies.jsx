@@ -12,6 +12,8 @@ function initialFormData() {
     company_name: '',
     company_slug: '',
     company_is_active: true,
+    uses_queues: true,
+    uses_docks: true,
     logo: null,
     remove_logo: false,
     admin_name: '',
@@ -80,6 +82,8 @@ export default function Companies({ companies, summary }) {
       company_name: company.name ?? '',
       company_slug: company.slug ?? '',
       company_is_active: Boolean(company.is_active),
+      uses_queues: Boolean(company.uses_queues ?? true),
+      uses_docks: Boolean(company.uses_docks ?? true),
       logo: null,
       remove_logo: false,
       admin_name: company.admin?.name ?? '',
@@ -353,6 +357,34 @@ export default function Companies({ companies, summary }) {
               {logoPreviewUrl && (
                 <img src={logoPreviewUrl} alt="Preview da logo" className="h-20 rounded-xl object-contain" />
               )}
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-dashed border-slate-200 p-4 dark:border-gray-700">
+              <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Módulos</p>
+              <label className="flex cursor-pointer items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={Boolean(data.uses_queues)}
+                  onChange={(e) => setData('uses_queues', e.target.checked)}
+                  className="rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+                />
+                <span>
+                  Filas / Operação
+                  <span className="ml-1 text-xs text-slate-400">(portaria, status de frete, pátio)</span>
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={Boolean(data.uses_docks)}
+                  onChange={(e) => setData('uses_docks', e.target.checked)}
+                  className="rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+                />
+                <span>
+                  Docas
+                  <span className="ml-1 text-xs text-slate-400">(atribuição de doca a cotas e fretes)</span>
+                </span>
+              </label>
             </div>
           </section>
 
