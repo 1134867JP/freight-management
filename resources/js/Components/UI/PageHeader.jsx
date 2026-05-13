@@ -1,18 +1,25 @@
 import React from 'react';
 
-export default function PageHeader({ title, subtitle = null, actions = null }) {
+export default function PageHeader({ title, subtitle = null, actions = null, icon = null }) {
   return (
-    <div className="flex flex-col gap-3 border-b border-gray-200 pb-4 mb-6 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700">
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5 h-8 w-1 shrink-0 rounded-full bg-teal-500" />
+    <div className="flex flex-col gap-3 border-b border-gray-200 pb-5 mb-6 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700">
+      <div className="flex items-center gap-4">
+        {icon ? (
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400">
+            {icon}
+          </div>
+        ) : (
+          <div className="h-9 w-1 shrink-0 rounded-full bg-teal-500" />
+        )}
         <div>
-          <h2 className="text-xl font-bold leading-tight text-gray-900 dark:text-gray-100">{title}</h2>
+          <h1 className="text-2xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+            {title}
+          </h1>
           {subtitle && (
             <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
           )}
         </div>
       </div>
-
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>
   );
