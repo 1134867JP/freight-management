@@ -232,27 +232,20 @@ function OccupancyChart({ occupancy }) {
 
 // ─── stat card ────────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, color }) {
-  const borderClass = {
-    gray: 'border-l-4 border-gray-300',
-    green: 'border-l-4 border-green-500',
-    blue: 'border-l-4 border-sky-500',
-    orange: 'border-l-4 border-amber-500',
-    red: 'border-l-4 border-red-500',
-  }[color] || 'border-l-4 border-gray-300';
-
-  const textClass = {
-    gray: 'text-gray-900 dark:text-gray-100',
-    green: 'text-green-700 dark:text-green-400',
-    blue: 'text-sky-700 dark:text-sky-400',
-    orange: 'text-amber-700 dark:text-amber-400',
-    red: 'text-red-700 dark:text-red-400',
-  }[color] || 'text-gray-900 dark:text-gray-100';
-
+function StatCard({ label, value, valueColor, accent, icon, iconBg }) {
   return (
-    <div className={`rounded-lg bg-white shadow-sm p-5 dark:bg-gray-800 ${borderClass}`}>
-      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{label}</p>
-      <p className={`mt-2 text-3xl font-bold ${textClass}`}>{value}</p>
+    <div className={`rounded-xl border-l-4 bg-white p-5 shadow-sm dark:bg-gray-800 ${accent}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{label}</p>
+          <p className={`mt-2 text-3xl font-black ${valueColor}`}>{value}</p>
+        </div>
+        {icon && (
+          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+            {icon}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -308,10 +301,9 @@ export default function Dashboard({ stats, occupancy }) {
 
           {/* stat cards */}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <StatCard label="Horários anunciados" value={stats?.total_timeslots ?? 0} color="gray" />
-            <StatCard label="Disponíveis" value={stats?.available_timeslots ?? 0} color="green" />
-            <StatCard label="Reservados" value={stats?.reserved_timeslots ?? 0} color="blue" />
-            <StatCard label="Lotados" value={stats?.full_timeslots ?? 0} color="orange" />
+            {STAT_CARDS(stats).map((card) => (
+              <StatCard key={card.label} {...card} />
+            ))}
           </div>
 
           {/* chart */}
