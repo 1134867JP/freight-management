@@ -115,8 +115,8 @@ export default function Produtos({ produtos }) {
     >
       <Head title="Produtos" />
 
-      <div className="py-12">
-        <div className="mx-auto max-w-5xl sm:px-6 lg:px-8">
+      <div className="py-8">
+        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
           {arrProdutos.length > 0 && (
@@ -138,75 +138,74 @@ export default function Produtos({ produtos }) {
             </div>
           )}
 
-          {arrProdutos.length === 0 ? (
-            <div className="rounded-xl border border-gray-200 bg-white p-12 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <EmptyState title="Nenhum produto cadastrado." />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {arrProdutos.map((objProduto) => (
-                <div
-                  key={objProduto.id}
-                  className={`group flex flex-col rounded-xl border bg-white shadow-sm transition hover:shadow-md dark:bg-gray-800 ${
-                    objProduto.is_active
-                      ? 'border-gray-200 dark:border-gray-700'
-                      : 'border-gray-200 opacity-60 dark:border-gray-700'
-                  }`}
-                >
-                  <div className="flex items-start justify-between p-5">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                        objProduto.is_active
-                          ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
-                          : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
-                      }`}>
-                        <ProdutoIcon />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                          {objProduto.nome}
-                        </h3>
-                      </div>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${
-                      objProduto.is_active
-                        ? 'bg-green-50 text-green-700 ring-green-200 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-800'
-                        : 'bg-gray-100 text-gray-500 ring-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:ring-gray-600'
-                    }`}>
-                      {objProduto.is_active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </div>
-
-                  <div className="flex-1 px-5 pb-4">
-                    {objProduto.descricao ? (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{objProduto.descricao}</p>
-                    ) : (
-                      <p className="text-sm italic text-gray-400 dark:text-gray-500">Sem descrição</p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 border-t border-gray-100 px-5 py-3 dark:border-gray-700">
-                    <button
-                      type="button"
-                      onClick={() => startEdit(objProduto)}
-                      className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                    >
-                      <IconEdit />
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(objProduto)}
-                      className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
-                    >
-                      <IconTrash />
-                      Excluir
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            {arrProdutos.length === 0 ? (
+              <div className="p-8">
+                <EmptyState
+                  icon={<ProdutoIcon />}
+                  title="Nenhum produto cadastrado."
+                  description="Crie um produto para vinculá-lo às cotas de agendamento."
+                />
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-left">
+                  <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/60">
+                    <tr>
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Nome</th>
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Descrição</th>
+                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Status</th>
+                      <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                    {arrProdutos.map((objProduto, index) => (
+                      <tr
+                        key={objProduto.id}
+                        className={`transition hover:bg-teal-50/20 dark:hover:bg-teal-900/10 ${index % 2 === 1 ? 'bg-gray-50/60 dark:bg-gray-800/40' : ''}`}
+                      >
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{objProduto.nome}</p>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                          {objProduto.descricao || <span className="italic text-gray-400 dark:text-gray-500">—</span>}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${
+                            objProduto.is_active
+                              ? 'bg-green-50 text-green-700 ring-green-200 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-800'
+                              : 'bg-gray-100 text-gray-500 ring-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:ring-gray-600'
+                          }`}>
+                            {objProduto.is_active ? 'Ativo' : 'Inativo'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(objProduto)}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
+                            >
+                              <IconEdit />
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(objProduto)}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                            >
+                              <IconTrash />
+                              Excluir
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
