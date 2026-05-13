@@ -1,13 +1,18 @@
 import React from 'react';
 
-export default function EmptyState({ title, description = null, action = null, className = '' }) {
+export default function EmptyState({ icon = null, title, description = null, action = null, className = '' }) {
   return (
-    <div
-      className={`rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-600 dark:border-gray-700 dark:bg-gray-700/30 dark:text-gray-400 ${className}`.trim()}
-    >
-      <p className="font-medium text-gray-700 dark:text-gray-300">{title}</p>
-      {description && <p className="mt-1 text-sm">{description}</p>}
-      {action && <div className="mt-3">{action}</div>}
+    <div className={`flex flex-col items-center justify-center py-16 text-center ${className}`}>
+      {icon && (
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+          {icon}
+        </div>
+      )}
+      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{title}</p>
+      {description && (
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{description}</p>
+      )}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
