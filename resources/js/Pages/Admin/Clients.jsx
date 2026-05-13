@@ -164,9 +164,15 @@ export default function Clients({ clients }) {
 
           <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             {clientsList.length === 0 ? (
-              <div className="p-8">
-                <EmptyState title="Nenhum cliente cadastrado" />
-              </div>
+              <EmptyState
+                icon={
+                  <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M7.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm9 2a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM2.5 19.5a5 5 0 0 1 10 0M13 19.5a4 4 0 0 1 8 0" />
+                  </svg>
+                }
+                title="Nenhum cliente cadastrado ainda."
+                description="Clique em 'Novo Cliente' para adicionar o primeiro."
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left">
@@ -187,8 +193,13 @@ export default function Clients({ clients }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {clientsList.map((client) => (
-                      <tr key={client.id} className="transition hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    {clientsList.map((client, index) => (
+                      <tr
+                        key={client.id}
+                        className={`transition hover:bg-teal-50/20 dark:hover:bg-teal-900/10 ${
+                          index % 2 === 1 ? 'bg-gray-50/60 dark:bg-gray-800/40' : ''
+                        }`}
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <Avatar name={client.name} />
