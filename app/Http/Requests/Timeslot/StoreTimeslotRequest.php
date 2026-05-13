@@ -29,33 +29,25 @@ class StoreTimeslotRequest extends FormRequest
     public function rules(): array
     {
         $idCompany = $this->user()?->company_id;
+        $usesDocks = $this->user()?->company?->uses_docks ?? true;
 
         return [
-            'start_time' => 'required|date',
-            'end_time' => 'required|date|after:start_time',
-            'operation_type' => 'required|in:load,unload,both',
-            'capacity' => 'required|integer|min:1',
-            'description' => 'nullable|string|max:255',
-            'status' => 'required|in:available,full,closed',
-            'modelo' => 'required|in:aberta,por_produto,por_produto_doca',
-            'produto_id' => [
-                'nullable',
-                Rule::exists('produtos', 'id')->where('company_id', $idCompany),
-            ],
-            'doca_id' => [
-                'nullable',
-                Rule::exists('docas', 'id')->where('company_id', $idCompany),
-            ],
-            'dropoff_address_id' => [
-                'nullable',
-                Rule::exists('dropoff_addresses', 'id')->where('company_id', $idCompany),
-            ],
-            'client_ids' => 'nullable|array',
-            'client_ids.*' => [
-                Rule::exists('users', 'id')
-                    ->where('company_id', $idCompany)
-                    ->where('role', User::ROLE_CLIENT),
-            ],
+            'start_time'         => 'required|date',
+            'end_time'           => 'required|date|after:start_time',
+            'operation_type'     => 'required|in:load,unload,both',
+            'capacity'           => 'required|integer|min:1',
+            'description'        => 'nullable|string|max:255',
+            'status'             => 'required|in:available,full,closed',
+            'modelo'             => ['required', Rule::in($usesDocks
+                ? ['aberta', 'por_produto', 'por_produto_doca']
+                : ['aberta', 'por_produto'])],
+            'produto_id'         => ['nullable', Rule::exists('produtos', 'id')->where('company_id', $idCompany)],
+            'doca_id'            => ['nullable', Rule::exists('docas', 'id')->where('company_id', $idCompany)],
+            'dropoff_address_id' => ['nullable', Rule::exists('dropoff_addresses', 'id')->where('company_id', $idCompany)],
+            'client_ids'         => 'nullable|array',
+            'client_ids.*'       => [Rule::exists('users', 'id')
+                ->where('company_id', $idCompany)
+                ->where('role', User::ROLE_CLIENT)],
         ];
     }
 
