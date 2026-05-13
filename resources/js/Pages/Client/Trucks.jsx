@@ -44,7 +44,7 @@ function TruckIcon() {
 }
 
 const inputClass =
-  'mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
+  'mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
 
 export default function Trucks({ trucks }) {
   const trucksList = useMemo(() => (Array.isArray(trucks) ? trucks : trucks?.data || []), [trucks]);
@@ -166,9 +166,15 @@ export default function Trucks({ trucks }) {
 
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             {trucksList.length === 0 ? (
-              <div className="p-8">
-                <EmptyState title="Nenhum caminhão cadastrado ainda." />
-              </div>
+              <EmptyState
+                icon={
+                  <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 7h10v7H3V7Zm10 2h3l3 3v2h-6V9Zm-6 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+                  </svg>
+                }
+                title="Nenhum caminhão cadastrado ainda."
+                description="Adicione um caminhão para começar a fazer reservas."
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left">
@@ -195,8 +201,13 @@ export default function Trucks({ trucks }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {trucksList.map((truck) => (
-                      <tr key={truck.id} className="transition hover:bg-gray-50/70 dark:hover:bg-gray-700/40">
+                    {trucksList.map((truck, index) => (
+                      <tr
+                        key={truck.id}
+                        className={`transition hover:bg-teal-50/20 dark:hover:bg-teal-900/10 ${
+                          index % 2 === 1 ? 'bg-gray-50/60 dark:bg-gray-800/40' : ''
+                        }`}
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
@@ -231,7 +242,7 @@ export default function Trucks({ trucks }) {
                             <button
                               type="button"
                               onClick={() => startEdit(truck)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
                             >
                               <IconEdit />
                               Editar
@@ -347,7 +358,7 @@ export default function Trucks({ trucks }) {
             <label className="flex cursor-pointer items-center gap-2">
               <input
                 type="checkbox"
-                className="rounded border-gray-300 text-blue-600"
+                className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                 checked={data.is_active}
                 onChange={(e) => setData('is_active', e.target.checked)}
               />
