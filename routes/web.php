@@ -11,6 +11,7 @@ use App\Http\Controllers\EmployeeManagementController;
 use App\Http\Controllers\FreightController;
 use App\Http\Controllers\GateController;
 use App\Http\Controllers\PlatformCompanyController;
+use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Controllers\PlatformCompanyInstanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProdutoController;
@@ -41,11 +42,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/companies', [PlatformCompanyController::class, 'store'])->name('platform.companies.store');
         Route::patch('/companies/{company}', [PlatformCompanyController::class, 'update'])->name('platform.companies.update');
         Route::delete('/companies/{company}', [PlatformCompanyController::class, 'destroy'])->name('platform.companies.destroy');
-        Route::get('/companies/{company}/instance', [PlatformCompanyInstanceController::class, 'edit'])->name('platform.companies.instance.edit');
-        Route::patch('/companies/{company}/instance', [PlatformCompanyInstanceController::class, 'update'])->name('platform.companies.instance.update');
         Route::delete('/companies/{company}/instance', [PlatformCompanyInstanceController::class, 'destroy'])->name('platform.companies.instance.destroy');
-        Route::post('/companies/{company}/instance/sync', [PlatformCompanyInstanceController::class, 'sync'])->name('platform.companies.instance.sync');
-        Route::post('/companies/{company}/instance/refresh', [PlatformCompanyInstanceController::class, 'refresh'])->name('platform.companies.instance.refresh');
     });
 
     // -------------------------
@@ -150,6 +147,11 @@ Route::middleware('auth')->group(function () {
                 ->parameters(['employees' => 'employee_user']);
             Route::patch('/employees/{employee_user}/permissions', [EmployeeManagementController::class, 'updatePermissions'])->name('employees.permissions');
         });
+
+        // WhatsApp
+        Route::get('/whatsapp', [WhatsAppController::class, 'show'])->name('admin.whatsapp');
+        Route::post('/whatsapp/sync', [WhatsAppController::class, 'sync'])->name('admin.whatsapp.sync');
+        Route::post('/whatsapp/refresh', [WhatsAppController::class, 'refresh'])->name('admin.whatsapp.refresh');
     });
 
     // -------------------------

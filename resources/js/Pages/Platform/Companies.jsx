@@ -4,7 +4,7 @@ import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import Button from '@/Components/UI/Button';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 
 function initialFormData() {
@@ -137,6 +137,14 @@ export default function Companies({ companies, summary }) {
     });
   };
 
+  const deleteInstance = (companyId) => {
+    if (confirm('Excluir instância WhatsApp desta empresa? Esta ação remove a conexão no provedor.')) {
+      router.delete(route('platform.companies.instance.destroy', companyId), {
+        preserveScroll: true,
+      });
+    }
+  };
+
   const logoPreviewUrl = data.remove_logo ? null : selectedLogoUrl ?? currentLogoUrl;
 
   return (
@@ -144,7 +152,7 @@ export default function Companies({ companies, summary }) {
       header={
         <PageHeader
           title="Painel Global"
-          subtitle="Cadastre empresas, mantenha o admin principal e abra uma tela dedicada para QR code e conexão da instância."
+          subtitle="Cadastre empresas, gerencie admins e acompanhe o status de conexão WhatsApp de cada empresa."
           actions={
             <button
               type="button"
@@ -203,12 +211,6 @@ export default function Companies({ companies, summary }) {
                       >
                         Editar empresa
                       </button>
-                      <Link
-                        href={route('platform.companies.instance.edit', company.id)}
-                        className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
-                      >
-                        Instância / QR Code
-                      </Link>
                       <button
                         type="button"
                         onClick={() => deleteCompany(company)}
@@ -253,30 +255,34 @@ export default function Companies({ companies, summary }) {
                   </div>
 
                   <div className="space-y-3">
-                    <SectionTitle>Instância WhatsApp</SectionTitle>
+                    <SectionTitle>WhatsApp</SectionTitle>
                     {company.whatsapp_instance ? (
                       <div className="rounded-2xl border border-slate-200 p-4 dark:border-gray-700">
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="font-medium text-slate-900 dark:text-gray-100">{company.whatsapp_instance.label}</p>
-                            <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">{company.whatsapp_instance.instance_name}</p>
+                            <p className="font-medium text-slate-900 dark:text-gray-100">
+                              {company.whatsapp_instance.instance_name}
+                            </p>
+                            <p className="mt-1 text-sm text-slate-500 dark:text-gray-400">
+                              {formatState(company.whatsapp_instance.connection_state)}
+                            </p>
                           </div>
-                          <StatusPill active={company.whatsapp_instance.is_active}>
-                            {company.whatsapp_instance.is_active ? 'Ativa' : 'Desligada'}
-                          </StatusPill>
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`inline-flex h-2.5 w-2.5 rounded-full ${company.whatsapp_instance.connected ? 'bg-emerald-500' : 'bg-red-400'}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => deleteInstance(company.id)}
+                              className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              Excluir
+                            </button>
+                          </div>
                         </div>
-                        <p className="mt-3 text-sm text-slate-600 dark:text-gray-400">
-                          Base URL: {company.whatsapp_instance.base_url || 'Não configurada'}
-                        </p>
-                        <p className="mt-1 text-sm text-slate-600">
-                          API Key: {company.whatsapp_instance.has_api_key ? 'Configurada' : 'Pendente'}
-                        </p>
-                        <p className="mt-1 text-sm text-slate-600">
-                          Estado: {formatState(company.whatsapp_instance.connection_state)}
-                        </p>
                       </div>
                     ) : (
-                      <EmptyBlock text="Instância ainda não configurada. Abra a tela dedicada para salvar a configuração e gerar o QR code." />
+                      <EmptyBlock text="Instância será criada automaticamente ao salvar a empresa." />
                     )}
                   </div>
                 </div>

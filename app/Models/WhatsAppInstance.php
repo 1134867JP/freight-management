@@ -11,10 +11,7 @@ class WhatsAppInstance extends Model
 
     protected $fillable = [
         'company_id',
-        'name',
         'instance_name',
-        'base_url',
-        'api_key',
         'is_default',
         'is_active',
         'settings',

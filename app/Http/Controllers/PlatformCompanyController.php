@@ -6,6 +6,7 @@ use App\Http\Requests\Platform\StoreCompanyRequest;
 use App\Http\Requests\Platform\UpdateCompanyRequest;
 use App\Models\Company;
 use App\Models\User;
+use App\Models\WhatsAppInstance;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +44,7 @@ class PlatformCompanyController extends Controller
                 'companies_count' => $companies->count(),
                 'active_companies_count' => $companies->where('is_active', true)->count(),
                 'instances_ready_count' => $companies->filter(
-                    fn (array $company) => $company['whatsapp_instance'] && $company['whatsapp_instance']['has_api_key'],
+                    fn (array $company) => ($company['whatsapp_instance']['connected'] ?? false) === true,
                 )->count(),
                 'clients_count' => $companies->sum('stats.clients_count'),
             ],
@@ -71,6 +72,15 @@ class PlatformCompanyController extends Controller
                 $validated['remove_logo'] ?? false,
             );
             $this->syncCompanyAdmin($company, $validated);
+
+            WhatsAppInstance::firstOrCreate(
+                ['company_id' => $company->id],
+                [
+                    'instance_name' => $slug,
+                    'is_default'    => true,
+                    'is_active'     => true,
+                ]
+            );
         });
 
         return redirect()
@@ -213,15 +223,12 @@ class PlatformCompanyController extends Controller
             ],
             'can_delete' => $company->active_timeslots_count === 0,
             'whatsapp_instance' => $instance ? [
-                'id' => $instance->id,
-                'label' => $instance->name,
-                'instance_name' => $instance->instance_name,
-                'base_url' => $instance->base_url,
-                'is_active' => $instance->is_active,
-                'has_api_key' => filled($instance->api_key),
+                'id'               => $instance->id,
+                'instance_name'    => $instance->instance_name,
+                'is_active'        => $instance->is_active,
                 'connection_state' => $instance->settings['connection_state'] ?? 'not_configured',
-                'connected' => $instance->settings['connected'] ?? false,
-                'last_synced_at' => $instance->settings['last_synced_at'] ?? null,
+                'connected'        => $instance->settings['connected'] ?? false,
+                'last_synced_at'   => $instance->settings['last_synced_at'] ?? null,
             ] : null,
         ];
     }

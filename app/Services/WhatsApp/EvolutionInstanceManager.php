@@ -18,14 +18,14 @@ class EvolutionInstanceManager
     {
         return $instance->is_active
             && filled($instance->instance_name)
-            && filled($instance->base_url)
-            && filled($instance->api_key);
+            && filled(config('services.evolution.base_url'))
+            && filled(config('services.evolution.api_key'));
     }
 
     public function sync(WhatsAppInstance $instance): array
     {
         if (! $this->isReady($instance)) {
-            throw new RuntimeException('Configure base URL, API Key e nome técnico antes de conectar a instância.');
+            throw new RuntimeException('Instância não configurada. Verifique a configuração global da Evolution.');
         }
 
         $this->ensureExists($instance);
@@ -60,7 +60,7 @@ class EvolutionInstanceManager
     public function connectionState(WhatsAppInstance $instance): array
     {
         if (! $this->isReady($instance)) {
-            throw new RuntimeException('Configure base URL, API Key e nome técnico antes de consultar a instância.');
+            throw new RuntimeException('Instância não configurada. Verifique a configuração global da Evolution.');
         }
 
         $payload = $this->fetchConnectionStatePayload($instance);
@@ -166,13 +166,13 @@ class EvolutionInstanceManager
     private function request(WhatsAppInstance $instance)
     {
         return $this->http
-            ->baseUrl(rtrim((string) $instance->base_url, '/'))
+            ->baseUrl(rtrim(config('services.evolution.base_url', ''), '/'))
             ->acceptJson()
             ->asJson()
             ->retry(2, 400)
             ->timeout(20)
             ->withHeaders([
-                'apikey' => (string) $instance->api_key,
+                'apikey' => config('services.evolution.api_key', ''),
             ]);
     }
 
