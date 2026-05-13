@@ -22,6 +22,8 @@ export default function AuthenticatedLayout({ header, children }) {
   const isCompanyEmployee = user?.role === 'company_employee';
   const isAdmin = isCompanyAdmin || isCompanyEmployee;
   const logoUrl = company?.logo_url || '/storage/logo.png';
+  const usesQueues = company?.uses_queues ?? true;
+  const usesDocks  = company?.uses_docks  ?? true;
   const roleLabel = isPlatformAdmin
     ? 'Super Admin'
     : isCompanyAdmin
@@ -43,24 +45,44 @@ export default function AuthenticatedLayout({ header, children }) {
     }
 
     if (isAdmin) {
+      const yardStructureChildren = [
+        ...(usesDocks   ? [{ label: 'Docas',             href: route('docas.index'),       active: route().current('docas.*')       }] : []),
+        ...(usesQueues  ? [{ label: 'Zonas do Pátio',    href: route('yard-zones.index'),  active: route().current('yard-zones.*')  }] : []),
+        ...(usesQueues  ? [{ label: 'Vagas do Pátio',    href: route('yard-spots.index'),  active: route().current('yard-spots.*')  }] : []),
+        ...(usesQueues  ? [{ label: 'Cavalos Mecânicos', href: route('yard-trucks.index'), active: route().current('yard-trucks.*') }] : []),
+      ];
+
+      const cadastrosItems = [
+        { label: 'Clientes',  href: route('clients.index'),           active: route().current('clients.*'),           icon: 'users'    },
+        { label: 'Endereços', href: route('dropoff-addresses.index'),  active: route().current('dropoff-addresses.*'), icon: 'location' },
+        { label: 'Produtos',  href: route('produtos.index'),           active: route().current('produtos.*'),          icon: 'box'      },
+        ...(yardStructureChildren.length > 0 ? [{
+          label: 'Estrutura do Pátio',
+          icon: 'zones',
+          group: 'yard-structure',
+          active: route().current('docas.*') || route().current('yard-zones.*') || route().current('yard-spots.*') || route().current('yard-trucks.*'),
+          children: yardStructureChildren,
+        }] : []),
+      ];
+
       return [
         {
           section: 'Operação',
           items: [
-            { label: 'Painel',    href: route('admin.dashboard'),       active: route().current('admin.dashboard'), icon: 'dashboard' },
-            { label: 'Portaria',  href: route('admin.gate'),            active: route().current('admin.gate'),      icon: 'gate'      },
-            { label: 'Fretes',    href: route('freights.approvalList'), active: route().current('freights.*'),      icon: 'freight'   },
+            { label: 'Painel',   href: route('admin.dashboard'),       active: route().current('admin.dashboard'), icon: 'dashboard' },
+            ...(usesQueues ? [{ label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' }] : []),
+            { label: 'Fretes',   href: route('freights.approvalList'), active: route().current('freights.*'),      icon: 'freight'   },
           ],
         },
-        {
+        ...(usesQueues ? [{
           section: 'Pátio',
           items: [
-            { label: 'Painel do Pátio',        href: route('admin.yard-board'),  active: route().current('admin.yard-board'),  icon: 'yardboard' },
-            { label: 'Mapa do Pátio',          href: route('admin.yard-map'),    active: route().current('admin.yard-map'),    icon: 'map'       },
+            { label: 'Painel do Pátio',        href: route('admin.yard-board'),  active: route().current('admin.yard-board'),   icon: 'yardboard' },
+            { label: 'Mapa do Pátio',          href: route('admin.yard-map'),    active: route().current('admin.yard-map'),     icon: 'map'       },
             { label: 'Ordens de Movimentação', href: route('admin.move-orders'), active: route().current('admin.move-orders*'), icon: 'moveorder' },
-            { label: 'KPIs',                   href: route('admin.kpi'),         active: route().current('admin.kpi'),         icon: 'kpi'       },
+            { label: 'KPIs',                   href: route('admin.kpi'),         active: route().current('admin.kpi'),          icon: 'kpi'       },
           ],
-        },
+        }] : []),
         {
           section: 'Agendamento',
           items: [
@@ -68,26 +90,7 @@ export default function AuthenticatedLayout({ header, children }) {
             { label: 'Agenda', href: route('admin.agenda'),    active: route().current('admin.agenda'), icon: 'schedule' },
           ],
         },
-        {
-          section: 'Cadastros',
-          items: [
-            { label: 'Clientes',  href: route('clients.index'),          active: route().current('clients.*'),          icon: 'users'    },
-            { label: 'Endereços', href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*'), icon: 'location' },
-            { label: 'Produtos',  href: route('produtos.index'),          active: route().current('produtos.*'),          icon: 'box'      },
-            {
-              label: 'Estrutura do Pátio',
-              icon: 'zones',
-              group: 'yard-structure',
-              active: route().current('docas.*') || route().current('yard-zones.*') || route().current('yard-spots.*') || route().current('yard-trucks.*'),
-              children: [
-                { label: 'Docas',             href: route('docas.index'),       active: route().current('docas.*')       },
-                { label: 'Zonas do Pátio',    href: route('yard-zones.index'),  active: route().current('yard-zones.*')  },
-                { label: 'Vagas do Pátio',    href: route('yard-spots.index'),  active: route().current('yard-spots.*')  },
-                { label: 'Cavalos Mecânicos', href: route('yard-trucks.index'), active: route().current('yard-trucks.*') },
-              ],
-            },
-          ],
-        },
+        { section: 'Cadastros', items: cadastrosItems },
         {
           section: 'Dados',
           items: [
@@ -133,7 +136,7 @@ export default function AuthenticatedLayout({ header, children }) {
         ],
       },
     ];
-  }, [isAdmin, isPlatformAdmin]);
+  }, [isAdmin, isPlatformAdmin, usesQueues, usesDocks]);
 
   const mainLinks = useMemo(
     () => menuSections.flatMap((s) => s.items.filter((i) => !i.children)),
