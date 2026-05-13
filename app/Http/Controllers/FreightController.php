@@ -41,7 +41,10 @@ class FreightController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        $docasDisponiveis = Doca::available()->orderBy('nome')->get(['id', 'nome', 'codigo']);
+        $company = auth()->user()->company;
+        $docasDisponiveis = $company->usesDocks()
+            ? Doca::available()->orderBy('nome')->get(['id', 'nome', 'codigo'])
+            : collect();
 
         return Inertia::render('Admin/Freights/Index', [
             'freights'         => $freights,

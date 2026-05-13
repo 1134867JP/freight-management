@@ -9,7 +9,7 @@ export default function FreightActionsAdmin({ freight, onCancel, onStart, onOpen
   const canStart = blReserved;
   const canFinalize = blInProgress;
   const canCancel = blReserved || blInProgress;
-  const canAssignDoca = blInProgress;
+  const canAssignDoca = blInProgress && Boolean(onOpenAssignDoca);
   const hasOperationalActions = canStart || canFinalize || canCancel || canAssignDoca;
 
   const baseButtonClass =

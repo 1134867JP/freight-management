@@ -3,13 +3,15 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import AssignDocaModal from './Partials/AssignDocaModal';
 import FinalizeFreightModal from './Partials/FinalizeFreightModal';
 import FreightsTable from './Partials/FreightsTable';
 import UploadAttachmentModal from './Partials/UploadAttachmentModal';
 
 export default function Index({ freights, docasDisponiveis }) {
+  const { auth } = usePage().props;
+  const usesDocks = auth.company?.uses_docks ?? true;
   const list = useMemo(() => freights?.data || [], [freights]);
   const [filterSearch, setFilterSearch] = useState('');
   const [filterOp, setFilterOp] = useState('all');
@@ -297,8 +299,8 @@ export default function Index({ freights, docasDisponiveis }) {
                 setFinalizeModal({ open: true, freight: objFreight })
               }
               onOpenAttachmentModal={openAttachmentModal}
-              onOpenAssignDocaModal={(objFreight) =>
-                setAssignDocaModal({ open: true, freight: objFreight })
+              onOpenAssignDocaModal={usesDocks ? (objFreight) =>
+                setAssignDocaModal({ open: true, freight: objFreight }) : undefined
               }
             />
           </div>
@@ -328,12 +330,14 @@ export default function Index({ freights, docasDisponiveis }) {
         onClose={closeAttachmentModal}
       />
 
-      <AssignDocaModal
-        open={assignDocaModal.open}
-        freight={assignDocaModal.freight}
-        docasDisponiveis={docasDisponiveis}
-        onClose={() => setAssignDocaModal({ open: false, freight: null })}
-      />
+      {usesDocks && (
+        <AssignDocaModal
+          open={assignDocaModal.open}
+          freight={assignDocaModal.freight}
+          docasDisponiveis={docasDisponiveis}
+          onClose={() => setAssignDocaModal({ open: false, freight: null })}
+        />
+      )}
     </AuthenticatedLayout>
   );
 }
