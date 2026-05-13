@@ -49,7 +49,6 @@ export default function Button({
   children,
   className = '',
   type = 'button',
-  onClick,
   ...props
 }) {
   const isDisabled = disabled || loading;
