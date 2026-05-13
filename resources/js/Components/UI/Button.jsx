@@ -31,6 +31,8 @@ const VARIANT_CLASSES = {
     'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 border-transparent',
   ghost:
     'bg-transparent text-gray-600 hover:bg-gray-100 border-transparent focus:ring-gray-400 dark:text-gray-300 dark:hover:bg-gray-700',
+  soft:
+    'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100 focus:ring-teal-500 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800 dark:hover:bg-teal-900/50',
 };
 
 const SIZE_CLASSES = {
