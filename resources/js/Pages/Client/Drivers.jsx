@@ -5,8 +5,9 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
+import Button from '@/Components/UI/Button';
 
 function IconEdit() {
   return (
@@ -38,7 +39,7 @@ function DriverIcon() {
 }
 
 const inputClass =
-  'mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
+  'mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
 
 function formatPhone(raw) {
   if (!raw) return '—';
@@ -63,6 +64,7 @@ function formatCpf(raw) {
 
 export default function Drivers({ drivers }) {
   const driversList = useMemo(() => (Array.isArray(drivers) ? drivers : drivers?.data || []), [drivers]);
+  const confirm = useConfirm();
 
   const [editingDriver, setEditingDriver] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -113,8 +115,9 @@ export default function Drivers({ drivers }) {
     });
   };
 
-  const deleteDriver = (id) => {
-    if (confirmAction('Tem certeza que deseja excluir este motorista?')) {
+  const deleteDriver = async (id) => {
+    const ok = await confirm('Tem certeza que deseja excluir este motorista?');
+    if (ok) {
       router.delete(route('client.drivers.destroy', id), { preserveScroll: true });
     }
   };
@@ -128,23 +131,19 @@ export default function Drivers({ drivers }) {
           title="Meus Motoristas"
           subtitle="Cadastre os motoristas vinculados às suas operações"
           actions={
-            <button
-              type="button"
-              onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
+            <Button onClick={() => setShowCreateModal(true)}>
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M12 5v14M5 12h14" strokeLinecap="round" />
               </svg>
               Novo Motorista
-            </button>
+            </Button>
           }
         />
       }
     >
       <Head title="Motoristas" />
 
-      <div className="py-12">
+      <div className="py-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
@@ -169,9 +168,16 @@ export default function Drivers({ drivers }) {
 
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
             {driversList.length === 0 ? (
-              <div className="p-8">
-                <EmptyState title="Nenhum motorista cadastrado ainda." />
-              </div>
+              <EmptyState
+                icon={
+                  <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                  </svg>
+                }
+                title="Nenhum motorista cadastrado ainda."
+                description="Cadastre motoristas para vinculá-los às suas reservas."
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left">
@@ -198,8 +204,13 @@ export default function Drivers({ drivers }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {driversList.map((driver) => (
-                      <tr key={driver.id} className="transition hover:bg-gray-50/70 dark:hover:bg-gray-700/40">
+                    {driversList.map((driver, index) => (
+                      <tr
+                        key={driver.id}
+                        className={`transition hover:bg-teal-50/20 dark:hover:bg-teal-900/10 ${
+                          index % 2 === 1 ? 'bg-gray-50/60 dark:bg-gray-800/40' : ''
+                        }`}
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
@@ -234,7 +245,7 @@ export default function Drivers({ drivers }) {
                             <button
                               type="button"
                               onClick={() => startEdit(driver)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
                             >
                               <IconEdit />
                               Editar
@@ -333,7 +344,7 @@ export default function Drivers({ drivers }) {
             <label className="flex cursor-pointer items-center gap-2">
               <input
                 type="checkbox"
-                className="rounded border-gray-300 text-blue-600"
+                className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                 checked={data.is_active}
                 onChange={(e) => setData('is_active', e.target.checked)}
               />
@@ -342,20 +353,10 @@ export default function Drivers({ drivers }) {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={processing}
-              className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-            >
+            <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
+            <Button type="submit" variant="primary" className="flex-1" disabled={processing}>
               {isEditing ? 'Salvar alterações' : 'Adicionar motorista'}
-            </button>
+            </Button>
           </div>
         </form>
       </ModalShell>
