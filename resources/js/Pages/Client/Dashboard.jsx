@@ -98,27 +98,18 @@ const quickLinks = [
   },
 ];
 
-function StatCard({ label, value, color }) {
-  const border = {
-    gray: 'border-gray-400',
-    green: 'border-green-500',
-    blue: 'border-blue-500',
-    orange: 'border-orange-500',
-    red: 'border-red-500',
-  }[color] || 'border-gray-400';
-
-  const text = {
-    gray: 'text-gray-900',
-    green: 'text-green-700',
-    blue: 'text-blue-700',
-    orange: 'text-orange-600',
-    red: 'text-red-700',
-  }[color] || 'text-gray-900';
-
+function StatCard({ label, value, color, accent, icon, iconBg }) {
   return (
-    <div className={`rounded-lg border-l-4 bg-white p-5 shadow-sm ${border}`}>
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className={`mt-2 text-3xl font-bold ${text}`}>{value}</p>
+    <div className={`rounded-xl border-l-4 bg-white p-5 shadow-sm dark:bg-gray-800 ${accent}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{label}</p>
+          <p className={`mt-2 text-3xl font-black ${color}`}>{value}</p>
+        </div>
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+          {icon}
+        </span>
+      </div>
     </div>
   );
 }
@@ -150,11 +141,10 @@ export default function Dashboard({ stats }) {
       <div className="py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
 
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            <StatCard label="Minhas solicitações" value={stats?.total_my_freights ?? 0} color="gray" />
-            <StatCard label="Carregando" value={stats?.loading_my_freights ?? 0} color="orange" />
-            <StatCard label="Descarregando" value={stats?.unloading_my_freights ?? 0} color="blue" />
-            <StatCard label="Concluídas" value={stats?.completed_my_freights ?? 0} color="green" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+            {statCards(stats).map((card) => (
+              <StatCard key={card.label} {...card} />
+            ))}
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
