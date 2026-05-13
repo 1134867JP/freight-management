@@ -44,7 +44,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
         </thead>
 
         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-          {timeslots.map((objSlot) => {
+          {timeslots.map((objSlot, index) => {
             const vlStart = new Date(objSlot.start_time);
             const vlEnd = new Date(objSlot.end_time);
             const nrOccupancyPercent = getOccupancyPercent(objSlot);
@@ -56,7 +56,9 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
               <tr
                 key={objSlot.id}
                 onClick={() => onEdit(objSlot.id)}
-                className="cursor-pointer align-top transition hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                className={`cursor-pointer align-top transition hover:bg-teal-50/20 dark:hover:bg-teal-900/10 ${
+                  index % 2 === 1 ? 'bg-gray-50/60 dark:bg-gray-800/40' : ''
+                }`}
               >
                 <td className="px-4 py-5">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -132,7 +134,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
                         event.stopPropagation();
                         onEdit(objSlot.id);
                       }}
-                      className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                      className="rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
                     >
                       Editar
                     </button>
