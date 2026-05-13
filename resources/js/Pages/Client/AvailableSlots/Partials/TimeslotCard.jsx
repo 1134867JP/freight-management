@@ -48,7 +48,9 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
   return (
     <article
       className={`rounded-xl border p-4 shadow-sm transition ${
-        selected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+        selected
+          ? 'border-teal-500 bg-teal-50 shadow-md shadow-teal-100 dark:bg-teal-900/20 dark:border-teal-400 dark:shadow-none'
+          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-teal-300 hover:shadow dark:hover:border-teal-700'
       }`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -81,6 +83,11 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
         </div>
 
         <div className="flex flex-col items-end gap-1">
+          {selected && (
+            <span className="rounded-full bg-teal-600 px-2.5 py-0.5 text-xs font-semibold text-white">
+              ✓ Selecionado
+            </span>
+          )}
           <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300">
             {translateTimeslotOperationType(slot.operation_type)}
           </span>
@@ -136,8 +143,8 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
         onClick={() => onReserve(slot)}
         className={`mt-4 inline-flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-semibold transition ${
           selected
-            ? 'bg-blue-700 text-white hover:bg-blue-800'
-            : 'bg-blue-600 text-white hover:bg-blue-700'
+            ? 'bg-teal-800 text-white hover:bg-teal-900'
+            : 'bg-teal-700 text-white hover:bg-teal-800'
         }`}
       >
         {selected ? 'Horário selecionado' : 'Reservar horário'}
