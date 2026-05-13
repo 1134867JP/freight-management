@@ -189,7 +189,7 @@ export default function MyReservations({ freights, filters = {} }) {
             <div className="mt-3 flex gap-2">
               <button
                 type="submit"
-                className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                className="rounded-md bg-teal-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-teal-800"
               >
                 Filtrar
               </button>
@@ -207,30 +207,34 @@ export default function MyReservations({ freights, filters = {} }) {
             <EmptyState
               title="Você não possui nenhuma reserva."
               action={
-                <Link href={route('client.available')} className="text-blue-600 underline">
+                <Link href={route('client.available')} className="text-teal-700 underline hover:text-teal-800 dark:text-teal-400">
                   Solicitar um horário
                 </Link>
               }
             />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
               <table className="min-w-full table-fixed text-left">
-                <thead className="bg-gray-50">
+                <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/60">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Horário</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Caminhão / Placa</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Operação</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Pesos</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Anexos</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Observações</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">Ações</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Horário</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Caminhão / Placa</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Pesos</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Anexos</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Observações</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Ações</th>
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {freights.map((freight) => (
-                    <tr key={freight.id} className="align-top transition hover:bg-gray-50/70">
+                  {freights.map((freight, index) => (
+                    <tr
+                      key={freight.id}
+                      className={`align-top transition hover:bg-teal-50/20 dark:hover:bg-teal-900/10 ${
+                        index % 2 === 1 ? 'bg-gray-50/60 dark:bg-gray-800/40' : ''
+                      }`}
+                    >
                       <td className="px-4 py-4 align-top text-sm">
                         {freight.timeslot
                           ? <>
