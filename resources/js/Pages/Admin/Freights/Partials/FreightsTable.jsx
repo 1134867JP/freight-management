@@ -105,8 +105,13 @@ export default function FreightsTable({
         </thead>
 
         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-          {freights.map((freight) => (
-            <tr key={freight.id} className="align-middle transition hover:bg-gray-50/70 dark:hover:bg-gray-700/50">
+          {freights.map((freight, index) => (
+            <tr
+              key={freight.id}
+              className={`align-middle transition hover:bg-teal-50/20 dark:hover:bg-teal-900/10 ${
+                index % 2 === 1 ? 'bg-gray-50/60 dark:bg-gray-800/40' : ''
+              }`}
+            >
               <td className="w-[16%] px-4 py-3">
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{freight.user?.name || '-'}</p>
                 {freight.driver_name && (
