@@ -58,9 +58,11 @@ class PlatformCompanyController extends Controller
             $slug = $this->makeUniqueSlug($validated['company_name'], $validated['company_slug'] ?? null);
 
             $company = Company::create([
-                'name' => $validated['company_name'],
-                'slug' => $slug,
-                'is_active' => $validated['company_is_active'],
+                'name'        => $validated['company_name'],
+                'slug'        => $slug,
+                'is_active'   => $validated['company_is_active'],
+                'uses_queues' => $validated['uses_queues'],
+                'uses_docks'  => $validated['uses_docks'],
             ]);
 
             $this->syncCompanyLogo(
@@ -83,9 +85,11 @@ class PlatformCompanyController extends Controller
             $slug = $this->makeUniqueSlug($validated['company_name'], $validated['company_slug'] ?? null, $company);
 
             $company->update([
-                'name' => $validated['company_name'],
-                'slug' => $slug,
-                'is_active' => $validated['company_is_active'],
+                'name'        => $validated['company_name'],
+                'slug'        => $slug,
+                'is_active'   => $validated['company_is_active'],
+                'uses_queues' => $validated['uses_queues'],
+                'uses_docks'  => $validated['uses_docks'],
             ]);
 
             $this->syncCompanyLogo(
@@ -187,10 +191,12 @@ class PlatformCompanyController extends Controller
         $instance = $company->whatsappInstance;
 
         return [
-            'id' => $company->id,
-            'name' => $company->name,
-            'slug' => $company->slug,
-            'is_active' => $company->is_active,
+            'id'          => $company->id,
+            'name'        => $company->name,
+            'slug'        => $company->slug,
+            'is_active'   => $company->is_active,
+            'uses_queues' => $company->uses_queues,
+            'uses_docks'  => $company->uses_docks,
             'logo_url' => $company->logo_url,
             'admin' => $admin ? [
                 'id' => $admin->id,
