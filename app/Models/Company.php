@@ -21,12 +21,26 @@ class Company extends Model
         'is_active',
         'logo_path',
         'settings',
+        'uses_queues',
+        'uses_docks',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
-        'settings' => 'array',
+        'is_active'   => 'boolean',
+        'settings'    => 'array',
+        'uses_queues' => 'boolean',
+        'uses_docks'  => 'boolean',
     ];
+
+    public function usesQueues(): bool
+    {
+        return $this->uses_queues ?? true;
+    }
+
+    public function usesDocks(): bool
+    {
+        return $this->uses_docks ?? true;
+    }
 
     public function getLogoUrlAttribute(): ?string
     {
