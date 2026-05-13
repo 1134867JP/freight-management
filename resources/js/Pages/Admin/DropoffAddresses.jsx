@@ -45,7 +45,6 @@ export default function DropoffAddresses({ addresses }) {
     city: '',
     state: '',
     complement: '',
-    notes: '',
     is_active: true,
   });
 
@@ -97,7 +96,6 @@ export default function DropoffAddresses({ addresses }) {
       city: address.city || '',
       state: address.state || '',
       complement: address.complement || '',
-      notes: address.notes || '',
       is_active: address.is_active ?? true,
     });
   };
@@ -185,11 +183,6 @@ export default function DropoffAddresses({ addresses }) {
                       <tr key={address.id} className="transition hover:bg-gray-50/70 dark:hover:bg-gray-700/40">
                         <td className="px-6 py-4">
                           <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{address.name}</p>
-                          {address.notes && (
-                            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]" title={address.notes}>
-                              {address.notes}
-                            </p>
-                          )}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                           <p>{address.street}{address.number ? `, ${address.number}` : ''}</p>
@@ -332,15 +325,6 @@ export default function DropoffAddresses({ addresses }) {
                 error={allErrors.complement}
                 value={data.complement}
                 onChange={(event) => setData('complement', event.target.value)}
-              />
-            </FormField>
-
-            <FormField label="Observações" error={allErrors.notes} className="md:col-span-2">
-              <textarea
-                className={`mt-1 block w-full ${FormField.inputClass(allErrors.notes)}`}
-                rows="3"
-                value={data.notes}
-                onChange={(event) => setData('notes', event.target.value)}
               />
             </FormField>
 
