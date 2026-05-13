@@ -36,10 +36,12 @@ class HandleInertiaRequests extends Middleware
             $user->loadMissing('company');
 
             $company = [
-                'id' => $user->company?->id,
-                'name' => $user->company?->name,
-                'slug' => $user->company?->slug,
-                'logo_url' => $user->company?->logo_url,
+                'id'          => $user->company?->id,
+                'name'        => $user->company?->name,
+                'slug'        => $user->company?->slug,
+                'logo_url'    => $user->company?->logo_url,
+                'uses_queues' => $user->company?->uses_queues ?? true,
+                'uses_docks'  => $user->company?->uses_docks ?? true,
             ];
         }
 
