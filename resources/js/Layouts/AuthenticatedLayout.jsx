@@ -1,5 +1,4 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { ConfirmProvider } from '@/Components/UI/ConfirmModal';
 import { useTheme } from '@/hooks/useTheme';
 import { Link, usePage } from '@inertiajs/react';
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
@@ -240,7 +239,6 @@ export default function AuthenticatedLayout({ header, children }) {
   }, [showAccountMenu]);
 
   return (
-    <ConfirmProvider>
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 lg:flex lg:h-screen lg:overflow-hidden">
       {/* SIDEBAR DESKTOP */}
       <aside className="hidden w-72 shrink-0 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 lg:flex lg:flex-col">
@@ -418,7 +416,6 @@ export default function AuthenticatedLayout({ header, children }) {
         <main>{children}</main>
       </div>
     </div>
-    </ConfirmProvider>
   );
 }
 
