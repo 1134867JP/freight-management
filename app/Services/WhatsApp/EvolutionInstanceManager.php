@@ -122,18 +122,9 @@ class EvolutionInstanceManager
             return;
         }
 
-        if (in_array($response->status(), [400, 409, 422], true)) {
+        // 400/403/409/422 all mean the instance already exists on the Evolution server
+        if (in_array($response->status(), [400, 403, 409, 422], true)) {
             return;
-        }
-
-        // Evolution API returns 403 with "already in use" when the instance name exists
-        if ($response->status() === 403) {
-            $messages = Arr::get($response->json() ?? [], 'response.message', []);
-            foreach ((array) $messages as $msg) {
-                if (str_contains(strtolower((string) $msg), 'already in use')) {
-                    return;
-                }
-            }
         }
 
         try {
