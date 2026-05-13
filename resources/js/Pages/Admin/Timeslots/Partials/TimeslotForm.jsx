@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { usePage } from '@inertiajs/react';
 import AddressModal from './AddressModal';
 import FormField from '@/Components/UI/FormField';
 import { useClientValidation } from '@/hooks/useClientValidation';
@@ -11,8 +12,9 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
   const arrProdutos = useMemo(() => produtos || [], [produtos]);
   const arrDocas = useMemo(() => docas || [], [docas]);
 
+  const usesDocks = usePage().props.auth?.company?.uses_docks ?? true;
   const blTemProduto = form.data.modelo === 'por_produto' || form.data.modelo === 'por_produto_doca';
-  const blTemDoca = form.data.modelo === 'por_produto_doca';
+  const blTemDoca = form.data.modelo === 'por_produto_doca' && usesDocks;
 
   // Limpar produto/doca quando o modelo não os exige
   useEffect(() => {
@@ -159,7 +161,7 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
               >
                 <option value="aberta">Cota Aberta</option>
                 <option value="por_produto">Por Produto</option>
-                <option value="por_produto_doca">Por Produto + Doca</option>
+                {usesDocks && <option value="por_produto_doca">Por Produto + Doca</option>}
               </FormField.Select>
             </FormField>
 
