@@ -91,7 +91,7 @@ export default function Index({ timeslots, trucks, drivers }) {
     >
       <Head title="Cotas Disponíveis" />
 
-      <div className="py-12">
+      <div className="py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <FlashMessages />
 
