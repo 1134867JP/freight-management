@@ -24,6 +24,8 @@ class StoreCompanyRequest extends FormRequest
             'company_is_active' => ['required', 'boolean'],
             'logo' => ['nullable', 'image', 'max:2048'],
             'remove_logo' => ['nullable', 'boolean'],
+            'uses_queues' => ['required', 'boolean'],
+            'uses_docks'  => ['required', 'boolean'],
 
             'admin_name' => ['required', 'string', 'max:255'],
             'admin_email' => ['required', 'string', 'email', 'max:255', Rule::unique(User::class, 'email')],
@@ -44,7 +46,9 @@ class StoreCompanyRequest extends FormRequest
     {
         $this->merge([
             'company_is_active' => $this->boolean('company_is_active'),
-            'remove_logo' => $this->boolean('remove_logo'),
+            'remove_logo'       => $this->boolean('remove_logo'),
+            'uses_queues'       => $this->boolean('uses_queues'),
+            'uses_docks'        => $this->boolean('uses_docks'),
             'admin_whatsapp_phone' => $this->exists('admin_whatsapp_phone')
                 ? WhatsAppPhone::normalize($this->input('admin_whatsapp_phone'))
                 : null,
