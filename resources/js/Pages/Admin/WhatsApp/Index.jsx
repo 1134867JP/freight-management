@@ -13,6 +13,14 @@ export default function Index({ configured, instance }) {
     router.post(route('admin.whatsapp.refresh'), {}, { preserveScroll: true });
   };
 
+  const handleDelete = () => {
+    if (!instance) return;
+    if (!window.confirm('Deseja excluir a instância do WhatsApp?')) return;
+    router.delete(route('admin.whatsapp.destroy'), { preserveScroll: true });
+  };
+
+  const canDelete = Boolean(instance && !instance.connected);
+
   return (
     <AuthenticatedLayout
       header={
@@ -71,6 +79,15 @@ export default function Index({ configured, instance }) {
                   >
                     Atualizar estado
                   </button>
+                  {canDelete && (
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                    >
+                      Excluir instância
+                    </button>
+                  )}
                 </div>
               </section>
 

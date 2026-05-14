@@ -152,6 +152,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/whatsapp', [WhatsAppController::class, 'show'])->name('admin.whatsapp');
         Route::post('/whatsapp/sync', [WhatsAppController::class, 'sync'])->name('admin.whatsapp.sync');
         Route::post('/whatsapp/refresh', [WhatsAppController::class, 'refresh'])->name('admin.whatsapp.refresh');
+        Route::delete('/whatsapp', [WhatsAppController::class, 'destroy'])->name('admin.whatsapp.destroy');
     });
 
     // -------------------------

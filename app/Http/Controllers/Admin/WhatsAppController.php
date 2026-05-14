@@ -27,9 +27,19 @@ class WhatsAppController extends Controller
 
     public function sync(EvolutionInstanceManager $manager): RedirectResponse
     {
-        $instance = auth()->user()->company?->whatsappInstance;
+        $company = auth()->user()->company;
 
-        abort_unless($instance, 404);
+        abort_unless($company, 404);
+
+        $instance = $company->whatsappInstance;
+
+        if (! $instance) {
+            $instance = $company->whatsappInstance()->create([
+                'instance_name' => $company->slug,
+                'is_default'    => true,
+                'is_active'     => true,
+            ]);
+        }
 
         try {
             $state = $manager->sync($instance);
@@ -62,6 +72,33 @@ class WhatsAppController extends Controller
         $this->persistInstanceState($instance, $state);
 
         return redirect()->route('admin.whatsapp')->with('success', 'Estado da instância atualizado.');
+    }
+
+    public function destroy(EvolutionInstanceManager $manager): RedirectResponse
+    {
+        $instance = auth()->user()->company?->whatsappInstance;
+
+        abort_unless($instance, 404);
+
+        if (($instance->settings['connected'] ?? false) === true) {
+            return redirect()
+                ->route('admin.whatsapp')
+                ->with('error', 'Não é possível excluir enquanto a instância estiver conectada.');
+        }
+
+        try {
+            $manager->delete($instance);
+        } catch (\Throwable $exception) {
+            return redirect()
+                ->route('admin.whatsapp')
+                ->with('error', 'Falha ao excluir a instância: '.$exception->getMessage());
+        }
+
+        $instance->delete();
+
+        return redirect()
+            ->route('admin.whatsapp')
+            ->with('success', 'Instância excluída com sucesso.');
     }
 
     private function persistInstanceState(WhatsAppInstance $instance, array $state): void
