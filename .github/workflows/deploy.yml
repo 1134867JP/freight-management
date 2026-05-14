@@ -32,14 +32,8 @@ jobs:
             echo "==> Atualizando codigo..."
             git pull origin main
 
-            echo "==> Buildando imagem Docker..."
-            docker build --target php-fpm -t freight-management-app:latest \
-              -f $APP_DIR/infra/production/images/Dockerfile \
-              $APP_DIR
-
             echo "==> Reiniciando servicos..."
-            cd $APP_DIR/infra/production
-            docker compose up -d --force-recreate app-fpm app-queue app-scheduler
+            docker compose up -d --remove-orphans
 
             echo "==> Aguardando app subir..."
             sleep 5
