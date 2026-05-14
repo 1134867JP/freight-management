@@ -5,6 +5,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { ConfirmProvider } from '@/Components/UI/ConfirmModal';
+import ErrorBoundary from '@/Components/UI/ErrorBoundary';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -16,9 +17,11 @@ createInertiaApp({
     const root = createRoot(el);
 
     root.render(
-      <ConfirmProvider>
-        <App {...props} />
-      </ConfirmProvider>
+      <ErrorBoundary>
+        <ConfirmProvider>
+          <App {...props} />
+        </ConfirmProvider>
+      </ErrorBoundary>
     );
   },
   progress: {

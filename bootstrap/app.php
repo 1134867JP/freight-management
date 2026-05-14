@@ -41,5 +41,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->respond(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
+            if ($request->header('X-Inertia')) {
+                return \Inertia\Inertia::render('ErrorPage', ['status' => $e->getStatusCode()])
+                    ->toResponse($request)
+                    ->setStatusCode($e->getStatusCode());
+            }
+        });
     })->create();
