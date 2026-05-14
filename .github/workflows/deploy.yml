@@ -33,7 +33,7 @@ jobs:
             git pull origin main
 
             echo "==> Buildando imagem Docker..."
-            docker build -t freight-management-app:latest \
+            docker build --target php-fpm -t freight-management-app:latest \
               -f $APP_DIR/infra/production/images/Dockerfile \
               $APP_DIR
 

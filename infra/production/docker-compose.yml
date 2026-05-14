@@ -15,8 +15,8 @@ services:
       DB_PORT: 5432
       TRUSTED_PROXIES: ${TRUSTED_PROXIES}
       EVOLUTION_BASE_URL: http://evolution-api:8080
-      WAIT_FOR_DB: "true"
-      APP_RUN_OPTIMIZE: "true"
+      WAIT_FOR_DB: 'true'
+      APP_RUN_OPTIMIZE: 'true'
       REDIS_HOST: app-redis
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
@@ -34,12 +34,17 @@ services:
   app-queue:
     image: ${APP_IMAGE}
     restart: unless-stopped
-    command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--timeout=120", "--max-time=3600"]
-
-  app-scheduler:
-    image: ${APP_IMAGE}
-    restart: unless-stopped
-    command: ["php", "artisan", "schedule:work"]
+    command:
+      [
+        'php',
+        'artisan',
+        'queue:work',
+        '--queue=default',
+        '--sleep=3',
+        '--tries=3',
+        '--timeout=120',
+        '--max-time=3600',
+      ]
     env_file:
       - ./.env
     environment:
@@ -49,8 +54,37 @@ services:
       DB_PORT: 5432
       TRUSTED_PROXIES: ${TRUSTED_PROXIES}
       EVOLUTION_BASE_URL: http://evolution-api:8080
-      WAIT_FOR_DB: "true"
-      APP_RUN_OPTIMIZE: "false"
+      WAIT_FOR_DB: 'true'
+      APP_RUN_OPTIMIZE: 'false'
+      REDIS_HOST: app-redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: phpredis
+      SESSION_DRIVER: redis
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+    depends_on:
+      app-postgres:
+        condition: service_healthy
+      app-redis:
+        condition: service_healthy
+    volumes:
+      - app_storage:/var/www/html/storage
+
+  app-scheduler:
+    image: ${APP_IMAGE}
+    restart: unless-stopped
+    command: ['php', 'artisan', 'schedule:work']
+    env_file:
+      - ./.env
+    environment:
+      APP_URL: ${APP_PUBLIC_URL}
+      DB_CONNECTION: pgsql
+      DB_HOST: app-postgres
+      DB_PORT: 5432
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES}
+      EVOLUTION_BASE_URL: http://evolution-api:8080
+      WAIT_FOR_DB: 'true'
+      APP_RUN_OPTIMIZE: 'false'
       REDIS_HOST: app-redis
       REDIS_PORT: 6379
       REDIS_CLIENT: phpredis
@@ -73,7 +107,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -85,7 +119,7 @@ services:
     restart: unless-stopped
     command: redis-server --port 6379 --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -118,7 +152,7 @@ services:
       POSTGRES_USER: ${EVOLUTION_DB_USERNAME}
       POSTGRES_PASSWORD: ${EVOLUTION_DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${EVOLUTION_DB_USERNAME} -d ${EVOLUTION_DB_DATABASE}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${EVOLUTION_DB_USERNAME} -d ${EVOLUTION_DB_DATABASE}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -131,7 +165,7 @@ services:
     restart: unless-stopped
     command: redis-server --port 6379 --appendonly yes
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -159,12 +193,12 @@ services:
       EVOLUTION_TLS_KEY: ${EVOLUTION_TLS_KEY}
       NGINX_AUTO_SELF_SIGNED: ${NGINX_AUTO_SELF_SIGNED}
       NGINX_CLIENT_MAX_BODY_SIZE: ${NGINX_CLIENT_MAX_BODY_SIZE}
-      NGINX_ENVSUBST_FILTER: "APP_DOMAIN|APP_PUBLIC_URL|EVOLUTION_DOMAIN|EVOLUTION_PUBLIC_URL|APP_TLS_CERT|APP_TLS_KEY|EVOLUTION_TLS_CERT|EVOLUTION_TLS_KEY|NGINX_CLIENT_MAX_BODY_SIZE"
+      NGINX_ENVSUBST_FILTER: 'APP_DOMAIN|APP_PUBLIC_URL|EVOLUTION_DOMAIN|EVOLUTION_PUBLIC_URL|APP_TLS_CERT|APP_TLS_KEY|EVOLUTION_TLS_CERT|EVOLUTION_TLS_KEY|NGINX_CLIENT_MAX_BODY_SIZE'
     ports:
-      - "${APP_PORT_HTTP}:8080"
-      - "${APP_PORT_HTTPS}:8443"
-      - "${EVOLUTION_PORT_HTTP}:8088"
-      - "${EVOLUTION_PORT_HTTPS}:8444"
+      - '${APP_PORT_HTTP}:8080'
+      - '${APP_PORT_HTTPS}:8443'
+      - '${EVOLUTION_PORT_HTTP}:8088'
+      - '${EVOLUTION_PORT_HTTPS}:8444'
     volumes:
       - ./certs:/etc/nginx/certs
       - app_storage:/var/www/html/storage:ro
