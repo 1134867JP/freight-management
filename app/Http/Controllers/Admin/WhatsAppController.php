@@ -106,7 +106,11 @@ class WhatsAppController extends Controller
         $settings = $instance->settings ?? [];
 
         $settings['connection_state']   = $state['connection_state'] ?? 'unknown';
-        $settings['qr_code']            = $state['qr_code'] ?? ($settings['qr_code'] ?? null);
+        // sync() always includes 'qr_code'; refresh (connectionState) never does.
+        // Use array_key_exists so a null QR from sync clears the stale code instead of preserving it.
+        $settings['qr_code'] = array_key_exists('qr_code', $state)
+            ? $state['qr_code']
+            : ($settings['qr_code'] ?? null);
         $settings['connected']          = $state['connected'] ?? false;
         $settings['last_synced_at']     = Carbon::now()->toIso8601String();
         $settings['last_sync_response'] = $state['last_sync_response'] ?? null;
