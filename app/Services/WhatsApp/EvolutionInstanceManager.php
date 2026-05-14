@@ -30,6 +30,17 @@ class EvolutionInstanceManager
 
         $this->ensureExists($instance);
 
+        // When the instance is disconnected (closed), logout first to clear the stale session
+        // so that /instance/connect returns a fresh QR code.
+        try {
+            $currentPayload = $this->fetchConnectionStatePayload($instance);
+            if ($this->extractConnectionState($currentPayload) === 'closed') {
+                $this->logout($instance);
+            }
+        } catch (\Throwable) {
+            // Ignore — if state check or logout fails, proceed and let connect decide
+        }
+
         $connectResponse = $this->request($instance)
             ->get('/instance/connect/'.rawurlencode($instance->instance_name));
 
