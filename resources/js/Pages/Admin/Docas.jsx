@@ -5,7 +5,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 import Button from '@/Components/UI/Button';
 
@@ -55,6 +55,7 @@ function StatusBadge({ status }) {
 }
 
 export default function Docas({ docas }) {
+  const confirm = useConfirm();
   const [editingDoca, setEditingDoca] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -105,8 +106,8 @@ export default function Docas({ docas }) {
     });
   };
 
-  const handleDeactivate = (objDoca) => {
-    if (!confirmAction(`Desativar a doca "${objDoca.nome}"?`)) return;
+  const handleDeactivate = async (objDoca) => {
+    if (!(await confirm(`Desativar a doca "${objDoca.nome}"?`))) return;
     router.delete(route('docas.destroy', objDoca.id), { preserveScroll: true });
   };
 

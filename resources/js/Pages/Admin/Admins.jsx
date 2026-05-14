@@ -5,7 +5,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { isValidEmail, isValidWhatsApp } from '@/utils/validation';
 import { Head, useForm, router } from '@inertiajs/react';
@@ -56,6 +56,7 @@ function IconTrash() {
 }
 
 export default function Admins({ admins, currentUserId }) {
+  const confirm = useConfirm();
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -124,8 +125,8 @@ export default function Admins({ admins, currentUserId }) {
     });
   };
 
-  const deleteAdmin = (id) => {
-    if (confirmAction('Tem certeza que deseja excluir este administrador?')) {
+  const deleteAdmin = async (id) => {
+    if (await confirm('Tem certeza que deseja excluir este administrador?')) {
       router.delete(route('admins.destroy', id), { preserveScroll: true });
     }
   };

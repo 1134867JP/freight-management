@@ -5,7 +5,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 import Button from '@/Components/UI/Button';
 
@@ -40,6 +40,7 @@ function IconTrash() {
 }
 
 export default function Produtos({ produtos }) {
+  const confirm = useConfirm();
   const [editingProduto, setEditingProduto] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -86,8 +87,8 @@ export default function Produtos({ produtos }) {
     });
   };
 
-  const handleDelete = (objProduto) => {
-    if (!confirmAction(`Excluir produto "${objProduto.nome}"?`)) return;
+  const handleDelete = async (objProduto) => {
+    if (!(await confirm(`Excluir produto "${objProduto.nome}"?`))) return;
     router.delete(route('produtos.destroy', objProduto.id), { preserveScroll: true });
   };
 

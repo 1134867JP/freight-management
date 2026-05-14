@@ -5,7 +5,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 
 const TYPE_COLORS = {
@@ -18,6 +18,7 @@ const TYPE_COLORS = {
 };
 
 export default function YardZones({ zones, tipos }) {
+  const confirm = useConfirm();
   const [editing, setEditing]     = useState(null);
   const [showCreate, setCreate]   = useState(false);
 
@@ -43,8 +44,8 @@ export default function YardZones({ zones, tipos }) {
     }
   };
 
-  const handleDeactivate = z => {
-    if (!confirmAction(`Desativar a zona "${z.nome}"?`)) return;
+  const handleDeactivate = async z => {
+    if (!(await confirm(`Desativar a zona "${z.nome}"?`))) return;
     router.delete(route('yard-zones.destroy', z.id), { preserveScroll: true });
   };
 

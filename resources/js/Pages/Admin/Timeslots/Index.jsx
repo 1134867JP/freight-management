@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { translateTimeslotOperationType } from '@/Features/Timeslot/utils/timeslotPresentation';
 import { Head, Link, router } from '@inertiajs/react';
 import TimeslotSummaryCards from './Partials/TimeslotSummaryCards';
@@ -11,6 +11,7 @@ import TimeslotsTable from './Partials/TimeslotsTable';
 import TimeslotsPagination from './Partials/TimeslotsPagination';
 
 export default function Index({ timeslots }) {
+  const confirm = useConfirm();
   const [filters, setFilters] = useState({
     search: '',
     status: 'all',
@@ -136,10 +137,10 @@ export default function Index({ timeslots }) {
     });
   };
 
-  const deleteSlot = (event, id) => {
+  const deleteSlot = async (event, id) => {
     event.stopPropagation();
 
-    if (!confirmAction('Tem certeza que deseja excluir este horário?')) {
+    if (!(await confirm('Tem certeza que deseja excluir este horário?'))) {
       return;
     }
 

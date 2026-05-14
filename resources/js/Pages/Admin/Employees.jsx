@@ -5,7 +5,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { isValidEmail, isValidWhatsApp } from '@/utils/validation';
 import { Head, useForm, router } from '@inertiajs/react';
@@ -70,6 +70,7 @@ function IconShield() {
 }
 
 export default function Employees({ employees, currentUserId }) {
+  const confirm = useConfirm();
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [permissionsEmployee, setPermissionsEmployee] = useState(null);
@@ -139,8 +140,8 @@ export default function Employees({ employees, currentUserId }) {
     });
   };
 
-  const deleteEmployee = (id) => {
-    if (confirmAction('Tem certeza que deseja excluir este funcionário?')) {
+  const deleteEmployee = async (id) => {
+    if (await confirm('Tem certeza que deseja excluir este funcionário?')) {
       router.delete(route('employees.destroy', id), { preserveScroll: true });
     }
   };

@@ -5,7 +5,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
-import { confirmAction } from '@/Components/UI/confirmAction';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 
 const STATUS_CFG = {
@@ -14,6 +14,7 @@ const STATUS_CFG = {
 };
 
 export default function YardTrucks({ trucks, operators }) {
+  const confirm = useConfirm();
   const [editing, setEditing]   = useState(null);
   const [showCreate, setCreate] = useState(false);
 
@@ -38,8 +39,8 @@ export default function YardTrucks({ trucks, operators }) {
     }
   };
 
-  const handleDeactivate = t => {
-    if (!confirmAction(`Desativar o cavalo "${t.identificador}"?`)) return;
+  const handleDeactivate = async t => {
+    if (!(await confirm(`Desativar o cavalo "${t.identificador}"?`))) return;
     router.delete(route('yard-trucks.destroy', t.id), { preserveScroll: true });
   };
 
