@@ -20,6 +20,7 @@ export default function Index({ configured, instance }) {
   };
 
   const canDelete = Boolean(instance && !instance.connected);
+  const canSync = !instance?.connected;
 
   return (
     <AuthenticatedLayout
@@ -65,13 +66,15 @@ export default function Index({ configured, instance }) {
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={handleSync}
-                    className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-gray-700 dark:hover:bg-gray-600"
-                  >
-                    Gerar QR Code
-                  </button>
+                  {canSync && (
+                    <button
+                      type="button"
+                      onClick={handleSync}
+                      className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    >
+                      Gerar QR Code
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={handleRefresh}

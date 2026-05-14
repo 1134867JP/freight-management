@@ -30,27 +30,44 @@ class EvolutionInstanceManager
 
         $this->ensureExists($instance);
 
-        // When the instance is disconnected (closed), logout first to clear the stale session
-        // so that /instance/connect returns a fresh QR code.
+        // Check current state to decide the approach
+        $currentState = null;
+        $currentPayload = null;
         try {
             $currentPayload = $this->fetchConnectionStatePayload($instance);
-            if ($this->extractConnectionState($currentPayload) === 'closed') {
-                $this->logout($instance);
-            }
+            $currentState = $this->extractConnectionState($currentPayload);
         } catch (\Throwable) {
-            // Ignore — if state check or logout fails, proceed and let connect decide
+            // Instance may not be fully initialized yet — proceed
+        }
+
+        // If already connected, do not disturb the active session
+        if ($currentState === 'open') {
+            return [
+                'connection_state' => 'open',
+                'qr_code' => null,
+                'connected' => true,
+                'last_sync_response' => ['connection' => $currentPayload],
+            ];
+        }
+
+        // When disconnected, delete and recreate to guarantee a fresh QR code (avoids 403)
+        if ($currentState === 'closed') {
+            try {
+                $this->delete($instance);
+            } catch (\Throwable) {
+                // Ignore delete failure — ensureExists will recreate below
+            }
+            $this->ensureExists($instance);
         }
 
         $connectResponse = $this->request($instance)
             ->get('/instance/connect/'.rawurlencode($instance->instance_name));
 
-        // If connect returns 403/409 (instance stuck/name conflict), force delete and recreate
+        // Last resort: if connect still returns 403/409, force delete and recreate once more
         if (in_array($connectResponse->status(), [403, 409], true)) {
             try {
                 $this->delete($instance);
-            } catch (\Throwable) {
-                // Ignore delete failure
-            }
+            } catch (\Throwable) {}
             $this->ensureExists($instance);
 
             $connectResponse = $this->request($instance)
