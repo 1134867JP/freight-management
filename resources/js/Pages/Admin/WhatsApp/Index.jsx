@@ -2,9 +2,12 @@ import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, router } from '@inertiajs/react';
 
 export default function Index({ configured, instance }) {
+  const confirm = useConfirm();
+
   const handleSync = () => {
     router.post(route('admin.whatsapp.sync'), {}, { preserveScroll: true });
   };
@@ -13,9 +16,9 @@ export default function Index({ configured, instance }) {
     router.post(route('admin.whatsapp.refresh'), {}, { preserveScroll: true });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!instance) return;
-    if (!window.confirm('Deseja excluir a instância do WhatsApp?')) return;
+    if (!(await confirm('Deseja excluir a instância do WhatsApp?'))) return;
     router.delete(route('admin.whatsapp.destroy'), { preserveScroll: true });
   };
 

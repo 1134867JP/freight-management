@@ -5,6 +5,7 @@ import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
 import EmptyState from '@/Components/UI/EmptyState';
+import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 
 const STATUS_CFG = {
@@ -38,6 +39,7 @@ function LocationLabel({ tipo, id, spots, docas }) {
 }
 
 export default function MoveOrders({ orders, activeFreights, availableSpots, docas, yardTrucks }) {
+  const confirm = useConfirm();
   const [showCreate, setCreate] = useState(false);
 
   const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
@@ -51,8 +53,8 @@ export default function MoveOrders({ orders, activeFreights, availableSpots, doc
     post(route('admin.move-orders.store'), { onSuccess: resetForm, preserveScroll: true });
   };
 
-  const doAction = (url, confirmMsg) => {
-    if (confirmMsg && !confirm(confirmMsg)) return;
+  const doAction = async (url, confirmMsg) => {
+    if (confirmMsg && !(await confirm(confirmMsg))) return;
     router.patch(url, {}, { preserveScroll: true });
   };
 
