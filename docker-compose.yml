@@ -18,6 +18,28 @@ services:
     networks:
       - freight-management_internal
       - web
+  queue:
+    image: freight-management-app
+    container_name: freight-queue
+    restart: unless-stopped
+    command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--timeout=120", "--max-time=3600"]
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: https://72.60.254.178.nip.io
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: freight_db
+      DB_USERNAME: freight_user
+      DB_PASSWORD: freight_pass_2024
+      QUEUE_CONNECTION: database
+    volumes:
+      - /opt/apps/outro-site/freight-management:/var/www/html
+    networks:
+      - freight-management_internal
+    depends_on:
+      - db
 
   db:
     image: postgres:16
