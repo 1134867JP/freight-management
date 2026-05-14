@@ -44,6 +44,19 @@ class EvolutionInstanceManager
         $connectResponse = $this->request($instance)
             ->get('/instance/connect/'.rawurlencode($instance->instance_name));
 
+        // If connect returns 403/409 (instance stuck/name conflict), force delete and recreate
+        if (in_array($connectResponse->status(), [403, 409], true)) {
+            try {
+                $this->delete($instance);
+            } catch (\Throwable) {
+                // Ignore delete failure
+            }
+            $this->ensureExists($instance);
+
+            $connectResponse = $this->request($instance)
+                ->get('/instance/connect/'.rawurlencode($instance->instance_name));
+        }
+
         try {
             $connectResponse->throw();
         } catch (RequestException $exception) {
