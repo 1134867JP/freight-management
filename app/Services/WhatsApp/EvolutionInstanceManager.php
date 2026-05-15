@@ -18,8 +18,8 @@ class EvolutionInstanceManager
     {
         return $instance->is_active
             && filled($instance->instance_name)
-            && filled(config('services.evolution.base_url'))
-            && filled(config('services.evolution.api_key'));
+            && filled($this->resolveBaseUrl($instance))
+            && filled($this->resolveApiKey($instance));
     }
 
     public function sync(WhatsAppInstance $instance): array
@@ -198,14 +198,24 @@ class EvolutionInstanceManager
     private function request(WhatsAppInstance $instance)
     {
         return $this->http
-            ->baseUrl(rtrim(config('services.evolution.base_url', ''), '/'))
+            ->baseUrl(rtrim($this->resolveBaseUrl($instance), '/'))
             ->acceptJson()
             ->asJson()
             ->retry(2, 400)
             ->timeout(20)
             ->withHeaders([
-                'apikey' => config('services.evolution.api_key', ''),
+                'apikey' => $this->resolveApiKey($instance),
             ]);
+    }
+
+    private function resolveBaseUrl(WhatsAppInstance $instance): string
+    {
+        return (string) ($instance->base_url ?: config('services.evolution.base_url', ''));
+    }
+
+    private function resolveApiKey(WhatsAppInstance $instance): string
+    {
+        return (string) ($instance->api_key ?: config('services.evolution.api_key', ''));
     }
 
     private function extractConnectionState(mixed $payload): ?string

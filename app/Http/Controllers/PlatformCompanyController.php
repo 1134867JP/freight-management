@@ -6,7 +6,6 @@ use App\Http\Requests\Platform\StoreCompanyRequest;
 use App\Http\Requests\Platform\UpdateCompanyRequest;
 use App\Models\Company;
 use App\Models\User;
-use App\Models\WhatsAppInstance;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -72,15 +71,6 @@ class PlatformCompanyController extends Controller
                 $validated['remove_logo'] ?? false,
             );
             $this->syncCompanyAdmin($company, $validated);
-
-            WhatsAppInstance::firstOrCreate(
-                ['company_id' => $company->id],
-                [
-                    'instance_name' => $slug,
-                    'is_default'    => true,
-                    'is_active'     => true,
-                ]
-            );
         });
 
         return redirect()
@@ -108,15 +98,6 @@ class PlatformCompanyController extends Controller
                 $validated['remove_logo'] ?? false,
             );
             $this->syncCompanyAdmin($company, $validated);
-
-            WhatsAppInstance::firstOrCreate(
-                ['company_id' => $company->id],
-                [
-                    'instance_name' => $slug,
-                    'is_default'    => true,
-                    'is_active'     => true,
-                ]
-            );
         });
 
         return redirect()

@@ -42,6 +42,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/companies', [PlatformCompanyController::class, 'store'])->name('platform.companies.store');
         Route::patch('/companies/{company}', [PlatformCompanyController::class, 'update'])->name('platform.companies.update');
         Route::delete('/companies/{company}', [PlatformCompanyController::class, 'destroy'])->name('platform.companies.destroy');
+        Route::get('/companies/{company}/instance', [PlatformCompanyInstanceController::class, 'edit'])->name('platform.companies.instance.edit');
+        Route::patch('/companies/{company}/instance', [PlatformCompanyInstanceController::class, 'update'])->name('platform.companies.instance.update');
+        Route::post('/companies/{company}/instance/sync', [PlatformCompanyInstanceController::class, 'sync'])->name('platform.companies.instance.sync');
         Route::delete('/companies/{company}/instance', [PlatformCompanyInstanceController::class, 'destroy'])->name('platform.companies.instance.destroy');
     });
 

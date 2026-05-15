@@ -1,0 +1,20 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    public $withinTransaction = false;
+
+    public function up(): void
+    {
+        DB::statement('DROP INDEX IF EXISTS freights_timeslot_id_truck_plate_active_unique');
+        DB::statement("CREATE UNIQUE INDEX freights_timeslot_id_truck_plate_active_unique ON freights (timeslot_id, truck_plate) WHERE status != 'cancelled'");
+    }
+
+    public function down(): void
+    {
+        DB::statement('DROP INDEX IF EXISTS freights_timeslot_id_truck_plate_active_unique');
+    }
+};
