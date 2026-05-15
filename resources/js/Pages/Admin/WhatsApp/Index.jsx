@@ -3,10 +3,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 
 export default function Index({ configured, instance }) {
   const confirm = useConfirm();
+  const { flash = {} } = usePage().props;
 
   const handleSync = () => {
     router.post(route('admin.whatsapp.sync'), {}, { preserveScroll: true });
@@ -22,7 +23,6 @@ export default function Index({ configured, instance }) {
     router.delete(route('admin.whatsapp.destroy'), { preserveScroll: true });
   };
 
-  const canDelete = Boolean(instance && !instance.connected);
   const canSync = !instance?.connected;
 
   return (
@@ -38,7 +38,17 @@ export default function Index({ configured, instance }) {
 
       <div className="py-8">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-          <FlashMessages />
+          <FlashMessages flash={{ success: flash.success, info: flash.info }} />
+
+          {flash.error && (
+            <ErrorRecovery
+              message={flash.error}
+              action={flash.error_action}
+              instance={instance}
+              onRetry={handleSync}
+              onDelete={handleDelete}
+            />
+          )}
 
           {!configured ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20">
@@ -85,7 +95,7 @@ export default function Index({ configured, instance }) {
                   >
                     Atualizar estado
                   </button>
-                  {canDelete && (
+                  {instance && !instance.connected && !flash.error && (
                     <button
                       type="button"
                       onClick={handleDelete}
@@ -121,6 +131,56 @@ export default function Index({ configured, instance }) {
         </div>
       </div>
     </AuthenticatedLayout>
+  );
+}
+
+function ErrorRecovery({ message, action, instance, onRetry, onDelete }) {
+  const canDelete = Boolean(instance && !instance.connected);
+  const deleteIsFirst = action === 'delete_instance' && canDelete;
+
+  return (
+    <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 dark:border-red-800 dark:bg-red-900/20">
+      <p className="text-sm font-medium text-red-800 dark:text-red-300">{message}</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {deleteIsFirst ? (
+          <>
+            <button
+              type="button"
+              onClick={onDelete}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Excluir instância
+            </button>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400"
+            >
+              Tentar novamente
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Tentar novamente
+            </button>
+            {canDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400"
+              >
+                Excluir instância
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 

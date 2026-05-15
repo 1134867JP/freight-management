@@ -44,7 +44,9 @@ class WhatsAppController extends Controller
         try {
             $state = $manager->sync($instance);
         } catch (\Throwable $exception) {
-            return redirect()->route('admin.whatsapp')->with('error', $exception->getMessage());
+            return redirect()->route('admin.whatsapp')
+                ->with('error', $exception->getMessage())
+                ->with('error_action', $this->is403Error($exception) ? 'delete_instance' : 'retry');
         }
 
         $this->persistInstanceState($instance, $state);
@@ -66,7 +68,9 @@ class WhatsAppController extends Controller
         try {
             $state = $manager->connectionState($instance);
         } catch (\Throwable $exception) {
-            return redirect()->route('admin.whatsapp')->with('error', $exception->getMessage());
+            return redirect()->route('admin.whatsapp')
+                ->with('error', $exception->getMessage())
+                ->with('error_action', $this->is403Error($exception) ? 'delete_instance' : 'retry');
         }
 
         $this->persistInstanceState($instance, $state);
@@ -99,6 +103,19 @@ class WhatsAppController extends Controller
         return redirect()
             ->route('admin.whatsapp')
             ->with('success', 'Instância excluída com sucesso.');
+    }
+
+    private function is403Error(\Throwable $exception): bool
+    {
+        if ($exception instanceof \Illuminate\Http\Client\RequestException) {
+            return $exception->response->status() === 403;
+        }
+
+        if ($prev = $exception->getPrevious()) {
+            return $this->is403Error($prev);
+        }
+
+        return false;
     }
 
     private function persistInstanceState(WhatsAppInstance $instance, array $state): void
