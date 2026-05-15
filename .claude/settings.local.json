@@ -12,7 +12,13 @@
       "Bash(find c:UsersjoperOneDriveDocumentosfreight-managementappNotifications -type f -name *.php)",
       "Bash(npm run:*)",
       "Bash(php -r \"require ''vendor/autoload.php''; $app = require ''bootstrap/app.php''; $app->make\\(\\\\Illuminate\\\\Contracts\\\\Console\\\\Kernel::class\\)->bootstrap\\(\\); echo ''OK'';\")",
-      "Bash(ls -1 c:/Users/joper/OneDrive/Documentos/freight-management/app/Models/*.php)"
+      "Bash(ls -1 c:/Users/joper/OneDrive/Documentos/freight-management/app/Models/*.php)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\joper\\\\OneDrive\\\\Documentos\\\\freight-management\\\\resources\\\\js\\\\Pages\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(docker --context default ps --format \"table {{.Names}}\\\\t{{.Status}}\\\\t{{.Image}}\")",
+      "Skill(superpowers:systematic-debugging)"
     ]
   }
 }
