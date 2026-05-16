@@ -50,8 +50,9 @@ class EvolutionInstanceManager
             ];
         }
 
-        // When disconnected, delete and recreate to guarantee a fresh QR code (avoids 403)
-        if ($currentState === 'closed') {
+        // Any non-connected state (closed, connecting, unknown, null) needs a fresh QR —
+        // delete and recreate to avoid Evolution 403 "name already in use" on connect
+        if ($currentState !== 'open') {
             try {
                 $this->delete($instance);
             } catch (\Throwable) {
