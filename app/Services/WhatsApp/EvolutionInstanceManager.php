@@ -50,22 +50,19 @@ class EvolutionInstanceManager
             ];
         }
 
-        // Any non-connected state (closed, connecting, unknown, null) needs a fresh QR —
-        // delete and recreate to avoid Evolution 403 "name already in use" on connect
-        if ($currentState !== 'open') {
-            try {
-                $this->delete($instance);
-            } catch (\Throwable) {
-                // Ignore delete failure — ensureExists will recreate below
-            }
-            $this->ensureExists($instance);
+        // Non-open state: logout to reset any pending WhatsApp session without deleting the
+        // Evolution instance (avoids 403 "name already in use" from a create/connect race).
+        try {
+            $this->logout($instance);
+        } catch (\Throwable) {
+            // Logout failure is not critical — proceed to connect
         }
 
         $connectResponse = $this->request($instance)
             ->get('/instance/connect/'.rawurlencode($instance->instance_name));
 
-        // Last resort: if connect still returns 403/409, force delete and recreate once more
-        if (in_array($connectResponse->status(), [403, 409], true)) {
+        // Last resort: if connect still fails, force delete and recreate once
+        if ($connectResponse->failed()) {
             try {
                 $this->delete($instance);
             } catch (\Throwable) {}
