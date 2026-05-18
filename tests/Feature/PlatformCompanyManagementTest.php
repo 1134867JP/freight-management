@@ -29,7 +29,7 @@ class PlatformCompanyManagementTest extends TestCase
 
     public function test_platform_admin_can_create_company_with_admin_and_logo(): void
     {
-        Storage::fake('public');
+        Storage::fake('s3');
 
         $platformAdmin = User::factory()->create([
             'company_id' => null,
@@ -59,22 +59,25 @@ class PlatformCompanyManagementTest extends TestCase
 
         $company->refresh();
         $this->assertNotNull($company->logo_path);
-        Storage::disk('public')->assertExists($company->logo_path);
+        Storage::disk('s3')->assertExists($company->logo_path);
         $this->assertNull($company->whatsappInstance()->first());
     }
 
-    public function test_company_exposes_relative_logo_url(): void
+    public function test_company_exposes_storage_logo_url(): void
     {
+        Storage::fake('s3');
+
         $company = Company::factory()->create([
             'logo_path' => 'company-logos/logo.png',
         ]);
 
-        $this->assertSame('/storage/company-logos/logo.png', $company->logo_url);
+        $this->assertNotNull($company->logo_url);
+        $this->assertStringContainsString('company-logos/logo.png', $company->logo_url);
     }
 
     public function test_platform_admin_can_update_company_logo_and_admin(): void
     {
-        Storage::fake('public');
+        Storage::fake('s3');
 
         $platformAdmin = User::factory()->create([
             'company_id' => null,
@@ -87,7 +90,7 @@ class PlatformCompanyManagementTest extends TestCase
             'is_active' => true,
         ]);
 
-        Storage::disk('public')->put('company-logos/logo-antiga.png', 'fake-image');
+        Storage::disk('s3')->put('company-logos/logo-antiga.png', 'fake-image');
 
         $company->update(['logo_path' => 'company-logos/logo-antiga.png']);
 
@@ -128,12 +131,12 @@ class PlatformCompanyManagementTest extends TestCase
 
         $company->refresh();
         $this->assertNull($company->logo_path);
-        Storage::disk('public')->assertMissing('company-logos/logo-antiga.png');
+        Storage::disk('s3')->assertMissing('company-logos/logo-antiga.png');
     }
 
     public function test_platform_admin_can_delete_company_without_active_timeslots(): void
     {
-        Storage::fake('public');
+        Storage::fake('s3');
 
         $platformAdmin = User::factory()->create([
             'company_id' => null,
@@ -145,7 +148,7 @@ class PlatformCompanyManagementTest extends TestCase
             'slug' => 'empresa-arquivada',
         ]);
 
-        Storage::disk('public')->put('company-logos/logo-arquivada.png', 'fake-image');
+        Storage::disk('s3')->put('company-logos/logo-arquivada.png', 'fake-image');
 
         $company->update(['logo_path' => 'company-logos/logo-arquivada.png']);
 
@@ -182,7 +185,7 @@ class PlatformCompanyManagementTest extends TestCase
             'company_id' => $company->id,
         ]);
 
-        Storage::disk('public')->assertMissing('company-logos/logo-arquivada.png');
+        Storage::disk('s3')->assertMissing('company-logos/logo-arquivada.png');
     }
 
     public function test_platform_admin_cannot_delete_company_with_active_timeslots(): void

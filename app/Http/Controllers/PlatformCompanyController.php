@@ -124,7 +124,7 @@ class PlatformCompanyController extends Controller
         });
 
         if (filled($logoPath)) {
-            Storage::disk('public')->delete($logoPath);
+            Storage::delete($logoPath);
         }
 
         return redirect()
@@ -135,16 +135,16 @@ class PlatformCompanyController extends Controller
     private function syncCompanyLogo(Company $company, ?UploadedFile $logo, bool $removeLogo): void
     {
         if ($removeLogo && filled($company->logo_path)) {
-            Storage::disk('public')->delete($company->logo_path);
+            Storage::delete($company->logo_path);
             $company->logo_path = null;
         }
 
         if ($logo) {
             if (filled($company->logo_path)) {
-                Storage::disk('public')->delete($company->logo_path);
+                Storage::delete($company->logo_path);
             }
 
-            $company->logo_path = $logo->store('company-logos', 'public');
+            $company->logo_path = $logo->store('company-logos');
         }
 
         $company->save();

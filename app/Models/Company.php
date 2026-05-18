@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 class Company extends Model
 {
@@ -48,7 +49,7 @@ class Company extends Model
             return null;
         }
 
-        return '/storage/'.$this->logo_path;
+        return Storage::url($this->logo_path);
     }
 
     public static function ensureDefault(): self
