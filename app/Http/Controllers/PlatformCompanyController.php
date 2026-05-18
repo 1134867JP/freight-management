@@ -144,7 +144,8 @@ class PlatformCompanyController extends Controller
                 Storage::delete($company->logo_path);
             }
 
-            $company->logo_path = $logo->store('company-logos');
+            $stored = $logo->store('company-logos');
+            $company->logo_path = $stored ?: null;
         }
 
         $company->save();
