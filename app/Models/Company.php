@@ -45,11 +45,13 @@ class Company extends Model
 
     public function getLogoUrlAttribute(): ?string
     {
-        if (blank($this->logo_path)) {
+        $path = (string) ($this->logo_path ?? '');
+
+        if (blank($path) || !str_contains($path, '/')) {
             return null;
         }
 
-        return Storage::url($this->logo_path);
+        return Storage::url($path);
     }
 
     public static function ensureDefault(): self
