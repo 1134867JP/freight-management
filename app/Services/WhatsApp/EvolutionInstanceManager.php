@@ -199,7 +199,7 @@ class EvolutionInstanceManager
             ->baseUrl(rtrim($this->resolveBaseUrl($instance), '/'))
             ->acceptJson()
             ->asJson()
-            ->retry(2, 400)
+            ->retry(2, 400, null, false)
             ->timeout(20)
             ->withHeaders([
                 'apikey' => $this->resolveApiKey($instance),

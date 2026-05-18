@@ -95,7 +95,7 @@ export default function Index({ configured, instance }) {
                   >
                     Atualizar estado
                   </button>
-                  {instance && !instance.connected && !flash.error && (
+                  {instance && !instance.connected && (
                     <button
                       type="button"
                       onClick={handleDelete}
