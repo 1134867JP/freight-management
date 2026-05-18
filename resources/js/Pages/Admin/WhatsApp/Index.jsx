@@ -95,7 +95,7 @@ export default function Index({ configured, instance }) {
                   >
                     Atualizar estado
                   </button>
-                  {instance && !instance.connected && (
+                  {instance && instance.connection_state !== 'open' && (
                     <button
                       type="button"
                       onClick={handleDelete}
@@ -135,7 +135,7 @@ export default function Index({ configured, instance }) {
 }
 
 function ErrorRecovery({ message, action, instance, onRetry, onDelete }) {
-  const canDelete = Boolean(instance && !instance.connected);
+  const canDelete = Boolean(instance && instance.connection_state !== 'open');
   const deleteIsFirst = action === 'delete_instance' && canDelete;
 
   return (
