@@ -115,6 +115,9 @@ jobs:
             echo "==> Aguardando app subir..."
             sleep 5
 
+            echo "==> Instalando dependencias PHP..."
+            docker exec freight-app composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
             echo "==> Rodando migrations e caches..."
             docker exec freight-app php artisan migrate --force
             docker exec freight-app php artisan config:cache
