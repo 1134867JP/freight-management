@@ -116,7 +116,10 @@ jobs:
             sleep 5
 
             echo "==> Instalando dependencias PHP..."
-            docker exec freight-app composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+            docker run --rm \
+              -v $APP_DIR:/app \
+              -v /tmp/composer-cache:/tmp/cache \
+              composer:2 install --no-interaction --prefer-dist --optimize-autoloader --no-dev --working-dir=/app
 
             echo "==> Rodando migrations e caches..."
             docker exec freight-app php artisan migrate --force
