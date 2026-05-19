@@ -13,6 +13,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
     volumes:
       - /opt/apps/outro-site/freight-management:/var/www/html
+      - /opt/apps/outro-site/freight-management/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     networks:
       - freight-management_internal
       - web
