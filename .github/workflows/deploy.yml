@@ -121,6 +121,10 @@ jobs:
               -v /tmp/composer-cache:/tmp/cache \
               composer:2 install --no-interaction --prefer-dist --optimize-autoloader --no-dev --working-dir=/app
 
+            echo "==> Ajustando permissoes..."
+            docker exec -u root freight-app chmod -R 775 storage bootstrap/cache
+            docker exec -u root freight-app chown -R www-data:www-data storage bootstrap/cache
+
             echo "==> Rodando migrations e caches..."
             docker exec freight-app php artisan migrate --force
             docker exec freight-app php artisan config:cache
