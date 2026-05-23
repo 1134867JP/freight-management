@@ -11,6 +11,14 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_BUCKET: ${AWS_BUCKET}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      AWS_URL: ${AWS_URL}
+      AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT}
     volumes:
       - /opt/apps/outro-site/freight-management:/var/www/html
       - /opt/apps/outro-site/freight-management/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
@@ -31,6 +39,14 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       QUEUE_CONNECTION: ${QUEUE_CONNECTION}
+      FILESYSTEM_DISK: ${FILESYSTEM_DISK}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_BUCKET: ${AWS_BUCKET}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      AWS_URL: ${AWS_URL}
+      AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT}
     volumes:
       - /opt/apps/outro-site/freight-management:/var/www/html
     networks:
