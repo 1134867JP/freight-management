@@ -61,6 +61,7 @@ class FreightController extends Controller
         }
 
         $statusCounts = (clone $query)
+            ->reorder()
             ->selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
