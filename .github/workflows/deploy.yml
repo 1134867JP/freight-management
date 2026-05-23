@@ -110,7 +110,7 @@ jobs:
             git pull origin main
 
             echo "==> Reiniciando servicos..."
-            docker compose up -d --remove-orphans
+            docker compose up -d --remove-orphans --force-recreate
 
             echo "==> Aguardando app subir..."
             sleep 5

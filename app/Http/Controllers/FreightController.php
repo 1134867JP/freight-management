@@ -60,9 +60,7 @@ class FreightController extends Controller
             $query->whereHas('timeslot', fn ($q) => $q->whereDate('start_time', $request->date));
         }
 
-        $statusCounts = (clone $query)
-            ->reorder()
-            ->selectRaw('status, count(*) as total')
+        $statusCounts = Freight::selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
 
