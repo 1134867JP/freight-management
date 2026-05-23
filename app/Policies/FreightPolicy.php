@@ -75,4 +75,9 @@ class FreightPolicy
     {
         return $user->isClient() && $user->id === $freight->user_id;
     }
+
+    public function downloadAttachmentClient(User $user, Freight $freight): bool
+    {
+        return $user->isClient() && $user->id === $freight->user_id;
+    }
 }

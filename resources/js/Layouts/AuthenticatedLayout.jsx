@@ -70,7 +70,7 @@ export default function AuthenticatedLayout({ header, children }) {
           section: 'Operação',
           items: [
             { label: 'Painel',   href: route('admin.dashboard'),       active: route().current('admin.dashboard'), icon: 'dashboard' },
-            ...(usesQueues ? [{ label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' }] : []),
+            ...((usesQueues || usesDocks) ? [{ label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' }] : []),
             { label: 'Fretes',   href: route('freights.approvalList'), active: route().current('freights.*'),      icon: 'freight'   },
           ],
         },
@@ -150,7 +150,9 @@ export default function AuthenticatedLayout({ header, children }) {
   }, [isAdmin, isPlatformAdmin, usesQueues, usesDocks]);
 
   const mainLinks = useMemo(
-    () => menuSections.flatMap((s) => s.items.filter((i) => !i.children)),
+    () => menuSections.flatMap((s) =>
+      s.items.flatMap((i) => i.children ? i.children : [i])
+    ),
     [menuSections],
   );
 

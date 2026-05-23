@@ -173,6 +173,7 @@ Route::middleware('auth')->group(function () {
         // Upload e download de nota fiscal
         Route::post('/my-reservations/{freight}/upload-invoice', [FreightController::class, 'uploadInvoice'])->name('client.upload-invoice');
         Route::get('/freights/{freight}/nota-fiscal', [FreightController::class, 'downloadInvoiceClient'])->name('client.download-invoice');
+        Route::get('/my-reservations/{freight}/attachments/{attachment}', [FreightController::class, 'downloadAttachmentClient'])->name('client.download-attachment');
 
         // Relatórios do cliente
         Route::get('/reports/reservations', [ReportController::class, 'clientReservations'])->name('reports.client.reservations');

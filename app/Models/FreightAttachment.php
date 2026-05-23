@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class FreightAttachment extends Model
 {
@@ -43,20 +42,7 @@ class FreightAttachment extends Model
             return route('client.download-invoice', $this->freight_id);
         }
 
-        return '#';
-    }
-
-    /**
-     * @deprecated Use admin_url or client_url instead.
-     */
-    public function getUrlAttribute(): string
-    {
-        // Tenta disco local primeiro; cai no disco padrão para arquivos legados
-        if (Storage::disk('local')->exists($this->path)) {
-            return $this->admin_url;
-        }
-
-        return Storage::url($this->path);
+        return route('client.download-attachment', [$this->freight_id, $this->id]);
     }
 
     public function freight(): BelongsTo

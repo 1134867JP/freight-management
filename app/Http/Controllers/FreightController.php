@@ -35,11 +35,35 @@ class FreightController extends Controller
     ) {}
 
     // ADMIN: List freights
-    public function approvalList()
+    public function approvalList(Request $request)
     {
-        $freights = Freight::with(['user', 'timeslot', 'attachments', 'doca'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = Freight::with(['user', 'timeslot', 'attachments', 'doca'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$s}%"))
+                  ->orWhere('truck_plate', 'like', "%{$s}%");
+            });
+        }
+
+        if ($request->filled('operation_type') && $request->operation_type !== 'all') {
+            $query->where('operation_type', $request->operation_type);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date')) {
+            $query->whereHas('timeslot', fn ($q) => $q->whereDate('start_time', $request->date));
+        }
+
+        $statusCounts = (clone $query)
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
         $company = auth()->user()->company;
         $docasDisponiveis = $company->usesDocks()
@@ -47,8 +71,10 @@ class FreightController extends Controller
             : collect();
 
         return Inertia::render('Admin/Freights/Index', [
-            'freights'         => $freights,
+            'freights'         => $query->paginate(15)->withQueryString(),
             'docasDisponiveis' => $docasDisponiveis,
+            'filters'          => $request->only(['search', 'operation_type', 'status', 'date']),
+            'statusCounts'     => $statusCounts,
         ]);
     }
 
@@ -98,7 +124,7 @@ class FreightController extends Controller
             );
         }
 
-        $freights = $query->orderBy('created_at', 'desc')->get();
+        $freights = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
 
         return Inertia::render('Client/MyReservations', [
             'freights' => $freights,
@@ -113,7 +139,7 @@ class FreightController extends Controller
 
         $invoicePath = null;
         if ($validated['operation_type'] === 'unload' && $request->hasFile('invoice_path')) {
-            $invoicePath = $request->file('invoice_path')->store('notas_fiscais', 'local');
+            $invoicePath = $request->file('invoice_path')->store('notas_fiscais');
         }
 
         try {
@@ -148,7 +174,7 @@ class FreightController extends Controller
             return redirect()->route('client.reservations')->with('success', 'Reserva criada com sucesso!');
         } catch (\Throwable $e) {
             if ($invoicePath) {
-                Storage::delete($invoicePath);
+                Storage::disk(config('filesystems.default'))->delete($invoicePath);
             }
 
             return redirect()->back()->with('error', $e->getMessage());
@@ -330,6 +356,16 @@ class FreightController extends Controller
         return $this->serveAttachment($attachment);
     }
 
+    // CLIENT: Download anexo do admin (apenas o próprio cliente)
+    public function downloadAttachmentClient(Request $request, Freight $freight, FreightAttachment $attachment)
+    {
+        $this->authorize('downloadAttachmentClient', $freight);
+        abort_unless($attachment->freight_id === $freight->id, 404);
+        abort_unless($attachment->type === FreightAttachment::TYPE_ATTACHMENT, 404);
+
+        return $this->serveAttachment($attachment);
+    }
+
     private function serveAttachment(FreightAttachment $attachment)
     {
         // Tenta disco local primeiro; cai no disco padrão para arquivos legados
@@ -348,7 +384,11 @@ class FreightController extends Controller
     {
         // Salva o novo arquivo ANTES da transação para evitar I/O dentro da tx.
         // Se a tx falhar, deletamos o arquivo recém-salvo no catch.
-        $newPath = $file->store($directory, 'local');
+        $newPath = $file->store($directory);
+
+        if ($newPath === false) {
+            throw new \RuntimeException('Falha ao salvar o arquivo no disco.');
+        }
 
         try {
             $oldPath = DB::transaction(function () use ($freight, $file, $type, $newPath) {
@@ -379,7 +419,7 @@ class FreightController extends Controller
             }
         } catch (\Throwable $e) {
             // Transação falhou: remove o arquivo recém-salvo para não deixar órfão
-            Storage::disk('local')->delete($newPath);
+            Storage::delete($newPath);
             throw $e;
         }
     }

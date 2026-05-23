@@ -12,7 +12,7 @@ import {
   translateFreightStatus,
   translateOperationType,
 } from '@/Features/Freight/utils/freightPresentation';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 
 const baseChip =
   'inline-flex items-center rounded px-2 py-1 text-xs font-medium';
@@ -48,7 +48,7 @@ function AttachmentsCell({ freight, onUploadNF }) {
 
         {adminAtt ? (
           <a
-            href={adminAtt.admin_url}
+            href={adminAtt.client_url}
             target="_blank"
             rel="noreferrer"
             title="Ver anexo"
@@ -86,7 +86,8 @@ function AttachmentsCell({ freight, onUploadNF }) {
   );
 }
 
-export default function MyReservations({ freights, filters = {} }) {
+export default function MyReservations({ freights: freightsPaginated, filters = {} }) {
+  const list = freightsPaginated?.data || [];
   const [form, setForm] = useState({
     date_from: filters.date_from || '',
     date_to: filters.date_to || '',
@@ -203,7 +204,7 @@ export default function MyReservations({ freights, filters = {} }) {
             </div>
           </form>
 
-          {freights.length === 0 ? (
+          {list.length === 0 ? (
             <EmptyState
               title="Você não possui nenhuma reserva."
               action={
@@ -228,7 +229,7 @@ export default function MyReservations({ freights, filters = {} }) {
                 </thead>
 
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {freights.map((freight, index) => (
+                  {list.map((freight, index) => (
                     <tr
                       key={freight.id}
                       className={`align-top transition hover:bg-teal-50/20 dark:hover:bg-teal-900/10 ${
@@ -336,6 +337,31 @@ export default function MyReservations({ freights, filters = {} }) {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {freightsPaginated?.links?.length > 3 && (
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {freightsPaginated.from}–{freightsPaginated.to} de {freightsPaginated.total} reservas
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {freightsPaginated.links.map((link, i) => (
+                  <button
+                    key={i}
+                    disabled={!link.url || link.active}
+                    onClick={() => link.url && router.get(link.url, {}, { preserveState: true })}
+                    className={`min-w-[2rem] rounded px-2 py-1 text-sm ${
+                      link.active
+                        ? 'bg-teal-600 font-semibold text-white'
+                        : link.url
+                        ? 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                        : 'cursor-default border border-gray-200 bg-white text-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600'
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: link.label }}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
