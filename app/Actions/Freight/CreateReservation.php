@@ -71,9 +71,7 @@ class CreateReservation
                 throw new \RuntimeException('Nota fiscal é obrigatória para descarga.');
             }
 
-            $status = $operationType === 'load'
-                ? FreightStatus::Loading->value
-                : FreightStatus::Unloading->value;
+            $status = FreightStatus::Reserved->value;
 
             $truck = Truck::query()
                 ->where('company_id', $timeslot->company_id)

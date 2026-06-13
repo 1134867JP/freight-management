@@ -72,7 +72,7 @@ class FreightActionsTest extends TestCase
         $this->assertInstanceOf(Freight::class, $freight);
         $this->assertDatabaseHas('freights', [
             'id' => $freight->id,
-            'status' => 'loading',
+            'status' => 'reserved',
             'truck_plate' => 'ABC1234',
         ]);
     }
@@ -92,7 +92,7 @@ class FreightActionsTest extends TestCase
 
         $this->assertDatabaseHas('freights', [
             'id' => $freight->id,
-            'status' => 'unloading',
+            'status' => 'reserved',
             'operation_type' => 'unload',
         ]);
     }
@@ -250,7 +250,7 @@ class FreightActionsTest extends TestCase
 
         (new ReopenReservation)->execute($freight);
 
-        $this->assertDatabaseHas('freights', ['id' => $freight->id, 'status' => 'loading']);
+        $this->assertDatabaseHas('freights', ['id' => $freight->id, 'status' => 'reserved']);
 
         $countAfter = $this->timeslot->fresh()->current_reservations;
         $this->assertGreaterThanOrEqual($countBefore, $countAfter);
