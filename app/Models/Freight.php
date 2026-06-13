@@ -15,14 +15,6 @@ class Freight extends Model
 {
     use Auditable, BelongsToCompany;
 
-    public const STATUS_LOADING = 'loading';
-
-    public const STATUS_UNLOADING = 'unloading';
-
-    public const STATUS_COMPLETED = 'completed';
-
-    public const STATUS_CANCELLED = 'cancelled';
-
     protected $fillable = [
         'company_id', 'user_id', 'timeslot_id', 'produto_id', 'doca_id', 'truck_id', 'current_spot_id', 'operation_type',
         'truck_plate', 'driver_name', 'driver_phone', 'cargo_description', 'weight', 'gross_weight', 'net_weight',
@@ -31,13 +23,13 @@ class Freight extends Model
     ];
 
     protected $casts = [
-        'weight'               => 'decimal:2',
-        'gross_weight'         => 'decimal:2',
-        'net_weight'           => 'decimal:2',
+        'weight' => 'decimal:2',
+        'gross_weight' => 'decimal:2',
+        'net_weight' => 'decimal:2',
         'detention_valor_hora' => 'decimal:2',
-        'status'               => FreightStatus::class,
-        'arrived_at'           => 'datetime',
-        'departed_at'          => 'datetime',
+        'status' => FreightStatus::class,
+        'arrived_at' => 'datetime',
+        'departed_at' => 'datetime',
     ];
 
     /**

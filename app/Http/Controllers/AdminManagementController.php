@@ -42,9 +42,7 @@ class AdminManagementController extends Controller
 
     public function update(UpdateAdminRequest $request, User $admin_user)
     {
-        abort_unless($admin_user->role === User::ROLE_COMPANY_ADMIN, 403, 'Apenas administradores podem ser editados aqui.');
-        abort_unless($admin_user->company_id === $request->user()->company_id, 403);
-        abort_unless($request->user()->hasPermission('manage_admins'), 403);
+        $this->authorize('updateAdmin', $admin_user);
 
         $validated = $request->validated();
 
@@ -63,10 +61,7 @@ class AdminManagementController extends Controller
 
     public function destroy(Request $request, User $admin_user)
     {
-        abort_unless($admin_user->role === User::ROLE_COMPANY_ADMIN, 403, 'Apenas administradores podem ser removidos aqui.');
-        abort_unless($admin_user->company_id === $request->user()->company_id, 403);
-        abort_unless($request->user()->hasPermission('manage_admins'), 403);
-        abort_if($admin_user->id === $request->user()->id, 403, 'Você não pode excluir sua própria conta aqui.');
+        $this->authorize('deleteAdmin', $admin_user);
 
         $admin_user->delete();
 

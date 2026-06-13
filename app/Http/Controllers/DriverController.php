@@ -27,11 +27,11 @@ class DriverController extends Controller
     {
         $arrValidated = $request->validated();
 
-        if (!empty($arrValidated['phone'])) {
+        if (! empty($arrValidated['phone'])) {
             $arrValidated['phone'] = preg_replace('/\D/', '', $arrValidated['phone']);
         }
 
-        if (!empty($arrValidated['cpf'])) {
+        if (! empty($arrValidated['cpf'])) {
             $arrValidated['cpf'] = preg_replace('/\D/', '', $arrValidated['cpf']);
         }
 
@@ -42,15 +42,15 @@ class DriverController extends Controller
 
     public function update(UpdateDriverRequest $request, Driver $driver)
     {
-        abort_unless($request->user()->id === $driver->user_id, 403);
+        $this->authorize('update', $driver);
 
         $arrValidated = $request->validated();
 
-        if (!empty($arrValidated['phone'])) {
+        if (! empty($arrValidated['phone'])) {
             $arrValidated['phone'] = preg_replace('/\D/', '', $arrValidated['phone']);
         }
 
-        if (!empty($arrValidated['cpf'])) {
+        if (! empty($arrValidated['cpf'])) {
             $arrValidated['cpf'] = preg_replace('/\D/', '', $arrValidated['cpf']);
         }
 
@@ -61,7 +61,7 @@ class DriverController extends Controller
 
     public function destroy(Request $request, Driver $driver)
     {
-        abort_unless($request->user()->id === $driver->user_id, 403);
+        $this->authorize('delete', $driver);
 
         $driver->delete();
 

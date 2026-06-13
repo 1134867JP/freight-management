@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\FreightStatus;
 use App\Jobs\SendWhatsAppMessageJob;
 use App\Models\Company;
 use App\Models\Freight;
@@ -96,7 +97,7 @@ class WhatsAppNotificationDispatchTest extends TestCase
             'truck_plate' => 'XYZ9876',
             'driver_name' => 'Cliente Teste',
             'cargo_description' => 'Pallets',
-            'status' => Freight::STATUS_LOADING,
+            'status' => FreightStatus::Loading->value,
         ]);
 
         $response = $this->actingAs($admin)->patch(route('freights.finalize-operation', $freight), [

@@ -44,8 +44,7 @@ class ClientManagementController extends Controller
     // ADMIN: Atualizar cliente e cota
     public function update(UpdateClientRequest $request, User $user)
     {
-        abort_unless($user->role === User::ROLE_CLIENT, 403, 'Apenas clientes podem ser editados aqui.');
-        abort_unless($user->company_id === $request->user()->company_id, 403);
+        $this->authorize('updateClient', $user);
 
         $validated = $request->validated();
 
@@ -65,8 +64,7 @@ class ClientManagementController extends Controller
     // ADMIN: Deletar cliente
     public function destroy(User $user)
     {
-        abort_unless($user->role === User::ROLE_CLIENT, 403, 'Apenas clientes podem ser removidos aqui.');
-        abort_unless($user->company_id === auth()->user()->company_id, 403);
+        $this->authorize('deleteClient', $user);
 
         $user->delete();
 

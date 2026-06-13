@@ -43,8 +43,7 @@ class EmployeeManagementController extends Controller
 
     public function update(UpdateEmployeeRequest $request, User $employee_user)
     {
-        abort_unless($employee_user->role === User::ROLE_COMPANY_EMPLOYEE, 403);
-        abort_unless($employee_user->company_id === $request->user()->company_id, 403);
+        $this->authorize('updateEmployee', $employee_user);
 
         $validated = $request->validated();
 
@@ -63,8 +62,7 @@ class EmployeeManagementController extends Controller
 
     public function updatePermissions(Request $request, User $employee_user)
     {
-        abort_unless($employee_user->role === User::ROLE_COMPANY_EMPLOYEE, 403);
-        abort_unless($employee_user->company_id === $request->user()->company_id, 403);
+        $this->authorize('updatePermissions', $employee_user);
 
         $validated = $request->validate([
             'permissions' => 'required|array',
@@ -80,9 +78,7 @@ class EmployeeManagementController extends Controller
 
     public function destroy(Request $request, User $employee_user)
     {
-        abort_unless($employee_user->role === User::ROLE_COMPANY_EMPLOYEE, 403);
-        abort_unless($employee_user->company_id === $request->user()->company_id, 403);
-        abort_if($employee_user->id === $request->user()->id, 403, 'Você não pode excluir sua própria conta.');
+        $this->authorize('deleteEmployee', $employee_user);
 
         $employee_user->delete();
 

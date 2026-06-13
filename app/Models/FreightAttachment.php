@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FreightAttachment extends Model
 {
+    use BelongsToCompany;
+
     public const TYPE_INVOICE = 'invoice';
 
     public const TYPE_ATTACHMENT = 'attachment';
@@ -48,10 +51,5 @@ class FreightAttachment extends Model
     public function freight(): BelongsTo
     {
         return $this->belongsTo(Freight::class);
-    }
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
     }
 }

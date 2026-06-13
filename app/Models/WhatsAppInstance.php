@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WhatsAppInstance extends Model
 {
+    use BelongsToCompany;
+
     protected $table = 'whatsapp_instances';
 
     protected $fillable = [
@@ -25,9 +27,4 @@ class WhatsAppInstance extends Model
         'is_active' => 'boolean',
         'settings' => 'array',
     ];
-
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
-    }
 }
