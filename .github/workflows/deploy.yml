@@ -74,7 +74,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          connect_timeout: 60s
+          timeout: 60s
           command_timeout: 20m
           script: |
             set -e
@@ -88,8 +88,7 @@ jobs:
             docker run --rm \
               -v $APP_DIR:/app \
               -w /app \
-              -e NODE_ENV=production \
-              node:20-alpine sh -c "npm ci --prefer-offline && npm run build"
+              node:20-alpine sh -c "npm ci && npm run build"
 
             echo "==> Reiniciando servicos..."
             docker compose up -d --remove-orphans --force-recreate
