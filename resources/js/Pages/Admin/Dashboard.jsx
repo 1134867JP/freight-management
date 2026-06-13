@@ -77,8 +77,8 @@ const QUICK_LINKS = [
     label: 'Painel do Pátio',
     description: 'Status ao vivo das docas com atualização automática.',
     routeName: 'admin.yard-board',
-    accent: 'border-t-teal-500',
-    iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400',
+    accent: 'border-t-brand-500',
+    iconBg: 'bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400',
     badge: 'Ao vivo',
     badgeColor: 'bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400',
     requiresQueues: true,
@@ -217,7 +217,7 @@ function OccupancyChart({ occupancy }) {
       <div className="border-b border-gray-100 px-6 py-4 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
               <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M2 15l4-8 4 5 3-3 4 6H2Z"
@@ -236,7 +236,7 @@ function OccupancyChart({ occupancy }) {
           </div>
           <Link
             href={route('reports.admin.timeslots')}
-            className="text-xs font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400"
+            className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
           >
             Ver relatório →
           </Link>
@@ -275,7 +275,7 @@ function OccupancyChart({ occupancy }) {
                   className={
                     isEmpty
                       ? 'fill-gray-100 dark:fill-gray-700'
-                      : 'fill-teal-500 dark:fill-teal-400'
+                      : 'fill-brand-500 dark:fill-brand-400'
                   }
                 />
                 {item.count > 0 && (
@@ -346,7 +346,7 @@ export default function Dashboard({ stats, occupancy }) {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400">
+              <span className="text-xs font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">
                 CargoHub Admin
               </span>
             </div>
@@ -366,11 +366,11 @@ export default function Dashboard({ stats, occupancy }) {
               <>
                 <Link
                   href={route('admin.yard-board')}
-                  className="inline-flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
+                  className="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700 transition hover:bg-brand-100 dark:border-brand-800 dark:bg-brand-900/20 dark:text-brand-400 dark:hover:bg-brand-900/40"
                 >
                   <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400 opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-teal-500" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
                   </span>
                   Painel do Pátio
                 </Link>
@@ -418,7 +418,7 @@ export default function Dashboard({ stats, occupancy }) {
                 <Link
                   key={link.label}
                   href={route(link.routeName)}
-                  className={`group relative rounded-lg border-t-4 bg-white p-5 shadow-sm border border-gray-200 transition hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-teal-200 dark:bg-gray-800 dark:border-gray-700 ${link.accent}`}
+                  className={`group relative rounded-lg border-t-4 bg-white p-5 shadow-sm border border-gray-200 transition hover:shadow-md hover:-translate-y-0.5 hover:ring-2 hover:ring-brand-200 dark:bg-gray-800 dark:border-gray-700 ${link.accent}`}
                 >
                   <div className="flex items-start justify-between">
                     <span

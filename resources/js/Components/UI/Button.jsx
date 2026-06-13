@@ -24,15 +24,15 @@ function Spinner() {
 
 const VARIANT_CLASSES = {
   primary:
-    'bg-teal-700 text-white hover:bg-teal-800 focus:ring-teal-500 border-transparent',
+    'bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500 border-transparent shadow-sm',
   secondary:
-    'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600',
+    'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 focus:ring-brand-400 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600',
   danger:
-    'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 border-transparent',
+    'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 border-transparent shadow-sm',
   ghost:
-    'bg-transparent text-gray-600 hover:bg-gray-100 border-transparent focus:ring-gray-400 dark:text-gray-300 dark:hover:bg-gray-700',
+    'bg-transparent text-gray-600 hover:bg-gray-100 border-transparent focus:ring-brand-400 dark:text-gray-300 dark:hover:bg-gray-700',
   soft:
-    'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100 focus:ring-teal-500 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800 dark:hover:bg-teal-900/50',
+    'bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100 focus:ring-brand-500 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-800 dark:hover:bg-brand-900/50',
 };
 
 const SIZE_CLASSES = {

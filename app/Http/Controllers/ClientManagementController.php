@@ -14,6 +14,7 @@ class ClientManagementController extends Controller
     public function index()
     {
         $clients = User::where('role', User::ROLE_CLIENT)
+            ->where('company_id', auth()->user()->company_id)
             ->withCount('freights')
             ->orderBy('name')
             ->paginate(20);
@@ -44,6 +45,7 @@ class ClientManagementController extends Controller
     public function update(UpdateClientRequest $request, User $user)
     {
         abort_unless($user->role === User::ROLE_CLIENT, 403, 'Apenas clientes podem ser editados aqui.');
+        abort_unless($user->company_id === $request->user()->company_id, 403);
 
         $validated = $request->validated();
 
@@ -64,6 +66,7 @@ class ClientManagementController extends Controller
     public function destroy(User $user)
     {
         abort_unless($user->role === User::ROLE_CLIENT, 403, 'Apenas clientes podem ser removidos aqui.');
+        abort_unless($user->company_id === auth()->user()->company_id, 403);
 
         $user->delete();
 

@@ -161,14 +161,14 @@ export default function AuthenticatedLayout({ header, children }) {
       href={href}
       className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-150 ${
         active
-          ? 'border-l-4 border-teal-600 bg-teal-50 pl-2.5 font-semibold text-teal-700 dark:border-teal-500 dark:bg-teal-900/30 dark:text-teal-400'
-          : 'border-l-4 border-transparent font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
+          ? 'border-l-2 border-brand-400 bg-brand-600/20 pl-2.5 font-semibold text-brand-300'
+          : 'border-l-2 border-transparent font-medium text-gray-400 hover:bg-gray-800 hover:text-white'
       }`}
     >
       {icon && (
         <MenuIcon
           name={icon}
-          className={`h-4 w-4 shrink-0 ${active ? 'text-teal-600 dark:text-teal-400' : 'text-gray-400 dark:text-gray-500'}`}
+          className={`h-4 w-4 shrink-0 ${active ? 'text-brand-400' : 'text-gray-500'}`}
         />
       )}
       <span>{label}</span>
@@ -180,11 +180,11 @@ export default function AuthenticatedLayout({ header, children }) {
       href={href}
       className={`flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition ${
         active
-          ? 'font-medium text-teal-600 dark:text-teal-400'
-          : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+          ? 'font-medium text-brand-300'
+          : 'text-gray-500 hover:text-gray-200'
       }`}
     >
-      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${active ? 'bg-teal-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${active ? 'bg-brand-400' : 'bg-gray-600'}`} />
       {label}
     </Link>
   );
@@ -202,26 +202,26 @@ export default function AuthenticatedLayout({ header, children }) {
           onClick={() => toggleGroup(item.group)}
           className={`flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-sm font-medium transition ${
             item.active
-              ? 'bg-teal-700/20 text-teal-700 dark:text-teal-400'
-              : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+              ? 'bg-brand-600/20 text-brand-300'
+              : 'text-gray-400 hover:bg-gray-800 hover:text-white'
           }`}
         >
           <span className="flex items-center gap-2">
             {item.icon && <MenuIcon name={item.icon} className="h-4 w-4 shrink-0" />}
             {item.label}
           </span>
-          <span className="text-xs text-gray-400 dark:text-gray-500">{isOpen ? '▲' : '▼'}</span>
+          <span className="text-xs text-gray-500">{isOpen ? '▲' : '▼'}</span>
         </button>
         {isOpen && (
-          <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-3 dark:border-gray-700">
+          <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-700 pl-3">
             {item.children.map((child) => (
               <Link
                 key={child.label}
                 href={child.href}
                 className={`block rounded-md px-3 py-2 text-sm transition ${
                   child.active
-                    ? 'bg-teal-700 font-medium text-white'
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                    ? 'bg-brand-600 font-medium text-white'
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`}
               >
                 {child.label}
@@ -257,26 +257,33 @@ export default function AuthenticatedLayout({ header, children }) {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 lg:flex lg:h-screen lg:overflow-hidden">
       {/* SIDEBAR DESKTOP */}
-      <aside className="hidden w-72 shrink-0 border-r border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 lg:flex lg:flex-col">
+      <aside className="hidden w-72 shrink-0 border-r border-gray-800 bg-gray-950 lg:flex lg:flex-col">
         {/* Header */}
-        <div className="border-b border-gray-200 dark:border-gray-700 p-4">
+        <div className="border-b border-gray-800 p-5">
           <Link href={route('dashboard')}>
             {company?.logo_url ? (
-              <img src={logoUrl} className="h-12 w-auto object-contain" alt={company.name || 'Logo'} />
+              <img src={logoUrl} className="h-10 w-auto object-contain brightness-0 invert" alt={company.name || 'Logo'} />
             ) : (
-              <ApplicationLogo className="h-8 w-auto fill-current text-gray-800" />
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
+                  <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M3 7h10v7H3V7Zm10 2h3l3 3v2h-6V9Zm-6 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span className="text-sm font-bold tracking-tight text-white">CargoHub YMS</span>
+              </div>
             )}
           </Link>
 
-          <div className="mt-3 flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-600 text-sm font-bold text-white">
+          <div className="mt-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
               {user.name.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{roleLabel}</p>
+              <p className="truncate text-sm font-semibold text-white">{user.name}</p>
+              <p className="text-xs text-gray-400">{roleLabel}</p>
               {company?.name && !isPlatformAdmin && (
-                <p className="truncate text-xs text-gray-400 dark:text-gray-500">{company.name}</p>
+                <p className="truncate text-xs text-gray-500">{company.name}</p>
               )}
             </div>
           </div>
@@ -287,7 +294,7 @@ export default function AuthenticatedLayout({ header, children }) {
           {menuSections.map((objSection) => (
             <div key={objSection.section ?? '_main'}>
               {objSection.section && (
-                <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-widest text-gray-500">
                   {objSection.section}
                 </p>
               )}
@@ -303,24 +310,24 @@ export default function AuthenticatedLayout({ header, children }) {
         </nav>
 
         {/* Engrenagem + dropdown (canto inferior esquerdo) */}
-        <div className="relative border-t border-gray-200 dark:border-gray-700 p-4" ref={accountMenuRef}>
+        <div className="relative border-t border-gray-800 p-4" ref={accountMenuRef}>
           <button
             type="button"
             onClick={() => setShowAccountMenu((v) => !v)}
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
           >
             <span className="flex items-center gap-2">
-              <GearIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <GearIcon className="h-5 w-5 text-gray-400" />
               Conta
             </span>
-            <span className="text-gray-400 dark:text-gray-500">{showAccountMenu ? '▲' : '▼'}</span>
+            <span className="text-gray-500">{showAccountMenu ? '▲' : '▼'}</span>
           </button>
 
           {showAccountMenu && (
-            <div className="absolute bottom-14 left-4 right-4 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800">
+            <div className="absolute bottom-14 left-4 right-4 rounded-lg border border-gray-700 bg-gray-900 shadow-xl">
               <Link
                 href={route('profile.edit')}
-                className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-t-lg transition-colors"
                 onClick={() => setShowAccountMenu(false)}
               >
                 Perfil
@@ -329,7 +336,7 @@ export default function AuthenticatedLayout({ header, children }) {
               {permissions?.manage_admins && (
                 <Link
                   href={route('admins.index')}
-                  className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                  className="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
                   onClick={() => setShowAccountMenu(false)}
                 >
                   Administradores
@@ -339,7 +346,7 @@ export default function AuthenticatedLayout({ header, children }) {
               {permissions?.manage_employees && (
                 <Link
                   href={route('employees.index')}
-                  className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                  className="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
                   onClick={() => setShowAccountMenu(false)}
                 >
                   Funcionários
@@ -349,7 +356,7 @@ export default function AuthenticatedLayout({ header, children }) {
               {permissions?.view_audit_logs && (
                 <Link
                   href={route('audit-logs.index')}
-                  className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                  className="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
                   onClick={() => setShowAccountMenu(false)}
                 >
                   Logs
@@ -360,7 +367,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 href={route('logout')}
                 method="post"
                 as="button"
-                className="block w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="block w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-gray-800 rounded-b-lg transition-colors"
                 onClick={() => setShowAccountMenu(false)}
               >
                 Sair
@@ -373,7 +380,7 @@ export default function AuthenticatedLayout({ header, children }) {
       {/* CONTEÚDO */}
       <div className="min-w-0 flex-1 lg:overflow-y-auto">
         {/* Top bar mobile */}
-        <div className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900 lg:hidden">
+        <div className="border-b border-gray-800 bg-gray-950 px-4 py-3 lg:hidden">
           <div className="flex items-center justify-between">
             <Link href={route('dashboard')}>
               <ApplicationLogo className="h-8 w-auto fill-current text-gray-800" />
@@ -425,7 +432,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
         {header && (
           <header className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-            <div className="px-4 py-6 sm:px-6 lg:px-8">{header}</div>
+            <div className="px-6 py-5 sm:px-8">{header}</div>
           </header>
         )}
 

@@ -1,10 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getTruckTypeLabel, normalizeTruckPlate } from '@/Features/Truck/utils/truckTypes';
 import FormField from '@/Components/UI/FormField';
+import ModalShell from '@/Components/UI/ModalShell';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { isValidBrPlate } from '@/utils/validation';
 
+function StepIndicator({ step }) {
+  return (
+    <div className="mb-6 flex items-center gap-2">
+      <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+        step >= 1 ? 'bg-brand-600 text-white' : 'bg-gray-200 text-gray-500'
+      }`}>1</div>
+      <div className={`h-px flex-1 ${step >= 2 ? 'bg-brand-400' : 'bg-gray-200'}`} />
+      <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+        step >= 2 ? 'bg-brand-600 text-white' : 'bg-gray-200 text-gray-500'
+      }`}>2</div>
+      <span className="ml-1 text-xs text-gray-400">
+        {step === 1 ? 'Veículo & Motorista' : 'Detalhes da Carga'}
+      </span>
+    </div>
+  );
+}
+
 export default function ReservationForm({
+  show,
   selectedSlot,
   data,
   setData,
@@ -14,14 +33,18 @@ export default function ReservationForm({
   trucks,
   drivers,
   onSubmit,
+  onClose,
   onOpenTruckModal,
-  className = '',
 }) {
+  const [step, setStep] = useState(1);
+  const [step1Errors, setStep1Errors] = useState({});
+
   if (!selectedSlot) return null;
 
   const blModeloAberta = !selectedSlot.modelo || selectedSlot.modelo === 'aberta';
   const blTemProduto = selectedSlot.modelo === 'por_produto' || selectedSlot.modelo === 'por_produto_doca';
   const blTemDoca = selectedSlot.modelo === 'por_produto_doca';
+  const blNeedsStep2 = blModeloAberta || data.operation_type === 'unload';
 
   const activeDrivers = Array.isArray(drivers) ? drivers.filter((d) => d.is_active) : [];
 
@@ -49,13 +72,7 @@ export default function ReservationForm({
     },
   });
 
-  const allErrors = { ...clientErrors, ...errors };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!validate(data)) return;
-    onSubmit(event);
-  };
+  const allErrors = { ...clientErrors, ...step1Errors, ...errors };
 
   const handleDriverSelect = (driverId) => {
     if (!driverId) return;
@@ -70,202 +87,259 @@ export default function ReservationForm({
     clearClientError('driver_phone');
   };
 
+  const handleNext = () => {
+    const errs = {};
+    if (!data.truck_plate || !isValidBrPlate(data.truck_plate))
+      errs.truck_plate = data.truck_plate ? 'Placa inválida.' : 'Selecione um caminhão.';
+    if (!data.driver_name || data.driver_name.trim().length < 3)
+      errs.driver_name = 'Nome do motorista deve ter ao menos 3 caracteres.';
+    setStep1Errors(errs);
+    if (Object.keys(errs).length === 0) setStep(2);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!validate(data)) return;
+    onSubmit(event);
+  };
+
+  const handleClose = () => {
+    setStep(1);
+    setStep1Errors({});
+    onClose();
+  };
+
   const nrRemaining = Math.max(selectedSlot.capacity - selectedSlot.current_reservations, 0);
+  const slotTime = new Date(selectedSlot.start_time).toLocaleString('pt-BR', {
+    weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+  });
 
   return (
-    <div className={`h-fit w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 ${className}`}>
-      <div className="mb-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Confirmação de Reserva</p>
-        <h3 className="mt-0.5 text-lg font-semibold text-gray-900 dark:text-gray-100">
-          {new Date(selectedSlot.start_time).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-        </h3>
-      </div>
-
-      <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-900/20">
-        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Disponibilidade</p>
-        <div className="mt-1.5 flex items-baseline gap-1.5">
-          <span className="text-2xl font-bold text-emerald-800 dark:text-emerald-300">{nrRemaining}</span>
-          <span className="text-sm text-emerald-700 dark:text-emerald-400">vaga(s) de {selectedSlot.capacity}</span>
-        </div>
-      </div>
-
-      {blTemProduto && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          <span className="inline-flex items-center rounded-full bg-purple-100 dark:bg-purple-900/30 px-3 py-1 text-xs font-semibold text-purple-800 dark:text-purple-300">
-            Produto: {selectedSlot.produto?.nome ?? '—'}
-          </span>
-          {blTemDoca && (
-            <span className="inline-flex items-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-3 py-1 text-xs font-semibold text-indigo-800 dark:text-indigo-300">
-              Doca: {selectedSlot.doca?.nome ?? '—'}
-            </span>
-          )}
-        </div>
-      )}
-
-      {selectedSlot.dropoff_address ? (
-        <div className="mb-4 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3">
-          <p className="text-sm font-medium text-blue-900 dark:text-blue-300">Endereço de Descarga:</p>
-          <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">{selectedSlot.dropoff_address.name}</p>
-          <p className="text-xs text-blue-700 dark:text-blue-400">
-            {selectedSlot.dropoff_address.street}, {selectedSlot.dropoff_address.number}
-            {selectedSlot.dropoff_address.complement &&
-              ` (${selectedSlot.dropoff_address.complement})`}
-          </p>
-          <p className="text-xs text-blue-700 dark:text-blue-400">
-            {selectedSlot.dropoff_address.neighborhood} - {selectedSlot.dropoff_address.city}/
-            {selectedSlot.dropoff_address.state}
-          </p>
-        </div>
-      ) : (
-        <div className="mb-4 rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 p-3">
-          <p className="text-sm italic text-gray-600 dark:text-gray-400">Endereço de descarga não informado</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <FormField label="Tipo de operação" error={allErrors.operation_type} required>
-          <FormField.Select
-            error={allErrors.operation_type}
-            value={data.operation_type}
-            onChange={(event) => onChangeOperationType(event.target.value)}
-            required
-          >
-            {selectedSlot.operation_type !== 'unload' && <option value="load">Carga</option>}
-            {selectedSlot.operation_type !== 'load' && <option value="unload">Descarga</option>}
-          </FormField.Select>
-        </FormField>
-
-        <FormField label="Caminhão" error={allErrors.truck_plate} required>
-          <div className="mt-1 flex gap-2">
-            <select
-              className={`flex-1 ${FormField.inputClass(allErrors.truck_plate)}`}
-              aria-invalid={Boolean(allErrors.truck_plate)}
-              value={data.truck_plate}
-              onChange={(event) => {
-                setData('truck_plate', normalizeTruckPlate(event.target.value));
-                clearClientError('truck_plate');
-              }}
-              required
-            >
-              <option value="">Selecione um caminhão</option>
-              {trucks.map((objTruck) => (
-                <option key={objTruck.id} value={objTruck.plate}>
-                  {objTruck.plate} - {getTruckTypeLabel(objTruck.type)}{' '}
-                  {objTruck.model ? `(${objTruck.model})` : ''}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={onOpenTruckModal}
-              title="Adicionar novo caminhão"
-              className="inline-flex items-center justify-center rounded-md border border-green-600 bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700"
-            >
-              +
-            </button>
+    <ModalShell
+      show={show}
+      title="Confirmar Reserva"
+      onClose={handleClose}
+      maxWidthClass="max-w-lg"
+    >
+      {/* slot summary */}
+      <div className="mb-5 rounded-xl border border-brand-100 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-950/20">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-brand-600 dark:text-brand-400">
+              Horário selecionado
+            </p>
+            <p className="mt-0.5 text-base font-bold text-gray-900 dark:text-gray-100">{slotTime}</p>
+            {blTemProduto && (
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                  {selectedSlot.produto?.nome}
+                </span>
+                {blTemDoca && (
+                  <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300">
+                    {selectedSlot.doca?.nome}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
-        </FormField>
+          <div className="text-right shrink-0">
+            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{nrRemaining}</p>
+            <p className="text-[11px] text-gray-500">vaga(s)</p>
+          </div>
+        </div>
+      </div>
 
-        {/* Driver quick-select: only shown when the client has registered drivers */}
-        {activeDrivers.length > 0 && (
-          <FormField label="Selecionar motorista cadastrado" hint="Preenche automaticamente nome e WhatsApp">
-            <FormField.Select
-              value=""
-              onChange={(event) => handleDriverSelect(event.target.value)}
-            >
-              <option value="">— escolha para preencher —</option>
-              {activeDrivers.map((driver) => (
-                <option key={driver.id} value={driver.id}>
-                  {driver.nome}{driver.phone ? ` · ${driver.phone}` : ''}
-                </option>
-              ))}
-            </FormField.Select>
-          </FormField>
+      <StepIndicator step={step} />
+
+      <form onSubmit={handleSubmit}>
+        {step === 1 && (
+          <div className="space-y-4">
+            {/* operation type */}
+            <FormField label="Tipo de operação" error={allErrors.operation_type} required>
+              <FormField.Select
+                error={allErrors.operation_type}
+                value={data.operation_type}
+                onChange={(e) => onChangeOperationType(e.target.value)}
+                required
+              >
+                {selectedSlot.operation_type !== 'unload' && <option value="load">↑ Carga</option>}
+                {selectedSlot.operation_type !== 'load' && <option value="unload">↓ Descarga</option>}
+              </FormField.Select>
+            </FormField>
+
+            {/* truck selector */}
+            <FormField label="Caminhão" error={allErrors.truck_plate} required>
+              <div className="flex gap-2">
+                <select
+                  className={`flex-1 ${FormField.inputClass(allErrors.truck_plate)}`}
+                  value={data.truck_plate}
+                  onChange={(e) => {
+                    setData('truck_plate', normalizeTruckPlate(e.target.value));
+                    clearClientError('truck_plate');
+                  }}
+                  required
+                >
+                  <option value="">Selecione um caminhão</option>
+                  {trucks.map((t) => (
+                    <option key={t.id} value={t.plate}>
+                      {t.plate} — {getTruckTypeLabel(t.type)}{t.model ? ` (${t.model})` : ''}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={onOpenTruckModal}
+                  title="Adicionar novo caminhão"
+                  className="rounded-lg border border-emerald-500 bg-emerald-500 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-600 transition-colors"
+                >
+                  +
+                </button>
+              </div>
+            </FormField>
+
+            {/* driver quick-select */}
+            {activeDrivers.length > 0 && (
+              <FormField label="Motorista cadastrado" hint="Preenche nome e WhatsApp automaticamente">
+                <FormField.Select
+                  value=""
+                  onChange={(e) => handleDriverSelect(e.target.value)}
+                >
+                  <option value="">— selecione para preencher —</option>
+                  {activeDrivers.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.nome}{d.phone ? ` · ${d.phone}` : ''}
+                    </option>
+                  ))}
+                </FormField.Select>
+              </FormField>
+            )}
+
+            {/* driver name */}
+            <FormField label="Nome do Motorista" error={allErrors.driver_name} required>
+              <FormField.Input
+                type="text"
+                error={allErrors.driver_name}
+                value={data.driver_name}
+                onChange={(e) => {
+                  setData('driver_name', e.target.value);
+                  clearClientError('driver_name');
+                }}
+                required
+              />
+            </FormField>
+
+            {/* driver phone */}
+            <FormField label="WhatsApp do Motorista" error={allErrors.driver_phone} hint="QR Code será enviado para este número">
+              <FormField.Input
+                type="tel"
+                error={allErrors.driver_phone}
+                value={data.driver_phone}
+                onChange={(e) => {
+                  setData('driver_phone', e.target.value);
+                  clearClientError('driver_phone');
+                }}
+                placeholder="Ex: 11999990000"
+              />
+            </FormField>
+
+            {/* navigation */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              {blNeedsStep2 ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="flex-1 rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors shadow-sm"
+                >
+                  Próximo →
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={processing}
+                  className="flex-1 rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50 transition-colors shadow-sm"
+                >
+                  {processing ? 'Enviando...' : 'Confirmar Reserva'}
+                </button>
+              )}
+            </div>
+          </div>
         )}
 
-        <FormField label="Nome do Motorista" error={allErrors.driver_name} required>
-          <FormField.Input
-            type="text"
-            error={allErrors.driver_name}
-            value={data.driver_name}
-            onChange={(event) => {
-              setData('driver_name', event.target.value);
-              clearClientError('driver_name');
-            }}
-            required
-          />
-        </FormField>
+        {step === 2 && (
+          <div className="space-y-4">
+            {/* cargo description — only for "aberta" model */}
+            {blModeloAberta && (
+              <FormField label="Descrição da Carga" error={allErrors.cargo_description} required>
+                <FormField.Input
+                  type="text"
+                  error={allErrors.cargo_description}
+                  value={data.cargo_description}
+                  onChange={(e) => {
+                    setData('cargo_description', e.target.value);
+                    clearClientError('cargo_description');
+                  }}
+                  placeholder="Ex: Bobinas de aço"
+                  required
+                />
+              </FormField>
+            )}
 
-        <FormField
-          label="WhatsApp do Motorista"
-          error={allErrors.driver_phone}
-          hint="O QR Code de entrada será enviado automaticamente para este número"
-        >
-          <FormField.Input
-            type="tel"
-            error={allErrors.driver_phone}
-            value={data.driver_phone}
-            onChange={(event) => {
-              setData('driver_phone', event.target.value);
-              clearClientError('driver_phone');
-            }}
-            placeholder="Ex: 11999990000"
-          />
-        </FormField>
+            {/* weight */}
+            <FormField label="Peso (Toneladas)" error={allErrors.weight} hint="Opcional">
+              <FormField.Input
+                type="number"
+                step="0.1"
+                min="0"
+                error={allErrors.weight}
+                value={data.weight}
+                onChange={(e) => setData('weight', e.target.value)}
+                placeholder="Ex: 25.5"
+              />
+            </FormField>
 
-        {/* Descrição da carga: apenas no modelo aberta */}
-        {blModeloAberta && (
-          <FormField label="Carga (Descrição)" error={allErrors.cargo_description} required>
-            <FormField.Input
-              type="text"
-              error={allErrors.cargo_description}
-              value={data.cargo_description}
-              onChange={(event) => {
-                setData('cargo_description', event.target.value);
-                clearClientError('cargo_description');
-              }}
-              required
-            />
-          </FormField>
+            {/* invoice — only for unload */}
+            {data.operation_type === 'unload' && (
+              <FormField label="Nota Fiscal" error={allErrors.invoice_path} required hint="PDF, JPG ou PNG — máx. 10MB">
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className={`mt-1 block w-full ${FormField.inputClass(allErrors.invoice_path)}`}
+                  onChange={(e) => {
+                    setData('invoice_path', e.target.files?.[0] || null);
+                    clearClientError('invoice_path');
+                  }}
+                  required
+                />
+              </FormField>
+            )}
+
+            {/* navigation */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                ← Voltar
+              </button>
+              <button
+                type="submit"
+                disabled={processing}
+                className="flex-1 rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50 transition-colors shadow-sm"
+              >
+                {processing ? 'Enviando...' : 'Confirmar Reserva'}
+              </button>
+            </div>
+          </div>
         )}
-
-        <FormField label="Peso (Toneladas)" error={allErrors.weight}>
-          <FormField.Input
-            type="number"
-            step="0.1"
-            error={allErrors.weight}
-            value={data.weight}
-            onChange={(event) => setData('weight', event.target.value)}
-          />
-        </FormField>
-
-        {data.operation_type === 'unload' && (
-          <FormField
-            label="Nota Fiscal (obrigatória para descarga)"
-            error={allErrors.invoice_path}
-            required
-          >
-            <input
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              className={`mt-1 block w-full ${FormField.inputClass(allErrors.invoice_path)}`}
-              aria-invalid={Boolean(allErrors.invoice_path)}
-              onChange={(event) => {
-                setData('invoice_path', event.target.files?.[0] || null);
-                clearClientError('invoice_path');
-              }}
-              required
-            />
-          </FormField>
-        )}
-
-        <button
-          disabled={processing}
-          className="mt-4 w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          {processing ? 'Enviando...' : 'Confirmar Reserva'}
-        </button>
       </form>
-    </div>
+    </ModalShell>
   );
 }

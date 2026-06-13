@@ -67,11 +67,7 @@ class ReopenReservation
                 throw new DuplicateActivePlateException();
             }
 
-            $locked->update([
-                'status' => $locked->operation_type === 'load'
-                    ? FreightStatus::Loading->value
-                    : FreightStatus::Unloading->value,
-            ]);
+            $locked->update(['status' => FreightStatus::Reserved->value]);
 
             $timeslot->clampReservations();
             $timeslot->save();
