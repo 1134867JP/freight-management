@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { getStatusPresentation } from '@/utils/statusPresentation';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -35,7 +36,6 @@ function formatDate(date) {
 
 const STATUS = {
   arrived: {
-    label: 'No Pátio',
     ring: 'ring-amber-400/60',
     border: 'border-amber-400',
     glow: 'shadow-amber-400/20',
@@ -45,7 +45,6 @@ const STATUS = {
     operationRow: 'from-amber-100/50 dark:from-amber-950/30',
   },
   loading: {
-    label: 'Carregando',
     ring: 'ring-sky-400/60',
     border: 'border-sky-400',
     glow: 'shadow-sky-400/20',
@@ -55,7 +54,6 @@ const STATUS = {
     operationRow: 'from-sky-100/50 dark:from-sky-950/30',
   },
   unloading: {
-    label: 'Descarregando',
     ring: 'ring-violet-400/60',
     border: 'border-violet-400',
     glow: 'shadow-violet-400/20',
@@ -79,6 +77,7 @@ function LiveDot({ color = 'bg-emerald-400' }) {
 
 function FreightSlot({ freight, now }) {
   const cfg = STATUS[freight.status] ?? STATUS.arrived;
+  const statusPresentation = getStatusPresentation('freight', freight.status);
   const since = elapsed(freight.arrived_at, now);
   const sinceOp = freight.status !== 'arrived' ? elapsed(freight.updated_at, now) : null;
 
@@ -94,7 +93,7 @@ function FreightSlot({ freight, now }) {
         </div>
         <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold ${cfg.badge}`}>
           <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot} animate-pulse`} />
-          {cfg.label}
+          {statusPresentation.label}
         </span>
       </div>
 

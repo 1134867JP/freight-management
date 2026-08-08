@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
+import Button from '@/Components/UI/Button';
 import PageHeader from '@/Components/UI/PageHeader';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { translateTimeslotOperationType } from '@/Features/Timeslot/utils/timeslotPresentation';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import TimeslotSummaryCards from './Partials/TimeslotSummaryCards';
 import TimeslotFilters from './Partials/TimeslotFilters';
 import TimeslotsTable from './Partials/TimeslotsTable';
@@ -160,12 +161,9 @@ export default function Index({ timeslots }) {
           title="Cotas"
           subtitle="Gerencie os Cotas disponíveis do pátio"
           actions={
-            <Link
-              href={route('timeslots.create')}
-              className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700"
-            >
+            <Button onClick={() => router.visit(route('timeslots.create'))}>
               Novo horário
-            </Link>
+            </Button>
           }
         />
       }

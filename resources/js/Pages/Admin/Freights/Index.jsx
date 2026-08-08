@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
+import Button from '@/Components/UI/Button';
+import FormField from '@/Components/UI/FormField';
 import PageHeader from '@/Components/UI/PageHeader';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, router, usePage } from '@inertiajs/react';
@@ -231,26 +233,26 @@ export default function Index({ freights, docasDisponiveis }) {
             <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/30">
               <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">Filtros</p>
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
-                <input
+                <FormField.Input
                   type="text"
                   value={filterSearch}
                   onChange={(event) => setFilterSearch(event.target.value)}
                   placeholder="Cliente ou placa..."
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
+                  className="mt-0"
                 />
 
-                <select
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                <FormField.Select
+                  className="mt-0"
                   value={filterOp}
                   onChange={(event) => setFilterOp(event.target.value)}
                 >
                   <option value="all">Operação: Todas</option>
                   <option value="load">Operação: Carga</option>
                   <option value="unload">Operação: Descarga</option>
-                </select>
+                </FormField.Select>
 
-                <select
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                <FormField.Select
+                  className="mt-0"
                   value={filterStatus}
                   onChange={(event) => setFilterStatus(event.target.value)}
                 >
@@ -261,23 +263,23 @@ export default function Index({ freights, docasDisponiveis }) {
                   <option value="unloading">Status: Descarregando</option>
                   <option value="completed">Status: Finalizado</option>
                   <option value="cancelled">Status: Cancelado</option>
-                </select>
+                </FormField.Select>
 
-                <input
+                <FormField.Input
                   type="date"
                   value={filterDate}
                   onChange={(event) => setFilterDate(event.target.value)}
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="mt-0"
                 />
 
                 <div className="flex gap-2">
-                  <button
-                    type="button"
+                  <Button
                     onClick={resetFilters}
-                    className="flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    variant="secondary"
+                    className="flex-1"
                   >
                     Limpar
-                  </button>
+                  </Button>
                   <a
                     href={exportCsvUrl()}
                     className="flex items-center gap-1.5 rounded-md border border-green-500 bg-green-50 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-100 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40"

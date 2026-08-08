@@ -1,6 +1,7 @@
 import React from 'react';
 import EmptyState from '@/Components/UI/EmptyState';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import TableShell from '@/Components/UI/TableShell';
 import { translateOperationType } from '@/Features/Freight/utils/freightPresentation';
 import FreightActionsAdmin from './FreightActionsAdmin';
 import FreightAttachmentsCell from './FreightAttachmentsCell';
@@ -63,20 +64,12 @@ export default function FreightsTable({
       minute: '2-digit',
     });
 
-  const formatWeight = (weight) => {
-    if (weight === null || weight === undefined || weight === '') {
-      return 'Não informado';
-    }
-
-    return weight;
-  };
-
   if (freights.length === 0) {
     return <EmptyState title="Nenhum frete encontrado para o filtro selecionado." />;
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <TableShell>
       <table className="min-w-full table-fixed text-left">
         <thead className="bg-gray-50 dark:bg-gray-700">
           <tr>
@@ -168,6 +161,6 @@ export default function FreightsTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </TableShell>
   );
 }

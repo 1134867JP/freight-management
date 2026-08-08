@@ -5,6 +5,10 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import FormActions from '@/Components/UI/FormActions';
+import FormField from '@/Components/UI/FormField';
+import IconButton from '@/Components/UI/IconButton';
+import TableShell from '@/Components/UI/TableShell';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import {
   TRUCK_TYPE_OPTIONS,
@@ -42,9 +46,6 @@ function TruckIcon() {
     </svg>
   );
 }
-
-const inputClass =
-  'mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
 
 export default function Trucks({ trucks }) {
   const trucksList = useMemo(() => (Array.isArray(trucks) ? trucks : trucks?.data || []), [trucks]);
@@ -164,7 +165,7 @@ export default function Trucks({ trucks }) {
             </div>
           )}
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {trucksList.length === 0 ? (
               <EmptyState
                 icon={
@@ -239,22 +240,18 @@ export default function Trucks({ trucks }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
+                            <IconButton
                               onClick={() => startEdit(truck)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
-                            >
-                              <IconEdit />
-                              Editar
-                            </button>
-                            <button
-                              type="button"
+                              icon={<IconEdit />}
+                              label="Editar caminhão"
+                              variant="secondary"
+                            />
+                            <IconButton
                               onClick={() => deleteTruck(truck.id)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
-                            >
-                              <IconTrash />
-                              Excluir
-                            </button>
+                              icon={<IconTrash />}
+                              label="Excluir caminhão"
+                              variant="danger"
+                            />
                           </div>
                         </td>
                       </tr>
@@ -263,7 +260,7 @@ export default function Trucks({ trucks }) {
                 </table>
               </div>
             )}
-          </div>
+          </TableShell>
         </div>
       </div>
 
@@ -274,13 +271,10 @@ export default function Trucks({ trucks }) {
         maxWidthClass="max-w-lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Placa <span className="text-red-500">*</span>
-            </label>
-            <input
+          <FormField label="Placa" error={plateError || errors.plate} required>
+            <FormField.Input
               type="text"
-              className={inputClass}
+              error={plateError || errors.plate}
               value={data.plate}
               onChange={(e) => {
                 const vlPlate = normalizeTruckPlate(e.target.value);
@@ -306,15 +300,11 @@ export default function Trucks({ trucks }) {
                 <span className="text-gray-400 dark:text-gray-500">Digite 7 caracteres (ABC1234 ou ABC1D23)</span>
               )}
             </p>
-            {plateError && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{plateError}</p>}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tipo <span className="text-red-500">*</span>
-            </label>
-            <select
-              className={inputClass}
+          <FormField label="Tipo" error={errors.type} required>
+            <FormField.Select
+              error={errors.type}
               value={data.type}
               onChange={(e) => setData('type', e.target.value)}
               required
@@ -322,37 +312,29 @@ export default function Trucks({ trucks }) {
               {TRUCK_TYPE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
-            </select>
-            {errors.type && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.type}</p>}
-          </div>
+            </FormField.Select>
+          </FormField>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Modelo <span className="text-xs font-normal text-gray-400">(opcional)</span>
-            </label>
-            <input
+          <FormField label="Modelo (opcional)" error={errors.model}>
+            <FormField.Input
               type="text"
-              className={inputClass}
+              error={errors.model}
               value={data.model}
               onChange={(e) => setData('model', e.target.value)}
               placeholder="Ex.: Volvo FH 540"
             />
-            {errors.model && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.model}</p>}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Observações <span className="text-xs font-normal text-gray-400">(opcional)</span>
-            </label>
+          <FormField label="Observações (opcional)" error={errors.notes}>
             <textarea
-              className={inputClass}
+              className={`mt-1 block w-full ${FormField.inputClass(errors.notes)}`}
+              aria-invalid={Boolean(errors.notes)}
               rows={3}
               value={data.notes}
               onChange={(e) => setData('notes', e.target.value)}
               placeholder="Ex.: restrições, informações adicionais, etc."
             />
-            {errors.notes && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.notes}</p>}
-          </div>
+          </FormField>
 
           <div>
             <label className="flex cursor-pointer items-center gap-2">
@@ -366,10 +348,10 @@ export default function Trucks({ trucks }) {
             </label>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <FormActions>
             <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
             <Button type="submit" variant="primary" className="flex-1" loading={processing}>{isEditing ? 'Salvar alterações' : 'Adicionar caminhão'}</Button>
-          </div>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>

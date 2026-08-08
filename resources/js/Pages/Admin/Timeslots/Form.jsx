@@ -1,8 +1,9 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
+import Button from '@/Components/UI/Button';
 import PageHeader from '@/Components/UI/PageHeader';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import TimeslotForm from './Partials/TimeslotForm';
 
 export default function Form({ timeslot, clients, addresses, produtos, docas, defaultDate }) {
@@ -55,12 +56,9 @@ export default function Form({ timeslot, clients, addresses, produtos, docas, de
           title={isEditing ? 'Editar Horário' : 'Novo Horário'}
           subtitle={isEditing ? 'Altere os dados do horário e salve' : 'Preencha os dados para criar um novo horário'}
           actions={
-            <Link
-              href={route('timeslots.index')}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-            >
+            <Button variant="secondary" onClick={() => router.visit(route('timeslots.index'))}>
               ← Voltar
-            </Link>
+            </Button>
           }
         />
       }

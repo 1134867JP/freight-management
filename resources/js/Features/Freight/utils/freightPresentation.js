@@ -1,13 +1,7 @@
-export function translateFreightStatus(status) {
-  const arrTranslations = {
-    reserved: 'Reservado',
-    cancelled: 'Cancelado',
-    loading: 'Carregando',
-    unloading: 'Descarregando',
-    completed: 'Finalizado',
-  };
+import { getStatusPresentation } from '@/utils/statusPresentation';
 
-  return arrTranslations[status] || status;
+export function translateFreightStatus(status) {
+  return getFreightStatusPresentation(status).label;
 }
 
 export function translateOperationType(operationType) {
@@ -21,12 +15,11 @@ export function translateOperationType(operationType) {
 }
 
 export function getFreightStatusTone(status) {
-  if (status === 'reserved') return 'info';
-  if (status === 'loading') return 'warning';
-  if (status === 'unloading') return 'info';
-  if (status === 'completed') return 'success';
-  if (status === 'cancelled') return 'danger';
-  return 'neutral';
+  return getFreightStatusPresentation(status).tone;
+}
+
+export function getFreightStatusPresentation(status) {
+  return getStatusPresentation('freight', status);
 }
 
 export function getStartButtonLabel(operationType) {

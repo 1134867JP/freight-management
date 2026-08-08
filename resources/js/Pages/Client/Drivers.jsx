@@ -5,6 +5,10 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import FormActions from '@/Components/UI/FormActions';
+import FormField from '@/Components/UI/FormField';
+import IconButton from '@/Components/UI/IconButton';
+import TableShell from '@/Components/UI/TableShell';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 import Button from '@/Components/UI/Button';
@@ -37,9 +41,6 @@ function DriverIcon() {
     </svg>
   );
 }
-
-const inputClass =
-  'mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
 
 function formatPhone(raw) {
   if (!raw) return '—';
@@ -166,7 +167,7 @@ export default function Drivers({ drivers }) {
             </div>
           )}
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {driversList.length === 0 ? (
               <EmptyState
                 icon={
@@ -242,22 +243,18 @@ export default function Drivers({ drivers }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
+                            <IconButton
                               onClick={() => startEdit(driver)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
-                            >
-                              <IconEdit />
-                              Editar
-                            </button>
-                            <button
-                              type="button"
+                              icon={<IconEdit />}
+                              label="Editar motorista"
+                              variant="secondary"
+                            />
+                            <IconButton
                               onClick={() => deleteDriver(driver.id)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
-                            >
-                              <IconTrash />
-                              Excluir
-                            </button>
+                              icon={<IconTrash />}
+                              label="Excluir motorista"
+                              variant="danger"
+                            />
                           </div>
                         </td>
                       </tr>
@@ -266,7 +263,7 @@ export default function Drivers({ drivers }) {
                 </table>
               </div>
             )}
-          </div>
+          </TableShell>
         </div>
       </div>
 
@@ -277,68 +274,54 @@ export default function Drivers({ drivers }) {
         maxWidthClass="max-w-lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Nome <span className="text-red-500">*</span>
-            </label>
-            <input
+          <FormField label="Nome" error={errors.nome} required>
+            <FormField.Input
               type="text"
-              className={inputClass}
+              error={errors.nome}
               value={data.nome}
               onChange={(e) => setData('nome', e.target.value)}
               placeholder="Ex.: João da Silva"
               maxLength={100}
               required
             />
-            {errors.nome && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.nome}</p>}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              WhatsApp <span className="text-xs font-normal text-gray-400">(opcional)</span>
-            </label>
-            <input
+          <FormField
+            label="WhatsApp (opcional)"
+            error={errors.phone}
+            hint="O QR Code de entrada será enviado para este número ao reservar uma cota."
+          >
+            <FormField.Input
               type="tel"
-              className={inputClass}
+              error={errors.phone}
               value={data.phone}
               onChange={(e) => setData('phone', e.target.value)}
               placeholder="Ex.: 11999990000"
               maxLength={20}
             />
-            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-              O QR Code de entrada será enviado para este número ao reservar uma cota.
-            </p>
-            {errors.phone && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.phone}</p>}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              CPF <span className="text-xs font-normal text-gray-400">(opcional)</span>
-            </label>
-            <input
+          <FormField label="CPF (opcional)" error={errors.cpf}>
+            <FormField.Input
               type="text"
-              className={inputClass}
+              error={errors.cpf}
               value={data.cpf}
               onChange={(e) => setData('cpf', e.target.value)}
               placeholder="Ex.: 000.000.000-00"
               maxLength={14}
             />
-            {errors.cpf && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.cpf}</p>}
-          </div>
+          </FormField>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Observações <span className="text-xs font-normal text-gray-400">(opcional)</span>
-            </label>
+          <FormField label="Observações (opcional)" error={errors.notas}>
             <textarea
-              className={inputClass}
+              className={`mt-1 block w-full ${FormField.inputClass(errors.notas)}`}
+              aria-invalid={Boolean(errors.notas)}
               rows={3}
               value={data.notas}
               onChange={(e) => setData('notas', e.target.value)}
               placeholder="Ex.: habilitação categoria E, restrições, etc."
             />
-            {errors.notas && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.notas}</p>}
-          </div>
+          </FormField>
 
           <div>
             <label className="flex cursor-pointer items-center gap-2">
@@ -352,12 +335,12 @@ export default function Drivers({ drivers }) {
             </label>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <FormActions>
             <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
-            <Button type="submit" variant="primary" className="flex-1" disabled={processing}>
+            <Button type="submit" variant="primary" className="flex-1" loading={processing}>
               {isEditing ? 'Salvar alterações' : 'Adicionar motorista'}
             </Button>
-          </div>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>

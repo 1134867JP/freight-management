@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
+import Button from '@/Components/UI/Button';
+import PageHeader from '@/Components/UI/PageHeader';
+import { Head } from '@inertiajs/react';
 
 const ZONE_COLORS = {
   parking:      { bg: 'bg-blue-50 dark:bg-blue-950/30',   border: 'border-blue-200 dark:border-blue-800',   header: 'bg-blue-100 dark:bg-blue-900/40',  text: 'text-blue-700 dark:text-blue-300',  dot: 'bg-blue-500'  },
@@ -88,7 +90,7 @@ function DocaCard({ doca }) {
 
 export default function YardMap({ initialData }) {
   const [data, setData]       = useState(initialData);
-  const [wsOk, setWsOk]       = useState(false);
+  const wsOk                    = false;
   const timerRef              = useRef(null);
 
   const refresh = useCallback(() => {
@@ -110,15 +112,11 @@ export default function YardMap({ initialData }) {
 
   return (
     <AuthenticatedLayout header={
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Mapa do Pátio</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Localização em tempo real de todos os veículos</p>
-        </div>
-        <button onClick={refresh} className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-          Atualizar
-        </button>
-      </div>
+      <PageHeader
+        title="Mapa do Pátio"
+        subtitle="Localização em tempo real de todos os veículos"
+        actions={<Button variant="secondary" size="sm" onClick={refresh}>Atualizar</Button>}
+      />
     }>
       <Head title="Mapa do Pátio" />
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import ModalShell from '@/Components/UI/ModalShell';
+import Button from '@/Components/UI/Button';
 
 export default function UploadAttachmentModal({
   open,
@@ -49,21 +50,22 @@ export default function UploadAttachmentModal({
         )}
 
         <div className="flex items-center justify-end gap-2 pt-1">
-          <button
-            type="button"
+          <Button
             onClick={onClose}
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            variant="secondary"
+            size="sm"
           >
             Cancelar
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="submit"
-            disabled={processing || !file}
-            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!file}
+            loading={processing}
+            size="sm"
           >
             Enviar anexo
-          </button>
+          </Button>
         </div>
       </form>
     </ModalShell>

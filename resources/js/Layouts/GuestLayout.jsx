@@ -109,15 +109,3 @@ function CargoHubLogo({ dark }) {
     </div>
   );
 }
-
-function Feature({ icon, title, desc }) {
-  return (
-    <div className="flex items-start gap-4 rounded-xl bg-white/5 ring-1 ring-white/8 px-4 py-3">
-      <span className="text-lg mt-0.5">{icon}</span>
-      <div>
-        <div className="text-sm font-semibold text-white">{title}</div>
-        <div className="mt-0.5 text-xs text-white/60">{desc}</div>
-      </div>
-    </div>
-  );
-}

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Button from '@/Components/UI/Button';
 import EmptyState from '@/Components/UI/EmptyState';
 import PageHeader from '@/Components/UI/PageHeader';
+import Pagination from '@/Components/UI/Pagination';
 import StatusBadge from '@/Components/UI/StatusBadge';
-import { translateTimeslotStatus, getTimeslotStatusTone } from '@/Features/Timeslot/utils/timeslotPresentation';
+import TableShell from '@/Components/UI/TableShell';
+import { translateTimeslotOperationType } from '@/Features/Timeslot/utils/timeslotPresentation';
+import { formatDateTime } from '@/utils/formatters';
+import { getStatusPresentation, TIMESLOT_STATUS_CONFIG } from '@/utils/statusPresentation';
 import { Head, router } from '@inertiajs/react';
-
-const OP_LABELS = {
-  load: 'Carga',
-  unload: 'Descarga',
-};
 
 export default function AdminTimeslotsReport({ timeslots, filters }) {
   const { data: items, current_page, last_page, links } = timeslots;
@@ -106,26 +106,19 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
                   className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 >
                   <option value="">Todos</option>
-                  <option value="available">Disponível</option>
-                  <option value="full">Lotado</option>
-                  <option value="closed">Encerrado</option>
+                  {Object.entries(TIMESLOT_STATUS_CONFIG).map(([value, { label }]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className="mt-3 flex gap-2">
-              <button
-                type="submit"
-                className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-              >
+              <Button type="submit" size="sm">
                 Filtrar
-              </button>
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="rounded-md border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              >
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={clearFilters}>
                 Limpar
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -137,11 +130,9 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
           )}
 
           {/* Tabela */}
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {items.length === 0 ? (
-              <div className="p-6">
-                <EmptyState title="Nenhum horário encontrado." />
-              </div>
+              <EmptyState title="Nenhum horário encontrado." />
             ) : (
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700">
@@ -160,13 +151,13 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
                   {items.map((ts) => (
                     <tr key={ts.id} className="align-top hover:bg-gray-50 dark:hover:bg-gray-700/40">
                       <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                        {new Date(ts.start_time).toLocaleString('pt-BR')}
+                        {formatDateTime(ts.start_time)}
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                        {new Date(ts.end_time).toLocaleString('pt-BR')}
+                        {formatDateTime(ts.end_time)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                        {OP_LABELS[ts.operation_type] || ts.operation_type}
+                        {translateTimeslotOperationType(ts.operation_type)}
                       </td>
                       <td className="px-4 py-3 text-sm text-center text-gray-700 dark:text-gray-300">
                         {ts.capacity}
@@ -175,7 +166,7 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
                         {ts.active_reservations}
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge label={translateTimeslotStatus(ts.status)} tone={getTimeslotStatusTone(ts.status)} />
+                        <StatusBadge {...getStatusPresentation('timeslot', ts.status)} />
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {ts.dropoff_address?.name || '—'}
@@ -188,30 +179,10 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
                 </tbody>
               </table>
             )}
-          </div>
+          </TableShell>
 
           {/* Paginação */}
-          {last_page > 1 && (
-            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-              <span>Página {current_page} de {last_page}</span>
-              <div className="flex gap-1">
-                {links.map((link, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    disabled={!link.url}
-                    onClick={() => link.url && router.get(link.url, {}, { preserveScroll: true })}
-                    className={`rounded px-3 py-1 text-xs font-medium ${
-                      link.active
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                    } disabled:opacity-40 disabled:cursor-not-allowed`}
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          <Pagination links={links} currentPage={current_page} lastPage={last_page} />
 
         </div>
       </div>

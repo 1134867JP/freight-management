@@ -1,4 +1,5 @@
-import PrimaryButton from '@/Components/PrimaryButton';
+import Button from '@/Components/UI/Button';
+import FormActions from '@/Components/UI/FormActions';
 import { Transition } from '@headlessui/react';
 import { useForm, usePage } from '@inertiajs/react';
 
@@ -49,15 +50,19 @@ export default function UpdateThemeForm({ className = '' }) {
                 className="mt-0.5 text-teal-600 focus:ring-teal-500"
               />
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{option.label}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {option.label}
+                </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{option.description}</p>
               </div>
             </label>
           ))}
         </div>
 
-        <div className="flex items-center gap-4">
-          <PrimaryButton disabled={processing}>Salvar</PrimaryButton>
+        <FormActions className="items-center sm:justify-start">
+          <Button type="submit" loading={processing}>
+            Salvar
+          </Button>
 
           <Transition
             show={recentlySuccessful}
@@ -68,7 +73,7 @@ export default function UpdateThemeForm({ className = '' }) {
           >
             <p className="text-sm text-gray-600 dark:text-gray-400">Salvo.</p>
           </Transition>
-        </div>
+        </FormActions>
       </form>
     </section>
   );

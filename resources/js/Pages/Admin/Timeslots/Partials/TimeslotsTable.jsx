@@ -1,6 +1,8 @@
 import React from 'react';
 import EmptyState from '@/Components/UI/EmptyState';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import Button from '@/Components/UI/Button';
+import TableShell from '@/Components/UI/TableShell';
 import {
   getTimeslotStatusTone,
   translateTimeslotOperationType,
@@ -29,7 +31,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+    <TableShell>
       <table className="min-w-[980px] w-full table-fixed text-left">
         <thead className="bg-gray-50 dark:bg-gray-700">
           <tr className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">
@@ -128,27 +130,27 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
 
                 <td className="px-4 py-5 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button
-                      type="button"
+                    <Button
                       onClick={(event) => {
                         event.stopPropagation();
                         onEdit(objSlot.id);
                       }}
-                      className="rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
+                      variant="soft"
+                      size="sm"
                     >
                       Editar
-                    </button>
+                    </Button>
 
-                    <button
-                      type="button"
+                    <Button
                       onClick={(event) => {
                         event.stopPropagation();
                         onDelete(event, objSlot.id);
                       }}
-                      className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                      variant="danger"
+                      size="sm"
                     >
                       Excluir
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -156,6 +158,6 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
           })}
         </tbody>
       </table>
-    </div>
+    </TableShell>
   );
 }

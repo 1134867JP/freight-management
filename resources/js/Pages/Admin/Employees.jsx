@@ -5,6 +5,9 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
+import FormActions from '@/Components/UI/FormActions';
+import IconButton from '@/Components/UI/IconButton';
+import TableShell from '@/Components/UI/TableShell';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { isValidEmail, isValidWhatsApp } from '@/utils/validation';
@@ -202,7 +205,7 @@ export default function Employees({ employees, currentUserId }) {
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {employees.length === 0 ? (
               <div className="p-8">
                 <EmptyState title="Nenhum funcionário cadastrado." />
@@ -275,31 +278,25 @@ export default function Employees({ employees, currentUserId }) {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center justify-end gap-2">
-                              <button
-                                type="button"
+                              <IconButton
                                 onClick={() => openPermissions(employee)}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
-                              >
-                                <IconShield />
-                                Permissões
-                              </button>
-                              <button
-                                type="button"
+                                icon={<IconShield />}
+                                label="Editar permissões"
+                                variant="secondary"
+                              />
+                              <IconButton
                                 onClick={() => startEdit(employee)}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                              >
-                                <IconEdit />
-                                Editar
-                              </button>
+                                icon={<IconEdit />}
+                                label="Editar funcionário"
+                                variant="secondary"
+                              />
                               {employee.id !== currentUserId && (
-                                <button
-                                  type="button"
+                                <IconButton
                                   onClick={() => deleteEmployee(employee.id)}
-                                  className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
-                                >
-                                  <IconTrash />
-                                  Excluir
-                                </button>
+                                  icon={<IconTrash />}
+                                  label="Excluir funcionário"
+                                  variant="danger"
+                                />
                               )}
                             </div>
                           </td>
@@ -310,7 +307,7 @@ export default function Employees({ employees, currentUserId }) {
                 </table>
               </div>
             )}
-          </div>
+          </TableShell>
         </div>
       </div>
 
@@ -383,10 +380,10 @@ export default function Employees({ employees, currentUserId }) {
             />
           </FormField>
 
-          <div className="flex gap-3 pt-2">
+          <FormActions>
             <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
             <Button type="submit" variant="primary" className="flex-1" loading={processing}>{isEditing ? 'Atualizar' : 'Criar'}</Button>
-          </div>
+          </FormActions>
         </form>
       </ModalShell>
 
@@ -433,10 +430,10 @@ export default function Employees({ employees, currentUserId }) {
             ))}
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <FormActions>
             <Button variant="secondary" className="flex-1" onClick={() => setPermissionsEmployee(null)}>Cancelar</Button>
             <Button variant="primary" className="flex-1" onClick={savePermissions}>Salvar permissões</Button>
-          </div>
+          </FormActions>
         </div>
       </ModalShell>
     </AuthenticatedLayout>

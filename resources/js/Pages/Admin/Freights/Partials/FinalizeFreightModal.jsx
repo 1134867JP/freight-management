@@ -1,6 +1,7 @@
 import React from 'react';
 import ModalShell from '@/Components/UI/ModalShell';
 import FormField from '@/Components/UI/FormField';
+import Button from '@/Components/UI/Button';
 import { getFinalizeButtonLabel } from '@/Features/Freight/utils/freightPresentation';
 
 export default function FinalizeFreightModal({
@@ -55,19 +56,19 @@ export default function FinalizeFreightModal({
         </FormField>
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="button"
+          <Button
             onClick={onClose}
-            className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            variant="secondary"
+            className="flex-1"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="flex-1 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            className="flex-1"
           >
             Finalizar
-          </button>
+          </Button>
         </div>
       </form>
     </ModalShell>

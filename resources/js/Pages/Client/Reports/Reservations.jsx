@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Button from '@/Components/UI/Button';
 import EmptyState from '@/Components/UI/EmptyState';
 import PageHeader from '@/Components/UI/PageHeader';
+import Pagination from '@/Components/UI/Pagination';
 import StatusBadge from '@/Components/UI/StatusBadge';
-import { translateFreightStatus, getFreightStatusTone } from '@/Features/Freight/utils/freightPresentation';
+import TableShell from '@/Components/UI/TableShell';
+import { translateOperationType } from '@/Features/Freight/utils/freightPresentation';
+import { formatDateTime, formatWeight } from '@/utils/formatters';
+import { FREIGHT_STATUS_CONFIG, getStatusPresentation } from '@/utils/statusPresentation';
 import { Head, router } from '@inertiajs/react';
-
-const OP_LABELS = { load: 'Carga', unload: 'Descarga' };
 
 export default function ClientReservationsReport({ freights, filters }) {
   const { data: items, current_page, last_page, links } = freights;
@@ -82,28 +85,19 @@ export default function ClientReservationsReport({ freights, filters }) {
                   className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 >
                   <option value="">Todos</option>
-                  <option value="reserved">Reservado</option>
-                  <option value="loading">Carregando</option>
-                  <option value="unloading">Descarregando</option>
-                  <option value="completed">Concluído</option>
-                  <option value="cancelled">Cancelado</option>
+                  {Object.entries(FREIGHT_STATUS_CONFIG).map(([value, { label }]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className="mt-3 flex gap-2">
-              <button
-                type="submit"
-                className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-              >
+              <Button type="submit" size="sm">
                 Filtrar
-              </button>
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="rounded-md border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              >
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={clearFilters}>
                 Limpar
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -115,11 +109,9 @@ export default function ClientReservationsReport({ freights, filters }) {
           )}
 
           {/* Tabela */}
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {items.length === 0 ? (
-              <div className="p-6">
-                <EmptyState title="Nenhum frete encontrado." />
-              </div>
+              <EmptyState title="Nenhum frete encontrado." />
             ) : (
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700">
@@ -138,9 +130,7 @@ export default function ClientReservationsReport({ freights, filters }) {
                   {items.map((fr) => (
                     <tr key={fr.id} className="align-top hover:bg-gray-50 dark:hover:bg-gray-700/40">
                       <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                        {fr.timeslot
-                          ? new Date(fr.timeslot.start_time).toLocaleString('pt-BR')
-                          : '—'}
+                        {formatDateTime(fr.timeslot?.start_time)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                         {fr.driver_name || '—'}
@@ -149,49 +139,29 @@ export default function ClientReservationsReport({ freights, filters }) {
                         {fr.truck_plate || '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                        {OP_LABELS[fr.operation_type] || fr.operation_type}
+                        {translateOperationType(fr.operation_type)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {fr.cargo_description || '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                        {fr.gross_weight ? `${Number(fr.gross_weight).toLocaleString('pt-BR')} kg` : '—'}
+                        {formatWeight(fr.gross_weight)}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                        {fr.net_weight ? `${Number(fr.net_weight).toLocaleString('pt-BR')} kg` : '—'}
+                        {formatWeight(fr.net_weight)}
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge label={translateFreightStatus(fr.status)} tone={getFreightStatusTone(fr.status)} />
+                        <StatusBadge {...getStatusPresentation('freight', fr.status)} />
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
-          </div>
+          </TableShell>
 
           {/* Paginação */}
-          {last_page > 1 && (
-            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-              <span>Página {current_page} de {last_page}</span>
-              <div className="flex gap-1">
-                {links.map((link, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    disabled={!link.url}
-                    onClick={() => link.url && router.get(link.url, {}, { preserveScroll: true })}
-                    className={`rounded px-3 py-1 text-xs font-medium ${
-                      link.active
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                    } disabled:opacity-40 disabled:cursor-not-allowed`}
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          <Pagination links={links} currentPage={current_page} lastPage={last_page} />
 
         </div>
       </div>

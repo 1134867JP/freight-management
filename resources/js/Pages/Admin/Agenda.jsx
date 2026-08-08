@@ -2,9 +2,10 @@ import React, { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
-import { translateFreightStatus, getFreightStatusTone } from '@/Features/Freight/utils/freightPresentation';
-import { translateTimeslotStatus, getTimeslotStatusTone } from '@/Features/Timeslot/utils/timeslotPresentation';
+import Button from '@/Components/UI/Button';
 import { Head, router } from '@inertiajs/react';
+import { formatDate, formatTime } from '@/utils/formatters';
+import { getStatusPresentation } from '@/utils/statusPresentation';
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -34,18 +35,6 @@ export default function Agenda({ timeslots }) {
   const [monthCursor, setMonthCursor] = useState(() => new Date());
   const [selectedDayKey, setSelectedDayKey] = useState(null);
 
-
-  const formatTime = (value) =>
-    new Date(value).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-  const formatDateShort = (value) =>
-    new Date(value).toLocaleDateString([], {
-      day: '2-digit',
-      month: '2-digit',
-    });
 
   const monthLabel = (d) => d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
@@ -166,7 +155,7 @@ export default function Agenda({ timeslots }) {
 
     if (!crossesDay) return `${formatTime(slot.start_time)} – ${formatTime(slot.end_time)}`;
 
-    return `${formatDateShort(slot.start_time)} ${formatTime(slot.start_time)} → ${formatDateShort(slot.end_time)} ${formatTime(slot.end_time)}`;
+    return `${formatDate(slot.start_time, { year: undefined })} ${formatTime(slot.start_time)} → ${formatDate(slot.end_time, { year: undefined })} ${formatTime(slot.end_time)}`;
   };
 
   return (
@@ -187,20 +176,18 @@ export default function Agenda({ timeslots }) {
             </div>
 
             <div className="flex gap-2">
-              <button
-                type="button"
+              <Button
                 onClick={prevMonth}
-                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                variant="secondary"
               >
                 ← Anterior
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 onClick={nextMonth}
-                className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                variant="secondary"
               >
                 Próximo →
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -302,10 +289,7 @@ export default function Agenda({ timeslots }) {
                               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                                 {formatRange(slot)}
                               </p>
-                              <StatusBadge
-                                label={translateTimeslotStatus(slot.status)}
-                                tone={getTimeslotStatusTone(slot.status)}
-                              />
+                              <StatusBadge {...getStatusPresentation('timeslot', slot.status)} />
                             </div>
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                               Capacidade: {slot.current_reservations}/{slot.capacity}
@@ -331,10 +315,7 @@ export default function Agenda({ timeslots }) {
                                     <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                                       {freight.user?.name || 'Cliente não informado'}
                                     </p>
-                                    <StatusBadge
-                                      label={translateFreightStatus(freight.status)}
-                                      tone={getFreightStatusTone(freight.status)}
-                                    />
+                                    <StatusBadge {...getStatusPresentation('freight', freight.status)} />
                                   </div>
 
                                   <div className="mt-2 space-y-1">

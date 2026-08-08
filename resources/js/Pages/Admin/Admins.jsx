@@ -5,6 +5,9 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
+import FormActions from '@/Components/UI/FormActions';
+import IconButton from '@/Components/UI/IconButton';
+import TableShell from '@/Components/UI/TableShell';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { isValidEmail, isValidWhatsApp } from '@/utils/validation';
@@ -154,7 +157,7 @@ export default function Admins({ admins, currentUserId }) {
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {admins.length === 0 ? (
               <div className="p-8">
                 <EmptyState title="Nenhum administrador cadastrado." />
@@ -213,23 +216,19 @@ export default function Admins({ admins, currentUserId }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
+                            <IconButton
                               onClick={() => startEdit(admin)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                            >
-                              <IconEdit />
-                              Editar
-                            </button>
+                              icon={<IconEdit />}
+                              label="Editar administrador"
+                              variant="secondary"
+                            />
                             {admin.id !== currentUserId && (
-                              <button
-                                type="button"
+                              <IconButton
                                 onClick={() => deleteAdmin(admin.id)}
-                                className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
-                              >
-                                <IconTrash />
-                                Excluir
-                              </button>
+                                icon={<IconTrash />}
+                                label="Excluir administrador"
+                                variant="danger"
+                              />
                             )}
                           </div>
                         </td>
@@ -239,7 +238,7 @@ export default function Admins({ admins, currentUserId }) {
                 </table>
               </div>
             )}
-          </div>
+          </TableShell>
         </div>
       </div>
 
@@ -311,10 +310,10 @@ export default function Admins({ admins, currentUserId }) {
             />
           </FormField>
 
-          <div className="flex gap-3 pt-2">
+          <FormActions>
             <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
             <Button type="submit" variant="primary" className="flex-1" loading={processing}>{isEditing ? 'Atualizar' : 'Criar'}</Button>
-          </div>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>

@@ -1,6 +1,6 @@
-import InputError from '@/Components/InputError';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import Button from '@/Components/UI/Button';
+import FormActions from '@/Components/UI/FormActions';
+import FormField from '@/Components/UI/FormField';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
 
@@ -17,33 +17,35 @@ export default function ForgotPassword({ status }) {
 
   return (
     <GuestLayout>
-      <Head title="Forgot Password" />
+      <Head title="Recuperar senha" />
 
       <div className="mb-4 text-sm text-gray-600">
-        Forgot your password? No problem. Just let us know your email address and we will email you
-        a password reset link that will allow you to choose a new one.
+        Informe seu e-mail e enviaremos um link para você criar uma nova senha.
       </div>
 
-      {status && <div className="mb-4 text-sm font-medium text-green-600">{status}</div>}
+      {status && (
+        <div role="status" className="mb-4 text-sm font-medium text-green-600">
+          {status}
+        </div>
+      )}
 
       <form onSubmit={submit}>
-        <TextInput
-          id="email"
-          type="email"
-          name="email"
-          value={data.email}
-          className="mt-1 block w-full"
-          isFocused={true}
-          onChange={(e) => setData('email', e.target.value)}
-        />
+        <FormField id="email" label="E-mail" error={errors.email}>
+          <FormField.Input
+            id="email"
+            type="email"
+            name="email"
+            value={data.email}
+            autoFocus
+            onChange={(e) => setData('email', e.target.value)}
+          />
+        </FormField>
 
-        <InputError message={errors.email} className="mt-2" />
-
-        <div className="mt-4 flex items-center justify-end">
-          <PrimaryButton className="ms-4" disabled={processing}>
-            Email Password Reset Link
-          </PrimaryButton>
-        </div>
+        <FormActions className="mt-4">
+          <Button type="submit" loading={processing}>
+            Enviar link de recuperação
+          </Button>
+        </FormActions>
       </form>
     </GuestLayout>
   );

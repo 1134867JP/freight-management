@@ -1,9 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
+import FormActions from '@/Components/UI/FormActions';
+import FormField from '@/Components/UI/FormField';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
+import StatusBadge from '@/Components/UI/StatusBadge';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import Button from '@/Components/UI/Button';
+import { formatPhone } from '@/utils/formatters';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -137,12 +141,13 @@ export default function Companies({ companies, summary }) {
     });
   };
 
-  const deleteInstance = (companyId) => {
-    if (confirm('Excluir instância WhatsApp desta empresa? Esta ação remove a conexão no provedor.')) {
-      router.delete(route('platform.companies.instance.destroy', companyId), {
-        preserveScroll: true,
-      });
-    }
+  const deleteInstance = async (companyId) => {
+    const ok = await confirm('Excluir instância WhatsApp desta empresa? Esta ação remove a conexão no provedor.');
+    if (!ok) return;
+
+    router.delete(route('platform.companies.instance.destroy', companyId), {
+      preserveScroll: true,
+    });
   };
 
   const logoPreviewUrl = data.remove_logo ? null : selectedLogoUrl ?? currentLogoUrl;
@@ -154,13 +159,11 @@ export default function Companies({ companies, summary }) {
           title="Painel Global"
           subtitle="Cadastre empresas, gerencie admins e acompanhe o status de conexão WhatsApp de cada empresa."
           actions={
-            <button
-              type="button"
+            <Button
               onClick={openCreate}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
               + Nova Empresa
-            </button>
+            </Button>
           }
         />
       }
@@ -196,7 +199,10 @@ export default function Companies({ companies, summary }) {
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-xl font-semibold">{company.name}</h3>
-                        <StatusPill active={company.is_active}>{company.is_active ? 'Ativa' : 'Inativa'}</StatusPill>
+                        <StatusBadge
+                          label={company.is_active ? 'Ativa' : 'Inativa'}
+                          tone={company.is_active ? 'success' : 'neutral'}
+                        />
                       </div>
                       <p className="mt-1 text-sm text-slate-300">Slug: {company.slug}</p>
                     </div>
@@ -204,25 +210,27 @@ export default function Companies({ companies, summary }) {
 
                   <div className="flex flex-col items-start gap-2 sm:items-end">
                     <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
+                      <Button
                         onClick={() => openEdit(company)}
-                        className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/15"
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full border-white/20 bg-white/10 text-white hover:bg-white/15 hover:text-white focus:ring-white/50"
                       >
                         Editar empresa
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
                         onClick={() => deleteCompany(company)}
                         disabled={!company.can_delete}
-                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                        variant="danger"
+                        size="sm"
+                        className={`rounded-full ${
                           company.can_delete
                             ? 'bg-red-500 text-white hover:bg-red-400'
                             : 'cursor-not-allowed bg-white/10 text-white/50'
                         }`}
                       >
                         Excluir empresa
-                      </button>
+                      </Button>
                     </div>
 
                     {!company.can_delete && (
@@ -240,7 +248,7 @@ export default function Companies({ companies, summary }) {
                       <div className="rounded-2xl bg-slate-50 p-4 dark:bg-gray-700">
                         <p className="font-medium text-slate-900 dark:text-gray-100">{company.admin.name}</p>
                         <p className="mt-1 text-sm text-slate-600 dark:text-gray-400">{company.admin.email}</p>
-                        <p className="mt-1 text-sm text-slate-500 dark:text-gray-500">WhatsApp: {company.admin.whatsapp_phone || 'Não informado'}</p>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-gray-500">WhatsApp: {formatPhone(company.admin.whatsapp_phone, 'Não informado')}</p>
                       </div>
                     ) : (
                       <EmptyBlock text="Nenhum admin cadastrado." />
@@ -271,13 +279,14 @@ export default function Companies({ companies, summary }) {
                             <span
                               className={`inline-flex h-2.5 w-2.5 rounded-full ${company.whatsapp_instance.connected ? 'bg-emerald-500' : 'bg-red-400'}`}
                             />
-                            <button
-                              type="button"
+                            <Button
                               onClick={() => deleteInstance(company.id)}
-                              className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                              variant="ghost"
+                              size="sm"
+                              className="h-auto px-0 py-0 text-red-500 hover:bg-transparent hover:text-red-700 dark:text-red-400 dark:hover:bg-transparent dark:hover:text-red-300"
                             >
                               Excluir
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -304,31 +313,31 @@ export default function Companies({ companies, summary }) {
               <SectionTitle>Empresa</SectionTitle>
             </div>
 
-            <Field label="Nome da empresa" error={errors.company_name}>
-              <input
+            <FormField label="Nome da empresa" error={errors.company_name}>
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                error={errors.company_name}
                 value={data.company_name}
                 onChange={(event) => setData('company_name', event.target.value)}
                 required
               />
-            </Field>
+            </FormField>
 
-            <Field label="Slug" hint="Se vazio, será gerado a partir do nome." error={errors.company_slug}>
-              <input
+            <FormField label="Slug" hint="Se vazio, será gerado a partir do nome." error={errors.company_slug}>
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                error={errors.company_slug}
                 value={data.company_slug}
                 onChange={(event) => setData('company_slug', event.target.value)}
                 placeholder="minha-empresa"
               />
-            </Field>
+            </FormField>
 
-            <Field label="Logo" hint="PNG ou JPG até 2MB." error={errors.logo}>
+            <FormField label="Logo" hint="PNG ou JPG até 2MB." error={errors.logo}>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/jpg,image/webp"
-                className="mt-1 block w-full text-sm text-slate-600"
+                className={`mt-1 block w-full text-sm text-slate-600 ${errors.logo ? 'text-red-600' : ''}`}
                 onChange={(event) => {
                   const file = event.target.files[0] ?? null;
                   setData('logo', file);
@@ -338,7 +347,7 @@ export default function Companies({ companies, summary }) {
                   }
                 }}
               />
-            </Field>
+            </FormField>
 
             <div className="space-y-3 rounded-2xl border border-dashed border-slate-200 p-4 dark:border-gray-700">
               <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Status e branding</p>
@@ -399,63 +408,62 @@ export default function Companies({ companies, summary }) {
               <SectionTitle>Admin principal</SectionTitle>
             </div>
 
-            <Field label="Nome" error={errors.admin_name}>
-              <input
+            <FormField label="Nome" error={errors.admin_name}>
+              <FormField.Input
                 type="text"
-                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                error={errors.admin_name}
                 value={data.admin_name}
                 onChange={(event) => setData('admin_name', event.target.value)}
                 required
               />
-            </Field>
+            </FormField>
 
-            <Field label="Email" error={errors.admin_email}>
-              <input
+            <FormField label="Email" error={errors.admin_email}>
+              <FormField.Input
                 type="email"
-                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                error={errors.admin_email}
                 value={data.admin_email}
                 onChange={(event) => setData('admin_email', event.target.value)}
                 required
               />
-            </Field>
+            </FormField>
 
-            <Field label="WhatsApp" hint="Com DDI e apenas números." error={errors.admin_whatsapp_phone}>
-              <input
+            <FormField label="WhatsApp" hint="Com DDI e apenas números." error={errors.admin_whatsapp_phone}>
+              <FormField.Input
                 type="tel"
-                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                error={errors.admin_whatsapp_phone}
                 value={data.admin_whatsapp_phone}
                 onChange={(event) => setData('admin_whatsapp_phone', event.target.value)}
                 placeholder="5511999999999"
               />
-            </Field>
+            </FormField>
 
-            <Field
+            <FormField
               label={editingCompany ? 'Nova senha do admin' : 'Senha do admin'}
               hint={editingCompany ? 'Preencha apenas se quiser trocar.' : null}
               error={errors.admin_password}
             >
-              <input
+              <FormField.Input
                 type="password"
-                className="mt-1 block w-full rounded-xl border-slate-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                error={errors.admin_password}
                 value={data.admin_password}
                 onChange={(event) => setData('admin_password', event.target.value)}
                 required={!editingCompany}
               />
-            </Field>
+            </FormField>
           </section>
 
-          <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
-            <button
-              type="button"
+          <FormActions className="border-t border-slate-200 pt-6">
+            <Button
               onClick={resetForm}
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              variant="secondary"
             >
               Cancelar
-            </button>
+            </Button>
             <Button type="submit" disabled={processing} variant="primary">
               {editingCompany ? 'Salvar alterações' : 'Criar empresa'}
             </Button>
-          </div>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>
@@ -464,31 +472,6 @@ export default function Companies({ companies, summary }) {
 
 function SectionTitle({ children }) {
   return <h3 className="text-base font-semibold text-slate-900 dark:text-gray-100">{children}</h3>;
-}
-
-function Field({ label, hint = null, error = null, children }) {
-  return (
-    <label className="block">
-      <span className="text-sm font-medium text-slate-700 dark:text-gray-300">{label}</span>
-      {children}
-      {hint && <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">{hint}</p>}
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-    </label>
-  );
-}
-
-function StatusPill({ active, children }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-        active
-          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-          : 'bg-slate-200 text-slate-700 dark:bg-gray-700 dark:text-gray-300'
-      }`}
-    >
-      {children}
-    </span>
-  );
 }
 
 function MiniStat({ label, value }) {

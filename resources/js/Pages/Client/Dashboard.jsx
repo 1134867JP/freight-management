@@ -1,5 +1,4 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import PageHeader from '@/Components/UI/PageHeader';
 import { Head, Link, usePage } from '@inertiajs/react';
 
 const statCards = (stats) => [

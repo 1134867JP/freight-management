@@ -1,11 +1,7 @@
-export function translateTimeslotStatus(status) {
-  const arrTranslations = {
-    available: 'Disponível',
-    full: 'Lotado',
-    closed: 'Fechado',
-  };
+import { getStatusPresentation } from '@/utils/statusPresentation';
 
-  return arrTranslations[status] || status;
+export function translateTimeslotStatus(status) {
+  return getTimeslotStatusPresentation(status).label;
 }
 
 export function translateTimeslotOperationType(type) {
@@ -19,8 +15,9 @@ export function translateTimeslotOperationType(type) {
 }
 
 export function getTimeslotStatusTone(status) {
-  if (status === 'available') return 'success';
-  if (status === 'full') return 'warning';
-  if (status === 'closed') return 'danger';
-  return 'neutral';
+  return getTimeslotStatusPresentation(status).tone;
+}
+
+export function getTimeslotStatusPresentation(status) {
+  return getStatusPresentation('timeslot', status);
 }

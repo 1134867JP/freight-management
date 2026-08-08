@@ -1,7 +1,6 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import Button from '@/Components/UI/Button';
+import FormActions from '@/Components/UI/FormActions';
+import FormField from '@/Components/UI/FormField';
 import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
 import { useRef } from 'react';
@@ -47,55 +46,46 @@ export default function UpdatePasswordForm({ className = '' }) {
       </header>
 
       <form onSubmit={updatePassword} className="mt-6 space-y-6">
-        <div>
-          <InputLabel htmlFor="current_password" value="Senha Atual" />
-
-          <TextInput
+        <FormField id="current_password" label="Senha atual" error={errors.current_password}>
+          <FormField.Input
             id="current_password"
             ref={currentPasswordInput}
             value={data.current_password}
             onChange={(e) => setData('current_password', e.target.value)}
             type="password"
-            className="mt-1 block w-full"
             autoComplete="current-password"
           />
+        </FormField>
 
-          <InputError message={errors.current_password} className="mt-2" />
-        </div>
-
-        <div>
-          <InputLabel htmlFor="password" value="Nova Senha" />
-
-          <TextInput
+        <FormField id="password" label="Nova senha" error={errors.password}>
+          <FormField.Input
             id="password"
             ref={passwordInput}
             value={data.password}
             onChange={(e) => setData('password', e.target.value)}
             type="password"
-            className="mt-1 block w-full"
             autoComplete="new-password"
           />
+        </FormField>
 
-          <InputError message={errors.password} className="mt-2" />
-        </div>
-
-        <div>
-          <InputLabel htmlFor="password_confirmation" value="Confirmar Senha" />
-
-          <TextInput
+        <FormField
+          id="password_confirmation"
+          label="Confirmar nova senha"
+          error={errors.password_confirmation}
+        >
+          <FormField.Input
             id="password_confirmation"
             value={data.password_confirmation}
             onChange={(e) => setData('password_confirmation', e.target.value)}
             type="password"
-            className="mt-1 block w-full"
             autoComplete="new-password"
           />
+        </FormField>
 
-          <InputError message={errors.password_confirmation} className="mt-2" />
-        </div>
-
-        <div className="flex items-center gap-4">
-          <PrimaryButton disabled={processing}>Salvar</PrimaryButton>
+        <FormActions className="items-center sm:justify-start">
+          <Button type="submit" loading={processing}>
+            Salvar
+          </Button>
 
           <Transition
             show={recentlySuccessful}
@@ -106,7 +96,7 @@ export default function UpdatePasswordForm({ className = '' }) {
           >
             <p className="text-sm text-gray-600 dark:text-gray-400">Salvo.</p>
           </Transition>
-        </div>
+        </FormActions>
       </form>
     </section>
   );

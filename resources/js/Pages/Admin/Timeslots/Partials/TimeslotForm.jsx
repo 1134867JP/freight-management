@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import AddressModal from './AddressModal';
 import FormField from '@/Components/UI/FormField';
+import Button from '@/Components/UI/Button';
 import { useClientValidation } from '@/hooks/useClientValidation';
 
 export default function TimeslotForm({ form, clients, addresses, produtos, docas, isEditing, onSubmit }) {
@@ -238,14 +239,13 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
                   </option>
                 ))}
               </select>
-              <button
-                type="button"
+              <Button
                 onClick={() => setShowAddressModal(true)}
                 title="Adicionar novo endereço"
-                className="inline-flex items-center justify-center rounded-md border border-teal-600 bg-teal-600 px-3 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+                className="shrink-0"
               >
                 +
-              </button>
+              </Button>
             </div>
           </FormField>
 
@@ -313,13 +313,13 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
 
         {/* Form Footer */}
         <div className="flex items-center gap-3 border-t border-gray-100 pt-6 dark:border-gray-700">
-          <button
+          <Button
             type="submit"
-            disabled={form.processing}
-            className="rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            loading={form.processing}
+            size="lg"
           >
             {isEditing ? 'Salvar alterações' : 'Criar Horário'}
-          </button>
+          </Button>
           {allErrors.submit && (
             <span className="text-sm text-red-600">{allErrors.submit}</span>
           )}

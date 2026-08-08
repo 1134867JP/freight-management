@@ -5,6 +5,10 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
+import FormActions from '@/Components/UI/FormActions';
+import StatusBadge from '@/Components/UI/StatusBadge';
+import TableShell from '@/Components/UI/TableShell';
+import Button from '@/Components/UI/Button';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 
@@ -59,9 +63,9 @@ export default function YardZones({ zones, tipos }) {
             <a href={route('admin.yard-map')} className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
               Ver Mapa
             </a>
-            <button type="button" onClick={() => setCreate(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
+            <Button onClick={() => setCreate(true)}>
               + Nova Zona
-            </button>
+            </Button>
           </div>
         }
       />
@@ -82,7 +86,7 @@ export default function YardZones({ zones, tipos }) {
               <EmptyState title="Nenhuma zona cadastrada." />
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <TableShell>
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
@@ -104,19 +108,17 @@ export default function YardZones({ zones, tipos }) {
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{z.spots_count ?? 0}</td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{z.ordem}</td>
                       <td className="px-4 py-3">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${z.is_active ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500'}`}>
-                          {z.is_active ? 'Sim' : 'Não'}
-                        </span>
+                        <StatusBadge label={z.is_active ? 'Ativa' : 'Inativa'} tone={z.is_active ? 'success' : 'neutral'} />
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <button onClick={() => startEdit(z)} className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                          <Button size="sm" variant="secondary" onClick={() => startEdit(z)}>
                             Editar
-                          </button>
+                          </Button>
                           {z.is_active && (
-                            <button onClick={() => handleDeactivate(z)} className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                            <Button size="sm" variant="danger" onClick={() => handleDeactivate(z)}>
                               Desativar
-                            </button>
+                            </Button>
                           )}
                         </div>
                       </td>
@@ -124,7 +126,7 @@ export default function YardZones({ zones, tipos }) {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableShell>
           )}
         </div>
       </div>
@@ -158,12 +160,12 @@ export default function YardZones({ zones, tipos }) {
           <FormField label="Descrição" error={errors.descricao}>
             <textarea className={`mt-1 block w-full ${FormField.inputClass(errors.descricao)}`} value={data.descricao} onChange={e => setData('descricao', e.target.value)} rows="2" />
           </FormField>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={resetForm} className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">Cancelar</button>
-            <button type="submit" disabled={processing} className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+          <FormActions>
+            <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
+            <Button type="submit" loading={processing} className="flex-1">
               {isEditing ? 'Salvar' : 'Criar'}
-            </button>
-          </div>
+            </Button>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>

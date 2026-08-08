@@ -1,4 +1,5 @@
-import PrimaryButton from '@/Components/PrimaryButton';
+import Button from '@/Components/UI/Button';
+import FormActions from '@/Components/UI/FormActions';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -13,34 +14,34 @@ export default function VerifyEmail({ status }) {
 
   return (
     <GuestLayout>
-      <Head title="Email Verification" />
+      <Head title="Verificar e-mail" />
 
       <div className="mb-4 text-sm text-gray-600">
-        Thanks for signing up! Before getting started, could you verify your email address by
-        clicking on the link we just emailed to you? If you didn't receive the email, we will gladly
-        send you another.
+        Antes de começar, confirme seu endereço de e-mail pelo link que enviamos. Caso não tenha
+        recebido, você pode solicitar um novo link.
       </div>
 
       {status === 'verification-link-sent' && (
-        <div className="mb-4 text-sm font-medium text-green-600">
-          A new verification link has been sent to the email address you provided during
-          registration.
+        <div role="status" className="mb-4 text-sm font-medium text-green-600">
+          Um novo link de verificação foi enviado para o seu endereço de e-mail.
         </div>
       )}
 
       <form onSubmit={submit}>
-        <div className="mt-4 flex items-center justify-between">
-          <PrimaryButton disabled={processing}>Resend Verification Email</PrimaryButton>
+        <FormActions className="mt-4 sm:justify-between">
+          <Button type="submit" loading={processing}>
+            Reenviar e-mail de verificação
+          </Button>
 
           <Link
             href={route('logout')}
             method="post"
             as="button"
-            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="self-center text-sm text-brand-600 hover:text-brand-700 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
           >
-            Log Out
+            Sair
           </Link>
-        </div>
+        </FormActions>
       </form>
     </GuestLayout>
   );

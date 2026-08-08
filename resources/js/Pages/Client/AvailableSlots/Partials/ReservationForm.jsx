@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { getTruckTypeLabel, normalizeTruckPlate } from '@/Features/Truck/utils/truckTypes';
 import FormField from '@/Components/UI/FormField';
 import ModalShell from '@/Components/UI/ModalShell';
+import Button from '@/Components/UI/Button';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { isValidBrPlate } from '@/utils/validation';
 
@@ -39,11 +40,9 @@ export default function ReservationForm({
   const [step, setStep] = useState(1);
   const [step1Errors, setStep1Errors] = useState({});
 
-  if (!selectedSlot) return null;
-
-  const blModeloAberta = !selectedSlot.modelo || selectedSlot.modelo === 'aberta';
-  const blTemProduto = selectedSlot.modelo === 'por_produto' || selectedSlot.modelo === 'por_produto_doca';
-  const blTemDoca = selectedSlot.modelo === 'por_produto_doca';
+  const blModeloAberta = !selectedSlot?.modelo || selectedSlot?.modelo === 'aberta';
+  const blTemProduto = selectedSlot?.modelo === 'por_produto' || selectedSlot?.modelo === 'por_produto_doca';
+  const blTemDoca = selectedSlot?.modelo === 'por_produto_doca';
   const blNeedsStep2 = blModeloAberta || data.operation_type === 'unload';
 
   const activeDrivers = Array.isArray(drivers) ? drivers.filter((d) => d.is_active) : [];
@@ -71,6 +70,8 @@ export default function ReservationForm({
       return null;
     },
   });
+
+  if (!selectedSlot) return null;
 
   const allErrors = { ...clientErrors, ...step1Errors, ...errors };
 
@@ -170,8 +171,9 @@ export default function ReservationForm({
             {/* truck selector */}
             <FormField label="Caminhão" error={allErrors.truck_plate} required>
               <div className="flex gap-2">
-                <select
-                  className={`flex-1 ${FormField.inputClass(allErrors.truck_plate)}`}
+                <FormField.Select
+                  error={allErrors.truck_plate}
+                  className="mt-0 flex-1"
                   value={data.truck_plate}
                   onChange={(e) => {
                     setData('truck_plate', normalizeTruckPlate(e.target.value));
@@ -185,15 +187,14 @@ export default function ReservationForm({
                       {t.plate} — {getTruckTypeLabel(t.type)}{t.model ? ` (${t.model})` : ''}
                     </option>
                   ))}
-                </select>
-                <button
-                  type="button"
+                </FormField.Select>
+                <Button
                   onClick={onOpenTruckModal}
                   title="Adicionar novo caminhão"
-                  className="rounded-lg border border-emerald-500 bg-emerald-500 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-600 transition-colors"
+                  className="shrink-0"
                 >
                   +
-                </button>
+                </Button>
               </div>
             </FormField>
 
@@ -244,29 +245,28 @@ export default function ReservationForm({
 
             {/* navigation */}
             <div className="flex gap-3 pt-2">
-              <button
-                type="button"
+              <Button
                 onClick={handleClose}
-                className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                variant="secondary"
+                className="flex-1"
               >
                 Cancelar
-              </button>
+              </Button>
               {blNeedsStep2 ? (
-                <button
-                  type="button"
+                <Button
                   onClick={handleNext}
-                  className="flex-1 rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors shadow-sm"
+                  className="flex-1"
                 >
                   Próximo →
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   type="submit"
-                  disabled={processing}
-                  className="flex-1 rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50 transition-colors shadow-sm"
+                  loading={processing}
+                  className="flex-1"
                 >
-                  {processing ? 'Enviando...' : 'Confirmar Reserva'}
-                </button>
+                  Confirmar Reserva
+                </Button>
               )}
             </div>
           </div>
@@ -322,20 +322,20 @@ export default function ReservationForm({
 
             {/* navigation */}
             <div className="flex gap-3 pt-2">
-              <button
-                type="button"
+              <Button
                 onClick={() => setStep(1)}
-                className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                variant="secondary"
+                className="flex-1"
               >
                 ← Voltar
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                disabled={processing}
-                className="flex-1 rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50 transition-colors shadow-sm"
+                loading={processing}
+                className="flex-1"
               >
-                {processing ? 'Enviando...' : 'Confirmar Reserva'}
-              </button>
+                Confirmar Reserva
+              </Button>
             </div>
           </div>
         )}

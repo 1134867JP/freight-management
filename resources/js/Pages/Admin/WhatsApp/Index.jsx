@@ -2,7 +2,10 @@ import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
+import Button from '@/Components/UI/Button';
+import StatusBadge from '@/Components/UI/StatusBadge';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
+import { formatDateTime } from '@/utils/formatters';
 import { Head, router, usePage } from '@inertiajs/react';
 
 export default function Index({ configured, instance }) {
@@ -71,7 +74,7 @@ export default function Index({ configured, instance }) {
                     {instance?.last_synced_at && (
                       <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">
                         Última sincronização:{' '}
-                        {new Date(instance.last_synced_at).toLocaleString('pt-BR')}
+                        {formatDateTime(instance.last_synced_at)}
                       </p>
                     )}
                   </div>
@@ -80,29 +83,25 @@ export default function Index({ configured, instance }) {
 
                 <div className="mt-6 flex flex-wrap gap-3">
                   {canSync && (
-                    <button
-                      type="button"
+                    <Button
                       onClick={handleSync}
-                      className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-gray-700 dark:hover:bg-gray-600"
                     >
                       Gerar QR Code
-                    </button>
+                    </Button>
                   )}
-                  <button
-                    type="button"
+                  <Button
                     onClick={handleRefresh}
-                    className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    variant="secondary"
                   >
                     Atualizar estado
-                  </button>
+                  </Button>
                   {instance && instance.connection_state !== 'open' && (
-                    <button
-                      type="button"
+                    <Button
                       onClick={handleDelete}
-                      className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                      variant="danger"
                     >
                       Excluir instância
-                    </button>
+                    </Button>
                   )}
                 </div>
               </section>
@@ -144,38 +143,36 @@ function ErrorRecovery({ message, action, instance, onRetry, onDelete }) {
       <div className="mt-4 flex flex-wrap gap-2">
         {deleteIsFirst ? (
           <>
-            <button
-              type="button"
+            <Button
               onClick={onDelete}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+              variant="danger"
             >
               Excluir instância
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               onClick={onRetry}
-              className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400"
+              variant="secondary"
+              className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
             >
               Tentar novamente
-            </button>
+            </Button>
           </>
         ) : (
           <>
-            <button
-              type="button"
+            <Button
               onClick={onRetry}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+              variant="danger"
             >
               Tentar novamente
-            </button>
+            </Button>
             {canDelete && (
-              <button
-                type="button"
+              <Button
                 onClick={onDelete}
-                className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 dark:border-red-700 dark:bg-transparent dark:text-red-400"
+                variant="secondary"
+                className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
               >
                 Excluir instância
-              </button>
+              </Button>
             )}
           </>
         )}
@@ -185,18 +182,7 @@ function ErrorRecovery({ message, action, instance, onRetry, onDelete }) {
 }
 
 function ConnectionBadge({ connected }) {
-  if (connected) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-        Conectado
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
-      Desconectado
-    </span>
-  );
+  return <StatusBadge label={connected ? 'Conectado' : 'Desconectado'} tone={connected ? 'success' : 'danger'} />;
 }
 
 function formatState(value) {

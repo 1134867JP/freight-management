@@ -1,7 +1,6 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import Button from '@/Components/UI/Button';
+import FormActions from '@/Components/UI/FormActions';
+import FormField from '@/Components/UI/FormField';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -23,89 +22,74 @@ export default function Register() {
 
   return (
     <GuestLayout>
-      <Head title="Register" />
+      <Head title="Criar conta" />
 
-      <form onSubmit={submit}>
-        <div>
-          <InputLabel htmlFor="name" value="Name" />
-
-          <TextInput
+      <form onSubmit={submit} className="space-y-4">
+        <FormField id="name" label="Nome" error={errors.name} required>
+          <FormField.Input
             id="name"
             name="name"
             value={data.name}
-            className="mt-1 block w-full"
             autoComplete="name"
-            isFocused={true}
+            autoFocus
             onChange={(e) => setData('name', e.target.value)}
             required
           />
+        </FormField>
 
-          <InputError message={errors.name} className="mt-2" />
-        </div>
-
-        <div className="mt-4">
-          <InputLabel htmlFor="email" value="Email" />
-
-          <TextInput
+        <FormField id="email" label="E-mail" error={errors.email} required>
+          <FormField.Input
             id="email"
             type="email"
             name="email"
             value={data.email}
-            className="mt-1 block w-full"
             autoComplete="username"
             onChange={(e) => setData('email', e.target.value)}
             required
           />
+        </FormField>
 
-          <InputError message={errors.email} className="mt-2" />
-        </div>
-
-        <div className="mt-4">
-          <InputLabel htmlFor="password" value="Password" />
-
-          <TextInput
+        <FormField id="password" label="Senha" error={errors.password} required>
+          <FormField.Input
             id="password"
             type="password"
             name="password"
             value={data.password}
-            className="mt-1 block w-full"
             autoComplete="new-password"
             onChange={(e) => setData('password', e.target.value)}
             required
           />
+        </FormField>
 
-          <InputError message={errors.password} className="mt-2" />
-        </div>
-
-        <div className="mt-4">
-          <InputLabel htmlFor="password_confirmation" value="Confirm Password" />
-
-          <TextInput
+        <FormField
+          id="password_confirmation"
+          label="Confirmar senha"
+          error={errors.password_confirmation}
+          required
+        >
+          <FormField.Input
             id="password_confirmation"
             type="password"
             name="password_confirmation"
             value={data.password_confirmation}
-            className="mt-1 block w-full"
             autoComplete="new-password"
             onChange={(e) => setData('password_confirmation', e.target.value)}
             required
           />
+        </FormField>
 
-          <InputError message={errors.password_confirmation} className="mt-2" />
-        </div>
-
-        <div className="mt-4 flex items-center justify-end">
+        <FormActions>
           <Link
             href={route('login')}
-            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="self-center text-sm text-brand-600 hover:text-brand-700 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
           >
-            Already registered?
+            Já possui uma conta?
           </Link>
 
-          <PrimaryButton className="ms-4" disabled={processing}>
-            Register
-          </PrimaryButton>
-        </div>
+          <Button type="submit" loading={processing}>
+            Criar conta
+          </Button>
+        </FormActions>
       </form>
     </GuestLayout>
   );

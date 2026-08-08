@@ -2,12 +2,18 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import EmptyState from '@/Components/UI/EmptyState';
 import PageHeader from '@/Components/UI/PageHeader';
-import { Head, router, usePage } from '@inertiajs/react';
+import Button from '@/Components/UI/Button';
+import FormField from '@/Components/UI/FormField';
+import Pagination from '@/Components/UI/Pagination';
+import StatusBadge from '@/Components/UI/StatusBadge';
+import TableShell from '@/Components/UI/TableShell';
+import { formatDateTime } from '@/utils/formatters';
+import { Head, router } from '@inertiajs/react';
 
 const ACTION_LABELS = {
-  created: { label: 'Inserção', class: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-  updated: { label: 'Atualização', class: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  deleted: { label: 'Exclusão', class: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  created: { label: 'Inserção', tone: 'success' },
+  updated: { label: 'Atualização', tone: 'info' },
+  deleted: { label: 'Exclusão', tone: 'danger' },
 };
 
 const MODEL_LABELS = {
@@ -19,12 +25,8 @@ const MODEL_LABELS = {
 };
 
 function ActionBadge({ action }) {
-  const cfg = ACTION_LABELS[action] || { label: action, class: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' };
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${cfg.class}`}>
-      {cfg.label}
-    </span>
-  );
+  const cfg = ACTION_LABELS[action] || { label: action, tone: 'neutral' };
+  return <StatusBadge label={cfg.label} tone={cfg.tone} />;
 }
 
 function DiffCell({ old: oldVal, new: newVal }) {
@@ -98,85 +100,70 @@ export default function AuditLogs({ logs, filters }) {
             className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
           >
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Ação</label>
-                <select
+              <FormField label="Ação">
+                <FormField.Select
                   value={form.action}
                   onChange={(e) => setForm({ ...form, action: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 >
                   <option value="">Todas</option>
                   <option value="created">Inserção</option>
                   <option value="updated">Atualização</option>
                   <option value="deleted">Exclusão</option>
-                </select>
-              </div>
+                </FormField.Select>
+              </FormField>
 
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Entidade</label>
-                <select
+              <FormField label="Entidade">
+                <FormField.Select
                   value={form.model_type}
                   onChange={(e) => setForm({ ...form, model_type: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 >
                   <option value="">Todas</option>
                   {Object.entries(MODEL_LABELS).map(([val, lbl]) => (
                     <option key={val} value={val}>{lbl}</option>
                   ))}
-                </select>
-              </div>
+                </FormField.Select>
+              </FormField>
 
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Usuário</label>
-                <input
+              <FormField label="Usuário">
+                <FormField.Input
                   type="text"
                   value={form.user_name}
                   onChange={(e) => setForm({ ...form, user_name: e.target.value })}
                   placeholder="Nome..."
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">De</label>
-                <input
+              <FormField label="De">
+                <FormField.Input
                   type="date"
                   value={form.date_from}
                   onChange={(e) => setForm({ ...form, date_from: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Até</label>
-                <input
+              <FormField label="Até">
+                <FormField.Input
                   type="date"
                   value={form.date_to}
                   onChange={(e) => setForm({ ...form, date_to: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                 />
-              </div>
+              </FormField>
             </div>
 
             <div className="mt-3 flex gap-2">
-              <button
-                type="submit"
-                className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-              >
-                Filtrar
-              </button>
-              <button
-                type="button"
+              <Button type="submit" size="sm">Filtrar</Button>
+              <Button
                 onClick={clearFilters}
-                className="rounded-md border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                size="sm"
+                variant="secondary"
               >
                 Limpar
-              </button>
+              </Button>
             </div>
           </form>
 
           {/* Tabela */}
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {items.length === 0 ? (
               <div className="p-6">
                 <EmptyState title="Nenhum log encontrado." />
@@ -197,7 +184,7 @@ export default function AuditLogs({ logs, filters }) {
                   {items.map((log) => (
                     <tr key={log.id} className="align-top hover:bg-gray-50 dark:hover:bg-gray-700/40">
                       <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                        {new Date(log.created_at).toLocaleString('pt-BR')}
+                        {formatDateTime(log.created_at)}
                       </td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                         {log.user_name || '—'}
@@ -219,30 +206,10 @@ export default function AuditLogs({ logs, filters }) {
                 </tbody>
               </table>
             )}
-          </div>
+          </TableShell>
 
           {/* Paginação */}
-          {last_page > 1 && (
-            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-              <span>Página {current_page} de {last_page}</span>
-              <div className="flex gap-1">
-                {links.map((link, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    disabled={!link.url}
-                    onClick={() => link.url && router.get(link.url, {}, { preserveScroll: true })}
-                    className={`rounded px-3 py-1 text-xs font-medium ${
-                      link.active
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                    } disabled:opacity-40 disabled:cursor-not-allowed`}
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          <Pagination links={links} currentPage={current_page} lastPage={last_page} />
 
         </div>
       </div>

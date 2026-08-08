@@ -5,6 +5,10 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
+import FormActions from '@/Components/UI/FormActions';
+import IconButton from '@/Components/UI/IconButton';
+import StatusBadge from '@/Components/UI/StatusBadge';
+import TableShell from '@/Components/UI/TableShell';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 import Button from '@/Components/UI/Button';
@@ -139,7 +143,7 @@ export default function Produtos({ produtos }) {
             </div>
           )}
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {arrProdutos.length === 0 ? (
               <div className="p-8">
                 <EmptyState
@@ -172,32 +176,25 @@ export default function Produtos({ produtos }) {
                           {objProduto.descricao || <span className="italic text-gray-400 dark:text-gray-500">—</span>}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${
-                            objProduto.is_active
-                              ? 'bg-green-50 text-green-700 ring-green-200 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-800'
-                              : 'bg-gray-100 text-gray-500 ring-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:ring-gray-600'
-                          }`}>
-                            {objProduto.is_active ? 'Ativo' : 'Inativo'}
-                          </span>
+                          <StatusBadge
+                            label={objProduto.is_active ? 'Ativo' : 'Inativo'}
+                            tone={objProduto.is_active ? 'success' : 'neutral'}
+                          />
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
+                            <IconButton
                               onClick={() => startEdit(objProduto)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
-                            >
-                              <IconEdit />
-                              Editar
-                            </button>
-                            <button
-                              type="button"
+                              icon={<IconEdit />}
+                              label={`Editar ${objProduto.nome}`}
+                              variant="secondary"
+                            />
+                            <IconButton
                               onClick={() => handleDelete(objProduto)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
-                            >
-                              <IconTrash />
-                              Excluir
-                            </button>
+                              icon={<IconTrash />}
+                              label={`Excluir ${objProduto.nome}`}
+                              variant="danger"
+                            />
                           </div>
                         </td>
                       </tr>
@@ -206,7 +203,7 @@ export default function Produtos({ produtos }) {
                 </table>
               </div>
             )}
-          </div>
+          </TableShell>
         </div>
       </div>
 
@@ -247,10 +244,10 @@ export default function Produtos({ produtos }) {
             </label>
           </FormField>
 
-          <div className="flex gap-3 pt-2">
+          <FormActions>
             <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
             <Button type="submit" variant="primary" className="flex-1" loading={processing}>{blIsEditing ? 'Salvar' : 'Criar'}</Button>
-          </div>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>

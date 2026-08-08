@@ -1,10 +1,14 @@
 import React, { useRef, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Button from '@/Components/UI/Button';
 import EmptyState from '@/Components/UI/EmptyState';
 import FlashMessages from '@/Components/UI/FlashMessages';
+import FormField from '@/Components/UI/FormField';
 import ModalShell from '@/Components/UI/ModalShell';
+import Pagination from '@/Components/UI/Pagination';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import TableShell from '@/Components/UI/TableShell';
 import QrCodeDisplay from '@/Components/UI/QrCodeDisplay';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import {
@@ -12,10 +16,14 @@ import {
   translateFreightStatus,
   translateOperationType,
 } from '@/Features/Freight/utils/freightPresentation';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { FREIGHT_STATUS_CONFIG } from '@/utils/statusPresentation';
+import { formatDate, formatDateTime, formatTime, formatWeight } from '@/utils/formatters';
+import { Head, Link, router } from '@inertiajs/react';
 
 const baseChip =
   'inline-flex items-center rounded px-2 py-1 text-xs font-medium';
+
+const freightStatusOptions = Object.entries(FREIGHT_STATUS_CONFIG);
 
 function AttachmentsCell({ freight, onUploadNF }) {
   const fileRef = useRef(null);
@@ -122,9 +130,6 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
   const canReopen = (freight) => freight.status === 'cancelled';
   const hasActions = (freight) => canCancel(freight) || canReopen(freight);
 
-  const btnBase =
-    'inline-flex items-center justify-center rounded-md border px-2.5 py-1.5 text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 whitespace-nowrap';
-
   return (
     <AuthenticatedLayout
       header={<PageHeader title="Minhas Reservas" subtitle="Acompanhe e gerencie seus fretes" />}
@@ -141,66 +146,60 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
             className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
           >
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">De</label>
-                <input
+              <FormField label="De">
+                <FormField.Input
                   type="date"
                   value={form.date_from}
                   onChange={(e) => setForm({ ...form, date_from: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="mt-0 w-full py-1.5"
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Até</label>
-                <input
+              </FormField>
+              <FormField label="Até">
+                <FormField.Input
                   type="date"
                   value={form.date_to}
                   onChange={(e) => setForm({ ...form, date_to: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="mt-0 w-full py-1.5"
                 />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Operação</label>
-                <select
+              </FormField>
+              <FormField label="Operação">
+                <FormField.Select
                   value={form.operation_type}
                   onChange={(e) => setForm({ ...form, operation_type: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="mt-0 w-full py-1.5"
                 >
                   <option value="">Todas</option>
                   <option value="load">Carga</option>
                   <option value="unload">Descarga</option>
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">Status</label>
-                <select
+                </FormField.Select>
+              </FormField>
+              <FormField label="Status">
+                <FormField.Select
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="mt-0 w-full py-1.5"
                 >
                   <option value="">Todos</option>
-                  <option value="reserved">Reservado</option>
-                  <option value="loading">Carregando</option>
-                  <option value="unloading">Descarregando</option>
-                  <option value="completed">Finalizado</option>
-                  <option value="cancelled">Cancelado</option>
-                </select>
-              </div>
+                  {freightStatusOptions.map(([value, presentation]) => (
+                    <option key={value} value={value}>{presentation.label}</option>
+                  ))}
+                </FormField.Select>
+              </FormField>
             </div>
             <div className="mt-3 flex gap-2">
-              <button
+              <Button
                 type="submit"
-                className="rounded-md bg-teal-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-teal-800"
+                size="sm"
               >
                 Filtrar
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 onClick={clearFilters}
-                className="rounded-md border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                variant="secondary"
+                size="sm"
               >
                 Limpar
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -214,7 +213,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
               }
             />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+            <TableShell className="shadow-none">
               <table className="min-w-full table-fixed text-left">
                 <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/60">
                   <tr>
@@ -240,10 +239,10 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                         {freight.timeslot
                           ? <>
                               <p className="font-medium text-gray-900 dark:text-gray-100">
-                                {new Date(freight.timeslot.start_time).toLocaleDateString('pt-BR')}
+                                {formatDate(freight.timeslot.start_time)}
                               </p>
                               <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {new Date(freight.timeslot.start_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                {formatTime(freight.timeslot.start_time)}
                               </p>
                             </>
                           : <span className="text-xs text-gray-400 dark:text-gray-500">Horário excluído</span>}
@@ -262,8 +261,8 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                       </td>
 
                       <td className="px-4 py-4 align-top text-sm text-gray-600">
-                        <p>B: <span className="font-medium text-gray-800 dark:text-gray-200">{freight.gross_weight ? `${freight.gross_weight} kg` : '—'}</span></p>
-                        <p>L: <span className="font-medium text-gray-800 dark:text-gray-200">{freight.net_weight ? `${freight.net_weight} kg` : '—'}</span></p>
+                        <p>B: <span className="font-medium text-gray-800 dark:text-gray-200">{formatWeight(freight.gross_weight)}</span></p>
+                        <p>L: <span className="font-medium text-gray-800 dark:text-gray-200">{formatWeight(freight.net_weight)}</span></p>
                       </td>
 
                       <AttachmentsCell freight={freight} onUploadNF={uploadNotaFiscal} />
@@ -283,8 +282,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                       <td className="px-4 py-4 align-top text-sm">
                         <div className="flex flex-wrap gap-2">
                           {canCancel(freight) && (
-                            <button
-                              type="button"
+                            <Button
                               onClick={async () => {
                                 const ok = await confirm('Tem certeza que deseja cancelar esta reserva?');
                                 if (ok) {
@@ -293,15 +291,16 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                                   });
                                 }
                               }}
-                              className={`${btnBase} border-red-600 bg-white text-red-600 hover:bg-red-50 focus:ring-red-500 dark:bg-transparent dark:hover:bg-red-950/40`}
+                              variant="secondary"
+                              size="sm"
+                              className="border-red-600 bg-white text-red-600 hover:bg-red-50 focus:ring-red-500 dark:bg-transparent dark:hover:bg-red-950/40"
                             >
                               Cancelar
-                            </button>
+                            </Button>
                           )}
 
                           {canReopen(freight) && (
-                            <button
-                              type="button"
+                            <Button
                               onClick={async () => {
                                 const ok = await confirm('Deseja reabrir esta reserva cancelada?');
                                 if (ok) {
@@ -312,20 +311,19 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                                   );
                                 }
                               }}
-                              className={`${btnBase} border-teal-700 bg-teal-700 text-white hover:bg-teal-800 focus:ring-teal-500`}
+                              size="sm"
                             >
                               Reabrir
-                            </button>
+                            </Button>
                           )}
 
                           {freight.qr_token && (
-                            <button
-                              type="button"
+                            <Button
                               onClick={() => setQrFreight(freight)}
-                              className={`${btnBase} border-teal-600 bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500`}
+                              size="sm"
                             >
                               QR
-                            </button>
+                            </Button>
                           )}
 
                           {!hasActions(freight) && !freight.qr_token && (
@@ -337,7 +335,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableShell>
           )}
 
           {freightsPaginated?.links?.length > 3 && (
@@ -345,23 +343,11 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {freightsPaginated.from}–{freightsPaginated.to} de {freightsPaginated.total} reservas
               </p>
-              <div className="flex flex-wrap gap-1">
-                {freightsPaginated.links.map((link, i) => (
-                  <button
-                    key={i}
-                    disabled={!link.url || link.active}
-                    onClick={() => link.url && router.get(link.url, {}, { preserveState: true })}
-                    className={`min-w-[2rem] rounded px-2 py-1 text-sm ${
-                      link.active
-                        ? 'bg-teal-600 font-semibold text-white'
-                        : link.url
-                        ? 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                        : 'cursor-default border border-gray-200 bg-white text-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600'
-                    }`}
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                  />
-                ))}
-              </div>
+              <Pagination
+                links={freightsPaginated.links}
+                currentPage={freightsPaginated.current_page}
+                lastPage={freightsPaginated.last_page}
+              />
             </div>
           )}
         </div>
@@ -386,7 +372,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
               <p className="text-center text-xs text-gray-500 dark:text-gray-400">{qrFreight.driver_name}</p>
               {qrFreight.timeslot && (
                 <p className="mt-1 text-center text-xs text-gray-500 dark:text-gray-400">
-                  {new Date(qrFreight.timeslot.start_time).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                  {formatDateTime(qrFreight.timeslot.start_time)}
                 </p>
               )}
             </div>

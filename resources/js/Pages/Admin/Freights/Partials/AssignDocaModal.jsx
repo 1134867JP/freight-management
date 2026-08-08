@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ModalShell from '@/Components/UI/ModalShell';
+import Button from '@/Components/UI/Button';
 import { router } from '@inertiajs/react';
 
 export default function AssignDocaModal({ open, freight, docasDisponiveis, onClose }) {
@@ -82,20 +83,21 @@ export default function AssignDocaModal({ open, freight, docasDisponiveis, onClo
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
-              type="button"
+            <Button
               onClick={handleClose}
-              className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              variant="secondary"
+              className="flex-1"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              disabled={!selectedDocaId || processing}
-              className="flex-1 rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              disabled={!selectedDocaId}
+              loading={processing}
+              className="flex-1"
             >
-              {processing ? 'Atribuindo...' : 'Atribuir'}
-            </button>
+              Atribuir
+            </Button>
           </div>
         </form>
       )}

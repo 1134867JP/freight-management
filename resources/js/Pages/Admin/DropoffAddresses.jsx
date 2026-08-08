@@ -6,6 +6,9 @@ import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
 import FormField from '@/Components/UI/FormField';
+import FormActions from '@/Components/UI/FormActions';
+import IconButton from '@/Components/UI/IconButton';
+import TableShell from '@/Components/UI/TableShell';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { useClientValidation } from '@/hooks/useClientValidation';
 import { Head, useForm, router } from '@inertiajs/react';
@@ -151,7 +154,7 @@ export default function DropoffAddresses({ addresses }) {
             </div>
           )}
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <TableShell>
             {addressesList.length === 0 ? (
               <div className="p-8">
                 <EmptyState title="Nenhum endereço cadastrado." />
@@ -202,22 +205,18 @@ export default function DropoffAddresses({ addresses }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
+                            <IconButton
                               onClick={() => startEdit(address)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-xs font-semibold text-teal-700 transition hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-400 dark:hover:bg-teal-900/40"
-                            >
-                              <IconEdit />
-                              Editar
-                            </button>
-                            <button
-                              type="button"
+                              icon={<IconEdit />}
+                              label={`Editar ${address.name}`}
+                              variant="secondary"
+                            />
+                            <IconButton
                               onClick={() => deleteAddress(address.id)}
-                              className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
-                            >
-                              <IconTrash />
-                              Excluir
-                            </button>
+                              icon={<IconTrash />}
+                              label={`Excluir ${address.name}`}
+                              variant="danger"
+                            />
                           </div>
                         </td>
                       </tr>
@@ -226,7 +225,7 @@ export default function DropoffAddresses({ addresses }) {
                 </table>
               </div>
             )}
-          </div>
+          </TableShell>
         </div>
       </div>
 
@@ -341,10 +340,10 @@ export default function DropoffAddresses({ addresses }) {
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <FormActions>
             <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
             <Button type="submit" variant="primary" className="flex-1" loading={processing}>{isEditing ? 'Atualizar' : 'Criar'}</Button>
-          </div>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>

@@ -1,10 +1,10 @@
 import React from 'react';
 
-function FormField({ label, error, hint, required, children, className = '' }) {
+function FormField({ id, label, error, hint, required, children, className = '' }) {
   return (
     <div className={className}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
           {required && <span className="ml-1 text-red-500">*</span>}
         </label>
@@ -37,18 +37,28 @@ FormField.inputClass = function inputClass(error, extra = '') {
   const state = error
     ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-red-200 dark:border-red-500 dark:bg-red-900/20 dark:text-gray-100'
     : 'border-gray-200 focus:border-teal-500 focus:ring-teal-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:focus:border-teal-400';
-  return ['rounded-lg border px-3 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2', state, extra].filter(Boolean).join(' ');
+  return [
+    'rounded-lg border px-3 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2',
+    state,
+    extra,
+  ]
+    .filter(Boolean)
+    .join(' ');
 };
 
-FormField.Input = function Input({ error, className = '', ...props }) {
+FormField.Input = React.forwardRef(function FormFieldInput(
+  { error, className = '', ...props },
+  ref,
+) {
   return (
     <input
+      ref={ref}
       className={`mt-1 block w-full ${FormField.inputClass(error, className)}`}
       aria-invalid={Boolean(error)}
       {...props}
     />
   );
-};
+});
 
 FormField.Select = function Select({ error, className = '', children, ...props }) {
   return (

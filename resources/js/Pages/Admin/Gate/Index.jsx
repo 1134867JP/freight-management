@@ -1,7 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
+import Button from '@/Components/UI/Button';
 import { Head, router } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
+import { formatTime } from '@/utils/formatters';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -12,11 +14,6 @@ function useNow() {
     return () => clearInterval(id);
   }, []);
   return now;
-}
-
-function fmtTime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
 function elapsedMin(isoFrom, now) {
@@ -123,13 +120,9 @@ function QrLookupPanel() {
           className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 font-mono text-sm focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           autoFocus
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="shrink-0 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 disabled:opacity-50 transition-colors"
-        >
-          {loading ? '...' : 'Buscar'}
-        </button>
+        <Button type="submit" loading={loading} className="shrink-0">
+          Buscar
+        </Button>
 
         {/* resultado inline */}
         {error && (
@@ -142,12 +135,12 @@ function QrLookupPanel() {
               <p className="text-[11px] text-gray-500">{result.driver_name} · {result.status_label}</p>
             </div>
             {result.status === 'reserved' ? (
-              <button
+              <Button
                 onClick={doCheckIn}
-                className="shrink-0 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors"
+                size="sm"
               >
                 ✓ Check-in
-              </button>
+              </Button>
             ) : (
               <span className="rounded-full bg-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                 {result.status_label}
@@ -214,7 +207,7 @@ function FreightCard({ freight, action, now }) {
             <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2"/>
             <path d="M6 3v3l2 1" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
           </svg>
-          {freight.timeslot ? fmtTime(freight.timeslot.start_time) : '—'}
+          {formatTime(freight.timeslot?.start_time)}
         </div>
         {waitMin !== null && (
           <span className={`text-[11px] font-bold ${

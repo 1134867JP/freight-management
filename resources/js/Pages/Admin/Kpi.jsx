@@ -1,5 +1,7 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Button from '@/Components/UI/Button';
+import PageHeader from '@/Components/UI/PageHeader';
 import { Head, router } from '@inertiajs/react';
 
 function StatCard({ label, value, unit, sub, color = 'text-gray-900 dark:text-gray-100', border = 'border-gray-200 dark:border-gray-700' }) {
@@ -15,7 +17,7 @@ function StatCard({ label, value, unit, sub, color = 'text-gray-900 dark:text-gr
   );
 }
 
-function BarChart({ data, maxVal, label }) {
+function BarChart({ data, maxVal }) {
   if (!data || Object.keys(data).length === 0) {
     return <p className="text-sm italic text-gray-400 dark:text-gray-500">Sem dados no período.</p>;
   }
@@ -82,19 +84,24 @@ export default function Kpi({ kpis, period }) {
 
   return (
     <AuthenticatedLayout header={
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">KPIs do Pátio</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Indicadores de desempenho operacional</p>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader
+        title="KPIs do Pátio"
+        subtitle="Indicadores de desempenho operacional"
+        actions={
+          <div className="flex gap-2">
           {[7, 14, 30].map(d => (
-            <button key={d} onClick={() => changePeriod(d)} className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${period === d ? 'bg-teal-600 text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
+            <Button
+              key={d}
+              onClick={() => changePeriod(d)}
+              size="sm"
+              variant={period === d ? 'primary' : 'secondary'}
+            >
               {d}d
-            </button>
+            </Button>
           ))}
-        </div>
-      </div>
+          </div>
+        }
+      />
     }>
       <Head title="KPIs do Pátio" />
 

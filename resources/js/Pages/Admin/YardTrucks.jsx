@@ -5,13 +5,13 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
+import FormActions from '@/Components/UI/FormActions';
+import StatusBadge from '@/Components/UI/StatusBadge';
+import TableShell from '@/Components/UI/TableShell';
+import Button from '@/Components/UI/Button';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
-
-const STATUS_CFG = {
-  available: { label: 'Disponível', cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-  busy:      { label: 'Em operação', cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-};
+import { getStatusPresentation } from '@/utils/statusPresentation';
 
 export default function YardTrucks({ trucks, operators }) {
   const confirm = useConfirm();
@@ -54,9 +54,9 @@ export default function YardTrucks({ trucks, operators }) {
         title="Cavalos Mecânicos de Pátio"
         subtitle="Veículos internos para movimentação de trailers"
         actions={
-          <button type="button" onClick={() => setCreate(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
+          <Button onClick={() => setCreate(true)}>
             + Novo Cavalo
-          </button>
+          </Button>
         }
       />
     }>
@@ -87,7 +87,7 @@ export default function YardTrucks({ trucks, operators }) {
               <EmptyState title="Nenhum cavalo mecânico cadastrado." />
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <TableShell>
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
@@ -97,39 +97,34 @@ export default function YardTrucks({ trucks, operators }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {arrTrucks.map(t => {
-                    const cfg = STATUS_CFG[t.status] || STATUS_CFG.available;
-                    return (
+                  {arrTrucks.map(t => (
                       <tr key={t.id} className={`hover:bg-gray-50/70 dark:hover:bg-gray-700/50 ${!t.is_active ? 'opacity-50' : ''}`}>
                         <td className="px-4 py-3 font-mono font-bold text-gray-900 dark:text-gray-100">{t.identificador}</td>
                         <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{t.modelo || <span className="italic text-gray-400">—</span>}</td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${cfg.cls}`}>{cfg.label}</span>
+                          <StatusBadge {...getStatusPresentation('yardTruck', t.status)} />
                         </td>
                         <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{t.operador?.name || <span className="italic text-gray-400">—</span>}</td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${t.is_active ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500'}`}>
-                            {t.is_active ? 'Sim' : 'Não'}
-                          </span>
+                          <StatusBadge label={t.is_active ? 'Ativo' : 'Inativo'} tone={t.is_active ? 'success' : 'neutral'} />
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
-                            <button onClick={() => startEdit(t)} className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                            <Button size="sm" variant="secondary" onClick={() => startEdit(t)}>
                               Editar
-                            </button>
+                            </Button>
                             {t.is_active && (
-                              <button onClick={() => handleDeactivate(t)} className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                              <Button size="sm" variant="danger" onClick={() => handleDeactivate(t)}>
                                 Desativar
-                              </button>
+                              </Button>
                             )}
                           </div>
                         </td>
                       </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
-            </div>
+            </TableShell>
           )}
         </div>
       </div>
@@ -159,12 +154,12 @@ export default function YardTrucks({ trucks, operators }) {
               <span className="text-sm text-gray-700 dark:text-gray-300">Ativo</span>
             </label>
           </FormField>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={resetForm} className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200">Cancelar</button>
-            <button type="submit" disabled={processing} className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+          <FormActions>
+            <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
+            <Button type="submit" loading={processing} className="flex-1">
               {isEditing ? 'Salvar' : 'Criar'}
-            </button>
-          </div>
+            </Button>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>

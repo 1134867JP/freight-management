@@ -5,20 +5,13 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import ModalShell from '@/Components/UI/ModalShell';
 import PageHeader from '@/Components/UI/PageHeader';
 import FormField from '@/Components/UI/FormField';
+import FormActions from '@/Components/UI/FormActions';
+import StatusBadge from '@/Components/UI/StatusBadge';
+import TableShell from '@/Components/UI/TableShell';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, useForm, router } from '@inertiajs/react';
 import Button from '@/Components/UI/Button';
-
-function DocaIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="7" width="20" height="14" rx="2" />
-      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-      <line x1="12" y1="12" x2="12" y2="16" />
-      <line x1="10" y1="14" x2="14" y2="14" />
-    </svg>
-  );
-}
+import { getStatusPresentation } from '@/utils/statusPresentation';
 
 function IconEdit() {
   return (
@@ -35,22 +28,6 @@ function IconOff() {
       <path d="M18.36 6.64A9 9 0 1 1 5.64 19.36" />
       <line x1="2" y1="2" x2="22" y2="22" />
     </svg>
-  );
-}
-
-const STATUS_CONFIG = {
-  available:   { label: 'Disponível', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', ring: 'ring-green-300 dark:ring-green-700', dot: 'bg-green-500' },
-  occupied:    { label: 'Ocupada',    bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', ring: 'ring-amber-300 dark:ring-amber-700',  dot: 'bg-amber-500' },
-  maintenance: { label: 'Manutenção', bg: 'bg-gray-100 dark:bg-gray-700/40',   text: 'text-gray-600 dark:text-gray-400',  ring: 'ring-gray-300 dark:ring-gray-600',   dot: 'bg-gray-400' },
-};
-
-function StatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.available;
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${cfg.bg} ${cfg.text} ${cfg.ring}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-      {cfg.label}
-    </span>
   );
 }
 
@@ -178,21 +155,19 @@ export default function Docas({ docas }) {
               </h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 {arrDocas.filter(d => d.is_active).map((objDoca) => {
-                  const cfg = STATUS_CONFIG[objDoca.status] ?? STATUS_CONFIG.available;
-                  const freightInfo = objDoca.status === 'occupied' && objDoca.freights?.[0];
+                  const presentation = getStatusPresentation('dock', objDoca.status);
                   return (
                     <div
                       key={objDoca.id}
-                      className={`rounded-xl border p-4 shadow-sm ${cfg.bg} border-opacity-50`}
+                      className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className={`text-xs font-bold uppercase tracking-wide ${cfg.text}`}>{objDoca.codigo}</p>
+                          <p className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">{objDoca.codigo}</p>
                           <p className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100">{objDoca.nome}</p>
                         </div>
-                        <span className={`mt-0.5 h-3 w-3 shrink-0 rounded-full ${cfg.dot}`} />
+                        <StatusBadge label={presentation.label} tone={presentation.tone} />
                       </div>
-                      <p className={`mt-2 text-xs font-medium ${cfg.text}`}>{cfg.label}</p>
                     </div>
                   );
                 })}
@@ -210,7 +185,7 @@ export default function Docas({ docas }) {
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Gerenciamento
               </h2>
-              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <TableShell>
                 <table className="min-w-full text-left text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
@@ -231,7 +206,7 @@ export default function Docas({ docas }) {
                         <td className="px-4 py-3 font-mono text-xs font-bold text-gray-700 dark:text-gray-300">{objDoca.codigo}</td>
                         <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{objDoca.nome}</td>
                         <td className="px-4 py-3">
-                          <StatusBadge status={objDoca.status} />
+                          <StatusBadge {...getStatusPresentation('dock', objDoca.status)} />
                         </td>
                         <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
                           {objDoca.descricao
@@ -240,29 +215,27 @@ export default function Docas({ docas }) {
                           }
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${objDoca.is_active ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
-                            {objDoca.is_active ? 'Sim' : 'Não'}
-                          </span>
+                          <StatusBadge label={objDoca.is_active ? 'Ativa' : 'Inativa'} tone={objDoca.is_active ? 'success' : 'neutral'} />
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <button
-                              type="button"
+                            <Button
                               onClick={() => startEdit(objDoca)}
-                              className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                              size="sm"
+                              variant="secondary"
                             >
                               <IconEdit />
                               Editar
-                            </button>
+                            </Button>
                             {objDoca.is_active && (
-                              <button
-                                type="button"
+                              <Button
                                 onClick={() => handleDeactivate(objDoca)}
-                                className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                                size="sm"
+                                variant="danger"
                               >
                                 <IconOff />
                                 Desativar
-                              </button>
+                              </Button>
                             )}
                           </div>
                         </td>
@@ -270,7 +243,7 @@ export default function Docas({ docas }) {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableShell>
             </div>
           )}
         </div>
@@ -341,10 +314,10 @@ export default function Docas({ docas }) {
             </label>
           </FormField>
 
-          <div className="flex gap-3 pt-2">
+          <FormActions>
             <Button variant="secondary" className="flex-1" onClick={resetForm}>Cancelar</Button>
             <Button type="submit" variant="primary" className="flex-1" loading={processing}>{blIsEditing ? 'Salvar' : 'Criar'}</Button>
-          </div>
+          </FormActions>
         </form>
       </ModalShell>
     </AuthenticatedLayout>

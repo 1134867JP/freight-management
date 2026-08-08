@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from '@/Components/UI/Button';
 import { translateTimeslotOperationType } from '@/Features/Timeslot/utils/timeslotPresentation';
 
 function getOccupationPercent(objSlot) {
@@ -138,17 +139,12 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
         </div>
       </div>
 
-      <button
-        type="button"
+      <Button
         onClick={() => onReserve(slot)}
-        className={`mt-4 inline-flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-semibold transition ${
-          selected
-            ? 'bg-teal-800 text-white hover:bg-teal-900'
-            : 'bg-teal-700 text-white hover:bg-teal-800'
-        }`}
+        className="mt-4 w-full"
       >
         {selected ? 'Horário selecionado' : 'Reservar horário'}
-      </button>
+      </Button>
     </article>
   );
 }

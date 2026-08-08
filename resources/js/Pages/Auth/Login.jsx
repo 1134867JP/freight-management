@@ -1,7 +1,5 @@
-import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
+import Button from '@/Components/UI/Button';
+import FormField from '@/Components/UI/FormField';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -24,44 +22,44 @@ export default function Login({ status, canResetPassword }) {
     <GuestLayout>
       <Head title="Log in" />
 
-      {status && <div className="mb-4 text-sm font-medium text-green-600">{status}</div>}
+      {status && (
+        <div role="status" className="mb-4 text-sm font-medium text-green-600">
+          {status}
+        </div>
+      )}
 
       <form onSubmit={submit} className="space-y-5" noValidate>
-        <div>
-          <InputLabel htmlFor="email" value="E-mail" />
-          <TextInput
+        <FormField id="email" label="E-mail" error={errors.email}>
+          <FormField.Input
             id="email"
             type="email"
             name="email"
             value={data.email}
-            className="mt-1.5 block w-full rounded-lg border-gray-200 text-sm shadow-none focus:border-blue-500 focus:ring-blue-500"
             autoComplete="username"
-            isFocused={true}
+            autoFocus
             onChange={(e) => setData('email', e.target.value)}
           />
-          <InputError message={errors.email} className="mt-1.5" />
-        </div>
+        </FormField>
 
-        <div>
-          <InputLabel htmlFor="password" value="Senha" />
-          <TextInput
+        <FormField id="password" label="Senha" error={errors.password}>
+          <FormField.Input
             id="password"
             type="password"
             name="password"
             value={data.password}
-            className="mt-1.5 block w-full rounded-lg border-gray-200 text-sm shadow-none focus:border-blue-500 focus:ring-blue-500"
             autoComplete="current-password"
             onChange={(e) => setData('password', e.target.value)}
           />
-          <InputError message={errors.password} className="mt-1.5" />
-        </div>
+        </FormField>
 
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer">
-            <Checkbox
+            <input
+              type="checkbox"
               name="remember"
               checked={data.remember}
               onChange={(e) => setData('remember', e.target.checked)}
+              className="rounded border-gray-300 text-brand-600 shadow-sm focus:ring-brand-500"
             />
             <span className="text-sm text-gray-500">Lembra-me</span>
           </label>
@@ -69,20 +67,16 @@ export default function Login({ status, canResetPassword }) {
           {canResetPassword && (
             <Link
               href={route('password.request')}
-              className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+              className="text-sm text-brand-600 hover:text-brand-700 hover:underline"
             >
               Esqueceu a senha?
             </Link>
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={processing}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {processing ? 'Entrando…' : 'Entrar'}
-        </button>
+        <Button type="submit" loading={processing} className="w-full">
+          Entrar
+        </Button>
       </form>
     </GuestLayout>
   );
