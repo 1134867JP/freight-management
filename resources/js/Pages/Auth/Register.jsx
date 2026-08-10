@@ -24,6 +24,12 @@ export default function Register() {
     <GuestLayout>
       <Head title="Criar conta" />
 
+      <div className="mb-7">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Novo acesso</p>
+        <h1 className="mt-2 text-2xl font-bold tracking-[-0.025em] text-slate-950">Criar conta</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-500">Cadastre seus dados de acesso ao CargoHub.</p>
+      </div>
+
       <form onSubmit={submit} className="space-y-4">
         <FormField id="name" label="Nome" error={errors.name} required>
           <FormField.Input

@@ -23,9 +23,9 @@ export default function Login({ status, canResetPassword }) {
       <Head title="Entrar" />
 
       <div className="mb-7">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600">Bem-vindo de volta</p>
-        <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-950">Acesse sua operação</h1>
-        <p className="mt-2 text-sm leading-relaxed text-slate-500">Use suas credenciais para entrar no CargoHub.</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Acesso ao sistema</p>
+        <h1 className="mt-2 text-2xl font-bold tracking-[-0.025em] text-slate-950">Entrar no CargoHub</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-500">Informe suas credenciais para continuar.</p>
       </div>
 
       {status && (

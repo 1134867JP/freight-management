@@ -38,7 +38,7 @@ FormField.inputClass = function inputClass(error, extra = '') {
     ? 'border-rose-400 bg-rose-50 focus:border-rose-500 focus:ring-rose-200 dark:border-rose-700 dark:bg-rose-950/20 dark:text-slate-100'
     : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-500 focus:ring-brand-500/15 dark:border-slate-700 dark:bg-slate-950/60 dark:text-slate-100 dark:placeholder:text-slate-500 dark:hover:border-slate-600 dark:focus:border-brand-400';
   return [
-    'min-h-10 rounded-xl border px-3.5 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2',
+    'min-h-10 rounded-lg border px-3 py-2 text-sm shadow-sm transition focus:outline-none focus:ring-2',
     state,
     extra,
   ]

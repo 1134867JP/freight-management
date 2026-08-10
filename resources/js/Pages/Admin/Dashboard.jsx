@@ -49,8 +49,8 @@ function OccupancyChart({ occupancy = [] }) {
       </Card.Header>
       <Card.Content className="pb-4">
         {!hasOccupancy ? (
-          <div className="flex h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-6 text-center dark:border-slate-800 dark:bg-slate-950/40">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-brand-600 shadow-sm dark:bg-slate-900">
+          <div className="flex h-56 flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 text-center dark:border-slate-700 dark:bg-slate-950/40">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-brand-700 dark:border-slate-700 dark:bg-slate-900">
               <Icon name="calendar" className="h-5 w-5" />
             </span>
             <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-200">Nenhum agendamento nos próximos 7 dias</p>
@@ -67,9 +67,9 @@ function OccupancyChart({ occupancy = [] }) {
               return (
                 <div key={item.date} className="flex h-full min-w-0 flex-col justify-end gap-2 text-center">
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.count}</span>
-                  <div className="relative flex min-h-0 flex-1 items-end overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                  <div className="relative flex min-h-0 flex-1 items-end overflow-hidden rounded-md bg-slate-100 dark:bg-slate-800">
                     <div
-                      className="w-full rounded-xl bg-gradient-to-t from-brand-700 via-brand-600 to-blue-400 transition-all duration-500"
+                      className="w-full rounded-md bg-brand-700 transition-[height] duration-500 dark:bg-brand-500"
                       style={{ height: `${height}%` }}
                       title={`${item.count} agendamento(s)`}
                     />
@@ -114,7 +114,7 @@ function CapacitySummary({ stats }) {
           </div>
         ))}
 
-        <Link href={route('timeslots.index')} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:bg-brand-950/40 dark:hover:text-brand-300">
+        <Link href={route('timeslots.index')} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-200 hover:text-brand-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-brand-900 dark:hover:text-brand-300">
           Gerenciar disponibilidade
           <span aria-hidden="true">→</span>
         </Link>
@@ -129,7 +129,7 @@ export default function Dashboard({ stats, occupancy }) {
   const usesQueues = auth.company?.uses_queues ?? true;
 
   const quickActions = [
-    ...(usesQueues ? [{ title: 'Painel do pátio', description: 'Acompanhe filas, vagas e docas em tempo real.', routeName: 'admin.yard-board', icon: 'yard', tone: 'brand', badge: 'Ao vivo' }] : []),
+    ...(usesQueues ? [{ title: 'Painel do pátio', description: 'Acompanhe filas, vagas e docas da operação.', routeName: 'admin.yard-board', icon: 'yard', tone: 'brand' }] : []),
     ...(usesQueues ? [{ title: 'Portaria', description: 'Faça check-in e check-out com menos etapas.', routeName: 'admin.gate', icon: 'gate', tone: 'warning' }] : []),
     { title: 'Gerenciar janelas', description: 'Crie horários e ajuste a capacidade da operação.', routeName: 'timeslots.index', icon: 'calendar', tone: 'violet' },
     { title: 'Agenda operacional', description: 'Visualize horários e reservas em uma única grade.', routeName: 'admin.agenda', icon: 'schedule', tone: 'brand' },
@@ -141,34 +141,25 @@ export default function Dashboard({ stats, occupancy }) {
     <AuthenticatedLayout>
       <Head title="Painel de operações" />
 
-      <div className="py-6 sm:py-8">
-        <div className="mx-auto max-w-[1600px] space-y-7 px-4 sm:px-6 lg:px-8">
-          <section className="relative overflow-hidden rounded-2xl bg-[#0a1830] p-5 text-white shadow-xl shadow-slate-900/10 sm:p-6">
-            <div className="pointer-events-none absolute -right-10 -top-28 h-72 w-72 rounded-full bg-blue-500/25 blur-3xl" />
-            <div className="pointer-events-none absolute bottom-0 right-1/4 h-28 w-80 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent blur-2xl" />
-            <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-blue-100">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  Visão operacional atualizada
-                </div>
-                <p className="text-sm font-medium text-slate-400">{greeting()}, {firstName}</p>
-                <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Controle sua operação em um só lugar.</h1>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
-                  Acompanhe capacidade, ocupação e próximos passos sem perder tempo procurando informações.
-                </p>
-              </div>
+      <div className="py-6">
+        <div className="mx-auto max-w-[1600px] space-y-6 px-4 sm:px-6 lg:px-8">
+          <section className="flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Visão geral</p>
+              <h1 className="mt-1 text-2xl font-bold tracking-[-0.025em] text-slate-950 dark:text-white">Painel operacional</h1>
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                {greeting()}, {firstName}. Resumo de capacidade, ocupação e atividades da operação.
+              </p>
+            </div>
 
-              <div className="flex flex-wrap gap-3">
-                <Link href={route('timeslots.index')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-lg transition hover:bg-blue-50">
-                  <Icon name="calendar" className="h-4 w-4 text-brand-600" />
-                  Nova janela
-                </Link>
-                <Link href={route('freights.approvalList')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-bold text-white transition hover:bg-white/[0.12]">
-                  Ver fretes
-                  <span aria-hidden="true">→</span>
-                </Link>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href={route('freights.approvalList')} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                Ver fretes
+              </Link>
+              <Link href={route('timeslots.index')} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-brand-700 bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:border-brand-800 hover:bg-brand-800">
+                <Icon name="calendar" className="h-4 w-4" />
+                Nova janela
+              </Link>
             </div>
           </section>
 
@@ -186,7 +177,7 @@ export default function Dashboard({ stats, occupancy }) {
 
           <section>
             <SectionHeading title="Acessos operacionais" description="Atalhos para as rotinas mais frequentes do dia." />
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {quickActions.map((action) => (
                 <QuickActionCard key={action.title} href={route(action.routeName)} {...action} icon={<Icon name={action.icon} className="h-5 w-5" />} />
               ))}

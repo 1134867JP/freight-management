@@ -40,23 +40,20 @@ export default function Dashboard({ stats }) {
     <AuthenticatedLayout>
       <Head title="Meu painel" />
 
-      <div className="py-6 sm:py-8">
-        <div className="mx-auto max-w-[1600px] space-y-7 px-4 sm:px-6 lg:px-8">
-          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a1830] via-[#102a50] to-brand-800 p-6 text-white shadow-xl shadow-slate-900/10 sm:p-8">
-            <div className="pointer-events-none absolute -right-16 -top-24 h-80 w-80 rounded-full border-[48px] border-white/[0.04]" />
-            <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-200">{greeting()}, {firstName}</p>
-                <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">Sua operação, sem incerteza.</h1>
-                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-blue-100/75 sm:text-base">
-                  Reserve horários e acompanhe cada frete do agendamento até a conclusão.
-                </p>
-              </div>
-              <Link href={route('client.available')} className="inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-brand-700 shadow-lg transition hover:bg-blue-50 lg:self-auto">
-                <Icon name="plus" className="h-4 w-4" />
-                Fazer nova reserva
-              </Link>
+      <div className="py-6">
+        <div className="mx-auto max-w-[1600px] space-y-6 px-4 sm:px-6 lg:px-8">
+          <section className="flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Visão geral</p>
+              <h1 className="mt-1 text-2xl font-bold tracking-[-0.025em] text-slate-950 dark:text-white">Meus agendamentos</h1>
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                {greeting()}, {firstName}. Acompanhe reservas, horários e fretes em andamento.
+              </p>
             </div>
+            <Link href={route('client.available')} className="inline-flex min-h-10 items-center justify-center gap-2 self-start rounded-lg border border-brand-700 bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:border-brand-800 hover:bg-brand-800 sm:self-auto">
+              <Icon name="plus" className="h-4 w-4" />
+              Nova reserva
+            </Link>
           </section>
 
           <section aria-label="Resumo dos fretes" className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6 lg:gap-4">
@@ -69,17 +66,16 @@ export default function Dashboard({ stats }) {
           </section>
 
           <section className="grid gap-5 lg:grid-cols-5">
-            <Card className="overflow-hidden lg:col-span-2">
-              <Card.Content className="relative h-full bg-slate-950 text-white">
-                <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-600/20 blur-3xl" />
-                <div className="relative">
-                  <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-blue-200">Agora</span>
-                  <p className="mt-5 text-5xl font-extrabold tracking-tight">{activeFreights}</p>
-                  <p className="mt-1 font-semibold text-white">frete(s) em operação</p>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-400">
+            <Card className="lg:col-span-2">
+              <Card.Content className="h-full">
+                <div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Em andamento</span>
+                  <p className="mt-3 text-4xl font-bold tabular-nums tracking-[-0.04em] text-slate-950 dark:text-white">{activeFreights}</p>
+                  <p className="mt-1 font-semibold text-slate-900 dark:text-white">frete(s) em operação</p>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                     Acompanhe os status ativos e identifique rapidamente o que exige atenção.
                   </p>
-                  <Link href={route('client.reservations')} className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-blue-300 hover:text-white">
+                  <Link href={route('client.reservations')} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200">
                     Ver acompanhamento <span aria-hidden="true">→</span>
                   </Link>
                 </div>
@@ -87,8 +83,8 @@ export default function Dashboard({ stats }) {
             </Card>
 
             <div className="lg:col-span-3">
-              <SectionHeading title="O que você precisa fazer?" description="Acesse as rotinas mais usadas sem navegar por vários menus." />
-              <div className="grid gap-4 sm:grid-cols-3">
+              <SectionHeading title="Acessos rápidos" description="Rotinas mais usadas para gerenciar seus agendamentos." />
+              <div className="grid gap-3 sm:grid-cols-3">
                 <QuickActionCard href={route('client.available')} title="Novo agendamento" description="Escolha uma janela disponível para sua operação." tone="brand" icon={<Icon name="plus" />} />
                 <QuickActionCard href={route('client.reservations')} title="Meus fretes" description="Consulte status, horários e histórico." tone="success" icon={<Icon name="truck" />} />
                 <QuickActionCard href={route('client.drivers')} title="Motoristas" description="Mantenha os dados da equipe atualizados." tone="violet" icon={<Icon name="driver" />} />

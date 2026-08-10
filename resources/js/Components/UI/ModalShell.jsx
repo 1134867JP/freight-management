@@ -34,18 +34,18 @@ export default function ModalShell({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         ref={panelRef}
-        className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-white/60 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900 ${maxWidthClass}`}
+        className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900 ${maxWidthClass}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
-          <h3 id="modal-title" className="text-lg font-bold tracking-tight text-slate-950 dark:text-white">{title}</h3>
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+          <h3 id="modal-title" className="text-base font-semibold text-slate-950 dark:text-white">{title}</h3>
           <IconButton
             icon={(
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -57,8 +57,8 @@ export default function ModalShell({
             onClick={onClose}
           />
         </div>
-        <div className="overflow-y-auto px-6 py-5">{children}</div>
-        {footer && <div className="shrink-0 border-t border-slate-100 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/40">{footer}</div>}
+        <div className="overflow-y-auto px-5 py-5">{children}</div>
+        {footer && <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/40">{footer}</div>}
       </div>
     </div>
   );

@@ -185,9 +185,9 @@ export default function AuthenticatedLayout({ header, children }) {
     <Link
       href={href}
       onClick={onNavigate}
-      className={`group relative flex min-h-10 items-center rounded-xl py-2 text-sm transition-all duration-150 ${compact ? 'justify-center px-2' : 'gap-3 px-3'} ${
+      className={`group relative flex min-h-10 items-center rounded-lg py-2 text-sm transition-colors duration-150 ${compact ? 'justify-center px-2' : 'gap-3 px-3'} ${
         active
-          ? 'bg-white font-semibold text-slate-950 shadow-[0_5px_18px_rgba(2,6,23,0.22)]'
+          ? 'bg-white/[0.09] font-semibold text-white ring-1 ring-inset ring-white/[0.08]'
           : 'font-medium text-slate-400 hover:bg-white/[0.07] hover:text-white'
       }`}
       aria-current={active ? 'page' : undefined}
@@ -195,12 +195,12 @@ export default function AuthenticatedLayout({ header, children }) {
       title={compact ? label : undefined}
     >
       {icon && (
-        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${active ? 'bg-brand-50 text-brand-600' : 'text-slate-500 group-hover:text-slate-200'}`}>
+        <span className={`flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${active ? 'text-blue-300' : 'text-slate-500 group-hover:text-slate-200'}`}>
           <MenuIcon name={icon} className="h-4 w-4" />
         </span>
       )}
       {!compact && <span className="truncate">{label}</span>}
-      {active && !compact && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-500" />}
+      {active && !compact && <span className="absolute left-0 h-5 w-0.5 rounded-r bg-blue-400" />}
     </Link>
   );
 
@@ -222,7 +222,7 @@ export default function AuthenticatedLayout({ header, children }) {
             }
             toggleGroup(item.group);
           }}
-          className={`flex min-h-10 w-full items-center rounded-xl py-2 text-sm font-medium transition ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
+          className={`flex min-h-10 w-full items-center rounded-lg py-2 text-sm font-medium transition-colors ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
             item.active
               ? 'bg-brand-500/15 text-brand-200'
               : 'text-slate-400 hover:bg-white/[0.07] hover:text-white'
@@ -272,7 +272,7 @@ export default function AuthenticatedLayout({ header, children }) {
       {menuSections.map((objSection, index) => (
         <div key={objSection.section ?? '_main'} className={compact && index > 0 ? 'border-t border-white/[0.06] pt-2' : ''}>
           {objSection.section && !compact && (
-            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
               {objSection.section}
             </p>
           )}
@@ -323,16 +323,15 @@ export default function AuthenticatedLayout({ header, children }) {
   }, [sidebarCollapsed]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 lg:flex lg:h-screen lg:overflow-hidden">
-      <aside className={`relative hidden shrink-0 overflow-hidden border-r border-slate-800/80 bg-[#07111f] transition-[width] duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? 'w-[88px]' : 'w-[280px]'}`}>
-        <div className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full bg-blue-600/15 blur-3xl" />
+    <div className="min-h-screen bg-[#f5f7fa] dark:bg-slate-950 lg:flex lg:h-screen lg:overflow-hidden">
+      <aside className={`relative hidden shrink-0 overflow-hidden border-r border-slate-800 bg-[#0a1424] transition-[width] duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? 'w-[88px]' : 'w-[280px]'}`}>
         <div className={`relative border-b border-white/[0.06] py-5 ${sidebarCollapsed ? 'px-6' : 'px-5'}`}>
           <Link href={route('dashboard')} aria-label="Ir para o painel">
             <BrandLogo inverse compact={sidebarCollapsed} />
           </Link>
 
           {company?.name && !isPlatformAdmin && (
-            <div className={`mt-5 flex items-center rounded-xl border border-white/[0.07] bg-white/[0.04] ${sidebarCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`} title={sidebarCollapsed ? company.name : undefined}>
+            <div className={`mt-5 flex items-center rounded-lg border border-white/[0.07] bg-white/[0.035] ${sidebarCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`} title={sidebarCollapsed ? company.name : undefined}>
               {company?.logo_url ? (
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white p-1.5">
                   <img src={logoUrl} className="max-h-full max-w-full object-contain" alt="" />
@@ -356,11 +355,11 @@ export default function AuthenticatedLayout({ header, children }) {
           <button
             type="button"
             onClick={() => setShowAccountMenu((v) => !v)}
-            className={`flex w-full items-center rounded-xl p-2 text-left transition hover:bg-white/[0.06] ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
+            className={`flex w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-white/[0.06] ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
             aria-expanded={showAccountMenu}
             aria-label={sidebarCollapsed ? `Abrir menu de ${user.name}` : undefined}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-blue-950/30">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-sm font-semibold text-white">
               {user.name.charAt(0).toUpperCase()}
             </span>
             {!sidebarCollapsed && <span className="min-w-0 flex-1">
@@ -371,7 +370,7 @@ export default function AuthenticatedLayout({ header, children }) {
           </button>
 
           {showAccountMenu && (
-            <div className={`overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-1.5 shadow-2xl shadow-black/40 ${sidebarCollapsed ? 'fixed bottom-4 left-[96px] z-50 w-56' : 'absolute bottom-[72px] left-4 right-4'}`}>
+            <div className={`overflow-hidden rounded-lg border border-slate-700 bg-slate-900 p-1.5 shadow-xl shadow-black/30 ${sidebarCollapsed ? 'fixed bottom-4 left-[96px] z-50 w-56' : 'absolute bottom-[72px] left-4 right-4'}`}>
               <Link
                 href={route('profile.edit')}
                 className="block rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
@@ -395,7 +394,7 @@ export default function AuthenticatedLayout({ header, children }) {
       </aside>
 
       <div className="min-w-0 flex-1 lg:overflow-y-auto">
-        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-xl sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950/85">
+        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
           <Link href={route('dashboard')} className="lg:hidden" aria-label="Ir para o painel">
             <BrandLogo compact />
           </Link>
@@ -404,7 +403,7 @@ export default function AuthenticatedLayout({ header, children }) {
             <button
               type="button"
               onClick={() => setSidebarCollapsed((value) => !value)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
               aria-label={sidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
               title={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
             >
@@ -413,7 +412,7 @@ export default function AuthenticatedLayout({ header, children }) {
               </svg>
             </button>
             <div className="min-w-0">
-              <p className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+              <p className="truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
                 {currentNavigation.section || 'Central de operações'}
               </p>
               <p className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -423,14 +422,14 @@ export default function AuthenticatedLayout({ header, children }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="hidden max-w-64 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 sm:inline-flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            <span className="hidden max-w-64 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 sm:inline-flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
               <MenuIcon name="buildings" className="h-3.5 w-3.5 shrink-0 text-slate-400" />
               <span className="truncate">{company?.name || 'CargoHub YMS'}</span>
             </span>
             <button
               type="button"
               onClick={() => setShowMobileMenu((state) => !state)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 lg:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 lg:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
               aria-label={showMobileMenu ? 'Fechar menu' : 'Abrir menu'}
               aria-expanded={showMobileMenu}
             >
@@ -449,7 +448,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
         {showMobileMenu && (
           <div className="fixed inset-0 z-50 lg:hidden">
-            <button type="button" className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)} aria-label="Fechar menu" />
+            <button type="button" className="absolute inset-0 bg-slate-950/60" onClick={() => setShowMobileMenu(false)} aria-label="Fechar menu" />
             <aside className="relative flex h-full w-[min(88vw,340px)] flex-col bg-[#07111f] shadow-2xl">
               <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-5">
                 <BrandLogo inverse />

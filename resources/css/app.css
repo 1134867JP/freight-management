@@ -4,7 +4,7 @@
 
 html {
   font-size: 15px;
-  background: #f8fafc;
+  background: #f5f7fa;
   color-scheme: light;
 }
 
@@ -15,8 +15,10 @@ html.dark {
 
 body {
   min-width: 320px;
-  background: #f8fafc;
+  background: #f5f7fa;
   color: #0f172a;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
 }
 
 .dark body {
@@ -40,11 +42,11 @@ body {
   }
 
   .table-shell thead {
-    @apply border-b border-slate-200 bg-slate-50/90 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400;
+    @apply border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400;
   }
 
   .table-shell th {
-    @apply whitespace-nowrap px-5 py-3.5;
+    @apply whitespace-nowrap px-5 py-3;
   }
 
   .table-shell tbody {
@@ -52,11 +54,11 @@ body {
   }
 
   .table-shell td {
-    @apply px-5 py-4 text-slate-600 dark:text-slate-300;
+    @apply px-5 py-3.5 text-slate-600 dark:text-slate-300;
   }
 
   .table-shell tbody tr {
-    @apply transition-colors hover:bg-blue-50/40 dark:hover:bg-blue-950/20;
+    @apply transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/45;
   }
 }
 

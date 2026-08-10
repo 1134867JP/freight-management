@@ -24,9 +24,9 @@ function Spinner() {
 
 const VARIANT_CLASSES = {
   primary:
-    'border-transparent bg-brand-600 text-white shadow-[0_1px_2px_rgba(30,64,175,0.25),0_6px_16px_rgba(37,99,235,0.16)] hover:bg-brand-700 hover:shadow-md focus:ring-brand-500',
+    'border-brand-700 bg-brand-700 text-white shadow-sm hover:border-brand-800 hover:bg-brand-800 focus:ring-brand-500',
   secondary:
-    'border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 focus:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
+    'border-slate-300 bg-white text-slate-700 shadow-sm hover:border-slate-400 hover:bg-slate-50 focus:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
   danger:
     'border-transparent bg-rose-600 text-white shadow-sm hover:bg-rose-700 focus:ring-rose-500',
   ghost:
@@ -60,10 +60,10 @@ export default function Button({
       disabled={isDisabled}
       aria-busy={loading}
       className={[
-        'inline-flex items-center justify-center rounded-xl border font-semibold',
-        'transition-all duration-150 active:translate-y-px',
+        'inline-flex items-center justify-center rounded-lg border font-semibold',
+        'transition-colors duration-150',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
-        'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:active:translate-y-0',
+        'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none',
         VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.primary,
         SIZE_CLASSES[size] ?? SIZE_CLASSES.md,
         className,

@@ -36,31 +36,19 @@ function formatDate(date) {
 
 const STATUS = {
   arrived: {
-    ring: 'ring-amber-400/60',
-    border: 'border-amber-400',
-    glow: 'shadow-amber-400/20',
-    badge: 'bg-amber-400/15 text-amber-700 dark:text-amber-300 ring-1 ring-amber-400/30',
+    border: 'border-l-amber-500 dark:border-l-amber-500',
+    badge: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900',
     dot: 'bg-amber-400',
-    icon: '⏳',
-    operationRow: 'from-amber-100/50 dark:from-amber-950/30',
   },
   loading: {
-    ring: 'ring-sky-400/60',
-    border: 'border-sky-400',
-    glow: 'shadow-sky-400/20',
-    badge: 'bg-sky-400/15 text-sky-700 dark:text-sky-300 ring-1 ring-sky-400/30',
+    border: 'border-l-sky-500 dark:border-l-sky-500',
+    badge: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200 dark:bg-sky-950/30 dark:text-sky-300 dark:ring-sky-900',
     dot: 'bg-sky-400',
-    icon: '↑',
-    operationRow: 'from-sky-100/50 dark:from-sky-950/30',
   },
   unloading: {
-    ring: 'ring-violet-400/60',
-    border: 'border-violet-400',
-    glow: 'shadow-violet-400/20',
-    badge: 'bg-violet-400/15 text-violet-700 dark:text-violet-300 ring-1 ring-violet-400/30',
+    border: 'border-l-violet-500 dark:border-l-violet-500',
+    badge: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:ring-violet-900',
     dot: 'bg-violet-400',
-    icon: '↓',
-    operationRow: 'from-violet-100/50 dark:from-violet-950/30',
   },
 };
 
@@ -68,10 +56,7 @@ const STATUS = {
 
 function LiveDot({ color = 'bg-emerald-400' }) {
   return (
-    <span className="relative flex h-2.5 w-2.5">
-      <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${color} opacity-60`} />
-      <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${color}`} />
-    </span>
+    <span className={`inline-flex h-2 w-2 rounded-full ${color}`} />
   );
 }
 
@@ -82,17 +67,14 @@ function FreightSlot({ freight, now }) {
   const sinceOp = freight.status !== 'arrived' ? elapsed(freight.updated_at, now) : null;
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${cfg.border} bg-gradient-to-br ${cfg.operationRow} to-transparent p-4 shadow-lg ${cfg.glow}`}>
-      {/* pulse bar top */}
-      <div className={`absolute top-0 left-0 h-0.5 w-full ${cfg.dot} opacity-70`} />
-
+    <div className={`rounded-lg border border-slate-200 border-l-[3px] ${cfg.border} bg-white p-4 dark:border-slate-700 dark:bg-slate-900`}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-2xl font-black tracking-widest text-gray-900 dark:text-white">{freight.truck_plate}</p>
+          <p className="font-mono text-xl font-bold tracking-widest text-slate-900 dark:text-white">{freight.truck_plate}</p>
           <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">{freight.driver_name}</p>
         </div>
-        <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold ${cfg.badge}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot} animate-pulse`} />
+        <span className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${cfg.badge}`}>
+          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
           {statusPresentation.label}
         </span>
       </div>
@@ -133,22 +115,22 @@ function DocaCard({ doca, now }) {
   const isEmpty = doca.freights.length === 0;
 
   return (
-    <div className={`flex flex-col rounded-2xl border transition-all duration-500 ${
+    <div className={`flex flex-col rounded-xl border ${
       isEmpty
-        ? 'border-gray-200 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-900/50'
-        : 'border-gray-300 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900'
+        ? 'border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-900/50'
+        : 'border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'
     }`}>
       {/* dock header */}
-      <div className={`flex items-center justify-between rounded-t-2xl px-4 py-3 ${
+      <div className={`flex items-center justify-between rounded-t-xl border-b border-slate-200 px-4 py-3 dark:border-slate-800 ${
         isEmpty
           ? 'bg-gray-100/40 dark:bg-gray-800/40'
           : 'bg-gray-100/70 dark:bg-gray-800/70'
       }`}>
         <div className="flex items-center gap-2.5">
-          <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${
+          <div className={`flex h-7 w-7 items-center justify-center rounded-md ${
             isEmpty
               ? 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-              : 'bg-teal-600 text-white'
+              : 'bg-brand-700 text-white'
           }`}>
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
               <path d="M2 20V9l10-6 10 6v11H2ZM9 20v-6h6v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -156,7 +138,7 @@ function DocaCard({ doca, now }) {
           </div>
           <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{doca.nome}</span>
         </div>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+        <span className={`rounded-md px-2.5 py-0.5 text-xs font-semibold ${
           isEmpty
             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
             : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
@@ -168,7 +150,7 @@ function DocaCard({ doca, now }) {
       {/* dock body */}
       <div className="flex-1 p-3">
         {isEmpty ? (
-          <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+          <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
             <svg className="h-8 w-8 text-gray-300 dark:text-gray-700" viewBox="0 0 24 24" fill="none">
               <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
@@ -190,12 +172,15 @@ function QueueCard({ freight, now }) {
   const since = elapsed(freight.arrived_at, now);
 
   return (
-    <div className="flex items-center gap-4 rounded-xl border border-amber-300/40 bg-amber-50/20 dark:border-amber-900/40 dark:bg-amber-950/20 px-4 py-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-300/50 bg-amber-100/30 dark:border-amber-800/50 dark:bg-amber-900/30">
-        <span className="text-lg">⏳</span>
+    <div className="flex items-center gap-4 rounded-lg border border-amber-200 bg-white px-4 py-3 dark:border-amber-900/60 dark:bg-slate-900">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M10 6v4.5l2.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-mono text-base font-black tracking-wider text-gray-900 dark:text-white">{freight.truck_plate}</p>
+        <p className="font-mono text-base font-bold tracking-wider text-gray-900 dark:text-white">{freight.truck_plate}</p>
         <p className="truncate text-xs text-gray-500 dark:text-gray-500">{freight.driver_name} · {freight.client_name}</p>
       </div>
       <div className="text-right">
@@ -211,8 +196,8 @@ function QueueCard({ freight, now }) {
 
 function StatPill({ label, value, color = 'text-gray-600 dark:text-gray-300' }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-gray-100/60 dark:bg-gray-800/60 px-3 py-1.5">
-      <span className={`font-mono text-xl font-black ${color}`}>{value}</span>
+    <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">
+      <span className={`font-mono text-lg font-bold tabular-nums ${color}`}>{value}</span>
       <span className="text-xs text-gray-500 dark:text-gray-500">{label}</span>
     </div>
   );
@@ -305,12 +290,12 @@ export default function YardBoard({ initialData }) {
   const freeDocas = (data?.docas ?? []).filter(d => d.freights.length === 0).length;
 
   const board = (
-    <div ref={rootRef} className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-white">
+    <div ref={rootRef} className="min-h-screen bg-[#f5f7fa] text-gray-900 dark:bg-gray-950 dark:text-white">
 
       {/* ── top bar ── */}
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-gray-200 bg-white/95 dark:border-gray-800 dark:bg-gray-950/95 px-6 py-3 backdrop-blur">
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-950">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-700">
             <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
               <path d="M3 7h10v7H3V7Zm10 2h3l3 3v2h-6V9ZM7 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
             </svg>
@@ -323,7 +308,7 @@ export default function YardBoard({ initialData }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <StatPill label="ativos" value={allActive} color="text-teal-600 dark:text-teal-400" />
+          <StatPill label="ativos" value={allActive} color="text-brand-700 dark:text-brand-300" />
           <StatPill label="carregando" value={loadingCount} color="text-sky-600 dark:text-sky-400" />
           <StatPill label="descarregando" value={unloadingCount} color="text-violet-600 dark:text-violet-400" />
           <StatPill label="aguardando" value={waitingCount} color="text-amber-600 dark:text-amber-400" />
@@ -375,20 +360,17 @@ export default function YardBoard({ initialData }) {
         </div>
       </header>
 
-      <div className="p-6 space-y-8">
+      <div className="space-y-7 p-6">
 
         {/* ── waiting queue ── */}
         {(data?.waitingQueue?.length ?? 0) > 0 && (
           <section>
             <div className="mb-3 flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className="relative flex h-3 w-3">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-60" />
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-400" />
-                </span>
-                <h2 className="text-sm font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">Fila de espera</h2>
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">Fila de espera</h2>
               </div>
-              <span className="rounded-full bg-amber-400/15 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-300">
+              <span className="rounded-md bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900">
                 {data.waitingQueue.length} veículo{data.waitingQueue.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -403,13 +385,13 @@ export default function YardBoard({ initialData }) {
         {/* ── docas grid ── */}
         <section>
           <div className="mb-3 flex items-center gap-3">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Docas</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">Docas</h2>
             <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
             <span className="text-xs text-gray-400 dark:text-gray-600">{data?.docas?.length ?? 0} docas ativas</span>
           </div>
 
           {(data?.docas?.length ?? 0) === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 py-20 text-center">
+            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-300 py-20 text-center dark:border-gray-700">
               <svg className="h-12 w-12 text-gray-200 dark:text-gray-800" viewBox="0 0 24 24" fill="none">
                 <path d="M2 20V9l10-6 10 6v11H2ZM9 20v-6h6v6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
               </svg>

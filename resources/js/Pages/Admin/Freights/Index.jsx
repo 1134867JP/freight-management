@@ -38,6 +38,14 @@ export default function Index({ freights, docasDisponiveis, filters = {}, status
     completed: Number(statusCounts.completed ?? 0),
     cancelled: Number(statusCounts.cancelled ?? 0),
   };
+  const summaryItems = [
+    { label: 'Reservados', value: statusSummary.reserved, dot: 'bg-slate-400' },
+    { label: 'No pátio', value: statusSummary.arrived, dot: 'bg-sky-500' },
+    { label: 'Carregando', value: statusSummary.loading, dot: 'bg-amber-500' },
+    { label: 'Descarregando', value: statusSummary.unloading, dot: 'bg-blue-600' },
+    { label: 'Finalizados', value: statusSummary.completed, dot: 'bg-emerald-500' },
+    { label: 'Cancelados', value: statusSummary.cancelled, dot: 'bg-rose-500' },
+  ];
 
   const confirm = useConfirm();
 
@@ -150,70 +158,31 @@ export default function Index({ freights, docasDisponiveis, filters = {}, status
 
   return (
     <AuthenticatedLayout
-      header={<PageHeader title="Fretes" subtitle="Operações e gestão de reservas de frete" />}
+      header={<PageHeader title="Fretes" subtitle="Acompanhe reservas e o ciclo operacional de cada veículo." />}
     >
       <Head title="Fretes" />
 
-      <div className="py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="py-6">
+        <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <Card className="rounded-lg p-4 sm:p-6">
+          <Card className="p-4 sm:p-5">
             <div
-              className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-6"
+              className="mb-5 flex divide-x divide-slate-200 overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-950/40"
               aria-label="Resumo dos fretes"
             >
-              <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-700">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
-                  Reservados
-                </p>
-                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {statusSummary.reserved}
-                </p>
-              </div>
-              <div className="rounded-lg border border-sky-200 bg-sky-50 p-4 dark:border-sky-800 dark:bg-sky-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-sky-700 dark:text-sky-400">
-                  No Pátio
-                </p>
-                <p className="mt-2 text-2xl font-bold text-sky-800 dark:text-sky-300">
-                  {statusSummary.arrived}
-                </p>
-              </div>
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-400">
-                  Carregando
-                </p>
-                <p className="mt-2 text-2xl font-bold text-amber-800 dark:text-amber-300">
-                  {statusSummary.loading}
-                </p>
-              </div>
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-400">
-                  Descarregando
-                </p>
-                <p className="mt-2 text-2xl font-bold text-blue-800 dark:text-blue-300">
-                  {statusSummary.unloading}
-                </p>
-              </div>
-              <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-green-700 dark:text-green-400">
-                  Finalizados
-                </p>
-                <p className="mt-2 text-2xl font-bold text-green-800 dark:text-green-300">
-                  {statusSummary.completed}
-                </p>
-              </div>
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-red-700 dark:text-red-400">
-                  Cancelados
-                </p>
-                <p className="mt-2 text-2xl font-bold text-red-800 dark:text-red-300">
-                  {statusSummary.cancelled}
-                </p>
-              </div>
+              {summaryItems.map((item) => (
+                <div key={item.label} className="min-w-[135px] flex-1 px-4 py-3.5">
+                  <p className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <span className={`h-1.5 w-1.5 rounded-full ${item.dot}`} />
+                    {item.label}
+                  </p>
+                  <p className="mt-1 text-xl font-bold tabular-nums text-slate-950 dark:text-white">{item.value}</p>
+                </div>
+              ))}
             </div>
 
-            <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/30">
+            <div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/30">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
                   Filtros

@@ -30,7 +30,7 @@ function PunctualityBadge({ freight }) {
   );
   if (diff <= 0)
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
         <svg className="h-2.5 w-2.5" viewBox="0 0 12 12" fill="none">
           <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
         </svg>
@@ -39,12 +39,12 @@ function PunctualityBadge({ freight }) {
     );
   if (diff <= 30)
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+      <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
         +{diff}min
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700 ring-1 ring-red-200">
+    <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700 ring-1 ring-red-200">
       Atrasado +{diff}min
     </span>
   );
@@ -53,12 +53,12 @@ function PunctualityBadge({ freight }) {
 function OpBadge({ type }) {
   if (type === 'load')
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-bold text-sky-700">
+      <span className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700 ring-1 ring-sky-200">
         ↑ Carga
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-bold text-violet-700">
+    <span className="inline-flex items-center gap-1 rounded-md bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700 ring-1 ring-violet-200">
       ↓ Descarga
     </span>
   );
@@ -118,7 +118,7 @@ function QrLookupPanel() {
   };
 
   return (
-    <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6 dark:border-gray-700 dark:bg-gray-900">
+    <div className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
       <form onSubmit={lookup} className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2 text-brand-600">
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
@@ -162,7 +162,7 @@ function QrLookupPanel() {
             setError(null);
           }}
           placeholder="Escaneie ou cole o token do QR Code..."
-          className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 font-mono text-sm focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           autoFocus
         />
         <Button type="submit" loading={loading} className="shrink-0">
@@ -186,7 +186,7 @@ function QrLookupPanel() {
                 ✓ Check-in
               </Button>
             ) : (
-              <span className="rounded-full bg-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+              <span className="rounded-md bg-gray-200 px-2.5 py-1 text-xs font-semibold text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                 {result.status_label}
               </span>
             )}
@@ -219,7 +219,7 @@ function FreightCard({ freight, action, now }) {
 
   return (
     <div
-      className={`rounded-xl border p-3.5 transition-shadow hover:shadow-md ${
+      className={`rounded-lg border p-3.5 ${
         isOverdue
           ? 'border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-950/20'
           : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
@@ -228,7 +228,7 @@ function FreightCard({ freight, action, now }) {
       {/* plate + op */}
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="font-mono text-base font-black tracking-wider text-gray-900 dark:text-gray-100">
+          <p className="font-mono text-base font-bold tracking-wider text-gray-900 dark:text-gray-100">
             {freight.truck_plate}
           </p>
           <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate max-w-[140px]">
@@ -306,12 +306,12 @@ function PipelineColumn({ title, count, accentColor, bgColor, icon, children, em
     <div className="flex min-w-0 flex-1 flex-col">
       {/* column header */}
       <div
-        className={`flex items-center gap-2.5 rounded-t-xl border-b-2 ${accentColor} ${bgColor} px-4 py-3`}
+        className={`flex items-center gap-2.5 rounded-t-lg border border-b-2 border-slate-200 ${accentColor} ${bgColor} px-4 py-3 dark:border-slate-700`}
       >
         {icon}
         <span className="text-sm font-bold text-gray-800 dark:text-gray-100">{title}</span>
         <span
-          className={`ml-auto rounded-full px-2 py-0.5 text-xs font-black ${bgColor} ring-2 ring-current text-gray-600 dark:text-gray-300`}
+          className="ml-auto rounded-md bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700"
         >
           {count}
         </span>
@@ -319,8 +319,7 @@ function PipelineColumn({ title, count, accentColor, bgColor, icon, children, em
 
       {/* scrollable cards */}
       <div
-        className="flex-1 space-y-2.5 overflow-y-auto rounded-b-xl border border-t-0 border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40"
-        style={{ maxHeight: 'calc(100vh - 280px)' }}
+        className="max-h-[55vh] flex-1 space-y-2.5 overflow-y-auto rounded-b-lg border border-t-0 border-slate-200 bg-slate-50 p-3 lg:max-h-[calc(100vh-280px)] dark:border-slate-700 dark:bg-slate-950/40"
       >
         {children}
         {count === 0 && (
@@ -357,11 +356,11 @@ export default function GateIndex({ expected, waiting, inProgress, completedToda
 
       <QrLookupPanel />
 
-      <div className="flex h-[calc(100vh-112px)] flex-col px-4 pt-4 pb-0 sm:px-6">
+      <div className="flex min-h-[calc(100vh-112px)] flex-col px-4 pb-4 pt-4 sm:px-6">
         <FlashMessages />
 
         {/* ── 3-column pipeline ── */}
-        <div className="flex flex-1 gap-4 overflow-hidden">
+        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-3">
           {/* ESPERADOS */}
           <PipelineColumn
             title="Esperados hoje"
@@ -434,7 +433,7 @@ export default function GateIndex({ expected, waiting, inProgress, completedToda
         </div>
 
         {/* ── barra de concluídos (compacta, no rodapé) ── */}
-        <div className="mt-3 shrink-0 rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800/50 dark:bg-emerald-950/10">
+        <div className="mt-3 shrink-0 rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
           <button
             type="button"
             onClick={() => setShowCompleted((v) => !v)}
@@ -448,19 +447,19 @@ export default function GateIndex({ expected, waiting, inProgress, completedToda
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
               Operação concluída / saída
             </span>
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-black text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:ring-emerald-900">
               {completedToday.length}
             </span>
-            <span className="ml-auto text-xs text-emerald-600 dark:text-emerald-500">
+            <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">
               {showCompleted ? 'Recolher ▲' : 'Expandir ▼'}
             </span>
           </button>
 
           {showCompleted && (
-            <div className="border-t border-emerald-200 px-4 pb-3 dark:border-emerald-800/50">
+            <div className="border-t border-slate-200 px-4 pb-3 dark:border-slate-700">
               {completedToday.length === 0 ? (
                 <p className="py-3 text-xs text-emerald-600 dark:text-emerald-500">
                   Nenhuma operação concluída ainda hoje.
