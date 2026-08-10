@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import Button from '@/Components/UI/Button';
+import Card from '@/Components/UI/Card';
 import FormField from '@/Components/UI/FormField';
 import PageHeader from '@/Components/UI/PageHeader';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
@@ -202,8 +203,8 @@ export default function Index({ freights, docasDisponiveis }) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <FlashMessages />
 
-          <div className="rounded-lg bg-white p-4 shadow-sm border border-gray-200 sm:p-6 dark:bg-gray-800 dark:border-gray-700">
-            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-6">
+          <Card className="rounded-lg p-4 sm:p-6">
+            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-6" aria-label="Resumo dos fretes">
               <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-700">
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">Reservados</p>
                 <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{statusSummary.reserved}</p>
@@ -231,48 +232,64 @@ export default function Index({ freights, docasDisponiveis }) {
             </div>
 
             <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/30">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">Filtros</p>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">Filtros</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{filteredFreights.length} resultado(s)</p>
+              </div>
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
-                <FormField.Input
-                  type="text"
-                  value={filterSearch}
-                  onChange={(event) => setFilterSearch(event.target.value)}
-                  placeholder="Cliente ou placa..."
-                  className="mt-0"
-                />
+                <FormField id="freight-search" label="Buscar" className="space-y-1">
+                  <FormField.Input
+                    id="freight-search"
+                    type="search"
+                    value={filterSearch}
+                    onChange={(event) => setFilterSearch(event.target.value)}
+                    placeholder="Cliente ou placa"
+                    className="mt-0"
+                    aria-label="Buscar por cliente ou placa"
+                  />
+                </FormField>
 
-                <FormField.Select
-                  className="mt-0"
-                  value={filterOp}
-                  onChange={(event) => setFilterOp(event.target.value)}
-                >
-                  <option value="all">Operação: Todas</option>
-                  <option value="load">Operação: Carga</option>
-                  <option value="unload">Operação: Descarga</option>
-                </FormField.Select>
+                <FormField id="freight-operation" label="Operação" className="space-y-1">
+                  <FormField.Select
+                    id="freight-operation"
+                    className="mt-0"
+                    value={filterOp}
+                    onChange={(event) => setFilterOp(event.target.value)}
+                  >
+                    <option value="all">Todas</option>
+                    <option value="load">Carga</option>
+                    <option value="unload">Descarga</option>
+                  </FormField.Select>
+                </FormField>
 
-                <FormField.Select
-                  className="mt-0"
-                  value={filterStatus}
-                  onChange={(event) => setFilterStatus(event.target.value)}
-                >
-                  <option value="all">Status: Todos</option>
-                  <option value="reserved">Status: Reservado</option>
-                  <option value="arrived">Status: No Pátio</option>
-                  <option value="loading">Status: Carregando</option>
-                  <option value="unloading">Status: Descarregando</option>
-                  <option value="completed">Status: Finalizado</option>
-                  <option value="cancelled">Status: Cancelado</option>
-                </FormField.Select>
+                <FormField id="freight-status" label="Status" className="space-y-1">
+                  <FormField.Select
+                    id="freight-status"
+                    className="mt-0"
+                    value={filterStatus}
+                    onChange={(event) => setFilterStatus(event.target.value)}
+                  >
+                    <option value="all">Todos</option>
+                    <option value="reserved">Reservado</option>
+                    <option value="arrived">No Pátio</option>
+                    <option value="loading">Carregando</option>
+                    <option value="unloading">Descarregando</option>
+                    <option value="completed">Finalizado</option>
+                    <option value="cancelled">Cancelado</option>
+                  </FormField.Select>
+                </FormField>
 
-                <FormField.Input
-                  type="date"
-                  value={filterDate}
-                  onChange={(event) => setFilterDate(event.target.value)}
-                  className="mt-0"
-                />
+                <FormField id="freight-date" label="Data" className="space-y-1">
+                  <FormField.Input
+                    id="freight-date"
+                    type="date"
+                    value={filterDate}
+                    onChange={(event) => setFilterDate(event.target.value)}
+                    className="mt-0"
+                  />
+                </FormField>
 
-                <div className="flex gap-2">
+                <div className="flex items-end gap-2">
                   <Button
                     onClick={resetFilters}
                     variant="secondary"
@@ -305,7 +322,7 @@ export default function Index({ freights, docasDisponiveis }) {
                 setAssignDocaModal({ open: true, freight: objFreight }) : undefined
               }
             />
-          </div>
+          </Card>
         </div>
       </div>
 

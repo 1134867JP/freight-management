@@ -164,6 +164,7 @@ export default function AuthenticatedLayout({ header, children }) {
           ? 'border-l-2 border-brand-400 bg-brand-600/20 pl-2.5 font-semibold text-brand-300'
           : 'border-l-2 border-transparent font-medium text-gray-400 hover:bg-gray-800 hover:text-white'
       }`}
+      aria-current={active ? 'page' : undefined}
     >
       {icon && (
         <MenuIcon
@@ -205,6 +206,7 @@ export default function AuthenticatedLayout({ header, children }) {
               ? 'bg-brand-600/20 text-brand-300'
               : 'text-gray-400 hover:bg-gray-800 hover:text-white'
           }`}
+          aria-expanded={isOpen}
         >
           <span className="flex items-center gap-2">
             {item.icon && <MenuIcon name={item.icon} className="h-4 w-4 shrink-0" />}
@@ -382,14 +384,16 @@ export default function AuthenticatedLayout({ header, children }) {
         {/* Top bar mobile */}
         <div className="border-b border-gray-800 bg-gray-950 px-4 py-3 lg:hidden">
           <div className="flex items-center justify-between">
-            <Link href={route('dashboard')}>
-              <ApplicationLogo className="h-8 w-auto fill-current text-gray-800" />
+            <Link href={route('dashboard')} className="flex items-center gap-2 text-white">
+              <ApplicationLogo className="h-8 w-auto fill-current text-white" />
+              <span className="text-sm font-bold tracking-tight">CargoHub YMS</span>
             </Link>
             <button
               type="button"
               onClick={() => setShowMobileMenu((state) => !state)}
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-700 text-gray-200 transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400"
               aria-label={showMobileMenu ? 'Fechar menu' : 'Abrir menu'}
+              aria-expanded={showMobileMenu}
             >
               {showMobileMenu ? (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -404,14 +408,14 @@ export default function AuthenticatedLayout({ header, children }) {
           </div>
 
           {showMobileMenu && (
-            <div className="mt-3 space-y-1 border-t border-gray-200 pt-3">
+            <nav aria-label="Navegação principal" className="mt-3 space-y-1 border-t border-gray-800 pt-3">
               {mainLinks.map((link) => (
                 <SideLink key={link.label} {...link} />
               ))}
-              <div className="mt-2 border-t border-gray-200 pt-2">
+              <div className="mt-2 border-t border-gray-800 pt-2">
                 <Link
                   href={route('profile.edit')}
-                  className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white"
                   onClick={() => setShowMobileMenu(false)}
                 >
                   Perfil
@@ -420,13 +424,13 @@ export default function AuthenticatedLayout({ header, children }) {
                   href={route('logout')}
                   method="post"
                   as="button"
-                  className="flex w-full items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                  className="flex w-full items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-950/30"
                   onClick={() => setShowMobileMenu(false)}
                 >
                   Sair
                 </Link>
               </div>
-            </div>
+            </nav>
           )}
         </div>
 

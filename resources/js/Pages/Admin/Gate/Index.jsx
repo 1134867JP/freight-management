@@ -100,8 +100,8 @@ function QrLookupPanel() {
   };
 
   return (
-    <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 shadow-sm dark:border-gray-700 dark:bg-gray-900">
-      <form onSubmit={lookup} className="flex items-center gap-3">
+    <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-4 py-3 shadow-sm sm:px-6 dark:border-gray-700 dark:bg-gray-900">
+      <form onSubmit={lookup} className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2 text-brand-600">
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
             <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.8"/>
@@ -117,7 +117,7 @@ function QrLookupPanel() {
           value={token}
           onChange={e => { setToken(e.target.value); setResult(null); setError(null); }}
           placeholder="Escaneie ou cole o token do QR Code..."
-          className="flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 font-mono text-sm focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 font-mono text-sm focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           autoFocus
         />
         <Button type="submit" loading={loading} className="shrink-0">
@@ -129,7 +129,7 @@ function QrLookupPanel() {
           <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
         )}
         {result && (
-          <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800">
+          <div className="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 sm:w-auto dark:border-gray-700 dark:bg-gray-800">
             <div>
               <p className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">{result.truck_plate}</p>
               <p className="text-[11px] text-gray-500">{result.driver_name} · {result.status_label}</p>
@@ -223,22 +223,25 @@ function FreightCard({ freight, action, now }) {
 
       {/* action button */}
       {action === 'checkin' && (
-        <button
+        <Button
           onClick={() => act('freights.gate-checkin')}
           disabled={busy}
-          className="mt-3 w-full rounded-lg bg-amber-500 py-2 text-xs font-bold text-white hover:bg-amber-600 disabled:opacity-50 transition-colors shadow-sm"
+          variant="secondary"
+          size="sm"
+          className="mt-3 w-full border-amber-500 bg-amber-500 text-white hover:bg-amber-600 hover:text-white focus:ring-amber-400"
         >
           ↓ Check-in
-        </button>
+        </Button>
       )}
       {action === 'checkout' && (
-        <button
+        <Button
           onClick={() => act('freights.gate-checkout')}
           disabled={busy || !!freight.departed_at}
-          className="mt-3 w-full rounded-lg bg-emerald-600 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors shadow-sm"
+          size="sm"
+          className="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
         >
           {freight.departed_at ? '✓ Saiu' : '↑ Check-out'}
-        </button>
+        </Button>
       )}
     </div>
   );
