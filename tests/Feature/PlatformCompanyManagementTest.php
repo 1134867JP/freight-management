@@ -45,11 +45,14 @@ class PlatformCompanyManagementTest extends TestCase
             'admin_email' => 'admin@acme.test',
             'admin_password' => 'password123',
             'admin_whatsapp_phone' => '5511999999999',
+            'pilot_mode' => true,
         ]);
 
         $response->assertRedirect(route('platform.dashboard'));
 
         $company = Company::query()->where('slug', 'acme-logistics')->firstOrFail();
+
+        $this->assertTrue($company->pilot_mode);
 
         $this->assertDatabaseHas('users', [
             'company_id' => $company->id,
@@ -110,6 +113,7 @@ class PlatformCompanyManagementTest extends TestCase
             'admin_email' => 'novo@empresa.test',
             'admin_password' => 'nova-senha-123',
             'admin_whatsapp_phone' => '5511888888888',
+            'pilot_mode' => true,
         ]);
 
         $response->assertRedirect(route('platform.dashboard'));
@@ -119,6 +123,7 @@ class PlatformCompanyManagementTest extends TestCase
             'name' => 'Empresa Nova',
             'slug' => 'empresa-nova',
             'is_active' => false,
+            'pilot_mode' => true,
         ]);
 
         $this->assertDatabaseHas('users', [

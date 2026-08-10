@@ -63,6 +63,7 @@ class PlatformCompanyController extends Controller
                 'is_active'   => $validated['company_is_active'],
                 'uses_queues' => $validated['uses_queues'],
                 'uses_docks'  => $validated['uses_docks'],
+                'pilot_mode'  => $validated['pilot_mode'],
             ]);
 
             $this->syncCompanyLogo(
@@ -90,6 +91,7 @@ class PlatformCompanyController extends Controller
                 'is_active'   => $validated['company_is_active'],
                 'uses_queues' => $validated['uses_queues'],
                 'uses_docks'  => $validated['uses_docks'],
+                'pilot_mode'  => $validated['pilot_mode'],
             ]);
 
             $this->syncCompanyLogo(
@@ -198,6 +200,7 @@ class PlatformCompanyController extends Controller
             'is_active'   => $company->is_active,
             'uses_queues' => $company->uses_queues,
             'uses_docks'  => $company->uses_docks,
+            'pilot_mode'  => $company->pilot_mode,
             'logo_url' => $company->logo_url,
             'admin' => $admin ? [
                 'id' => $admin->id,

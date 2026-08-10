@@ -38,6 +38,7 @@ class UpdateCompanyRequest extends FormRequest
             'remove_logo' => ['nullable', 'boolean'],
             'uses_queues' => ['required', 'boolean'],
             'uses_docks'  => ['required', 'boolean'],
+            'pilot_mode'  => ['required', 'boolean'],
 
             'admin_name' => ['required', 'string', 'max:255'],
             'admin_email' => [
@@ -67,6 +68,7 @@ class UpdateCompanyRequest extends FormRequest
             'remove_logo'       => $this->boolean('remove_logo'),
             'uses_queues'       => $this->boolean('uses_queues'),
             'uses_docks'        => $this->boolean('uses_docks'),
+            'pilot_mode'        => $this->boolean('pilot_mode'),
             'admin_whatsapp_phone' => $this->exists('admin_whatsapp_phone')
                 ? WhatsAppPhone::normalize($this->input('admin_whatsapp_phone'))
                 : null,

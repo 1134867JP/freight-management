@@ -18,6 +18,7 @@ function initialFormData() {
     company_is_active: true,
     uses_queues: true,
     uses_docks: true,
+    pilot_mode: false,
     logo: null,
     remove_logo: false,
     admin_name: '',
@@ -88,6 +89,7 @@ export default function Companies({ companies, summary }) {
       company_is_active: Boolean(company.is_active),
       uses_queues: Boolean(company.uses_queues ?? true),
       uses_docks: Boolean(company.uses_docks ?? true),
+      pilot_mode: Boolean(company.pilot_mode ?? false),
       logo: null,
       remove_logo: false,
       admin_name: company.admin?.name ?? '',
@@ -203,6 +205,7 @@ export default function Companies({ companies, summary }) {
                           label={company.is_active ? 'Ativa' : 'Inativa'}
                           tone={company.is_active ? 'success' : 'neutral'}
                         />
+                        {company.pilot_mode && <StatusBadge label="Modo piloto" tone="info" />}
                       </div>
                       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Slug: {company.slug}</p>
                     </div>
@@ -375,6 +378,20 @@ export default function Companies({ companies, summary }) {
 
             <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-gray-700 dark:bg-slate-950/30">
               <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Módulos</p>
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-slate-700 dark:border-blue-900 dark:bg-blue-950/30 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={Boolean(data.pilot_mode)}
+                  onChange={(e) => setData('pilot_mode', e.target.checked)}
+                  className="mt-0.5 rounded border-slate-300 text-blue-700 focus:ring-blue-500"
+                />
+                <span>
+                  <span className="block font-medium text-slate-900 dark:text-white">Modo piloto</span>
+                  <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+                    Mostra somente visão geral, agendamento, fretes, clientes e destinos. Os demais módulos permanecem salvos, mas ficam fora do menu.
+                  </span>
+                </span>
+              </label>
               <label className="flex cursor-pointer items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
                 <input
                   type="checkbox"

@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
                 'logo_url'    => $user->company?->logo_url,
                 'uses_queues' => $user->company?->uses_queues ?? true,
                 'uses_docks'  => $user->company?->uses_docks ?? true,
+                'pilot_mode'  => $user->company?->pilot_mode ?? false,
             ];
         }
 

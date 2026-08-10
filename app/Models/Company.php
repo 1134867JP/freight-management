@@ -24,6 +24,7 @@ class Company extends Model
         'settings',
         'uses_queues',
         'uses_docks',
+        'pilot_mode',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class Company extends Model
         'settings'    => 'array',
         'uses_queues' => 'boolean',
         'uses_docks'  => 'boolean',
+        'pilot_mode'  => 'boolean',
     ];
 
     public function usesQueues(): bool
@@ -41,6 +43,11 @@ class Company extends Model
     public function usesDocks(): bool
     {
         return $this->uses_docks ?? true;
+    }
+
+    public function isPilotMode(): bool
+    {
+        return $this->pilot_mode ?? false;
     }
 
     public function getLogoUrlAttribute(): ?string

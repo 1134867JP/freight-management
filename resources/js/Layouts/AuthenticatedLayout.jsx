@@ -30,6 +30,7 @@ export default function AuthenticatedLayout({ header, children }) {
   const logoUrl = company?.logo_url || '/storage/logo.png';
   const usesQueues = company?.uses_queues ?? true;
   const usesDocks  = company?.uses_docks  ?? true;
+  const pilotMode = company?.pilot_mode ?? false;
   const canManageAdmins = permissions?.manage_admins ?? false;
   const canManageEmployees = permissions?.manage_employees ?? false;
   const canViewAuditLogs = permissions?.view_audit_logs ?? false;
@@ -63,6 +64,39 @@ export default function AuthenticatedLayout({ header, children }) {
         ...(usesQueues  ? [{ label: 'Vagas do Pátio',    href: route('yard-spots.index'),  active: route().current('yard-spots.*')  }] : []),
         ...(usesQueues  ? [{ label: 'Veículos do Pátio', href: route('yard-trucks.index'), active: route().current('yard-trucks.*') }] : []),
       ];
+
+      if (pilotMode) {
+        const pilotRegistrations = registrationChildren.slice(0, 2);
+
+        return [
+          {
+            section: 'Operação',
+            items: [
+              { label: 'Visão geral', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
+              { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
+            ],
+          },
+          {
+            section: 'Agendamento',
+            items: [
+              { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda'), icon: 'schedule' },
+              { label: 'Janelas', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
+            ],
+          },
+          {
+            section: 'Gestão',
+            items: [
+              {
+                label: 'Cadastros',
+                icon: 'box',
+                group: 'registrations',
+                active: pilotRegistrations.some((item) => item.active),
+                children: pilotRegistrations,
+              },
+            ],
+          },
+        ];
+      }
 
       const accessChildren = [
         ...(canManageAdmins ? [{ label: 'Administradores', href: route('admins.index'), active: route().current('admins.*') }] : []),
@@ -138,6 +172,19 @@ export default function AuthenticatedLayout({ header, children }) {
       ];
     }
 
+    if (pilotMode) {
+      return [
+        {
+          section: 'Operação',
+          items: [
+            { label: 'Visão geral', href: route('client.dashboard'), active: route().current('client.dashboard'), icon: 'dashboard' },
+            { label: 'Agendar horário', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
+            { label: 'Meus agendamentos', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'clipboard' },
+          ],
+        },
+      ];
+    }
+
     // Client
     return [
       {
@@ -162,7 +209,7 @@ export default function AuthenticatedLayout({ header, children }) {
         ],
       },
     ];
-  }, [canManageAdmins, canManageEmployees, canViewAuditLogs, isAdmin, isPlatformAdmin, usesQueues, usesDocks]);
+  }, [canManageAdmins, canManageEmployees, canViewAuditLogs, isAdmin, isPlatformAdmin, pilotMode, usesQueues, usesDocks]);
 
   const currentNavigation = useMemo(() => {
     for (const section of menuSections) {
