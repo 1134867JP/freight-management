@@ -73,6 +73,21 @@ body {
   }
 }
 
+/*
+ * iOS Safari automatically zooms the viewport when a focused form control
+ * renders below 16px. Keep text-entry controls at that minimum on touch
+ * devices while preserving the denser desktop interface.
+ */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type='button']):not([type='checkbox']):not([type='color']):not([type='file']):not(
+      [type='radio']
+    ):not([type='range']):not([type='reset']):not([type='submit']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
