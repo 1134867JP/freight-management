@@ -44,8 +44,8 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
     <AuthenticatedLayout
       header={
         <PageHeader
-          title="Relatório de Cotas"
-          subtitle="Cotas cadastradas no sistema"
+          title="Relatório de Janelas"
+          subtitle="Janelas de agendamento cadastradas no sistema"
           actions={
             <a
               href={exportUrl()}
@@ -57,7 +57,7 @@ export default function AdminTimeslotsReport({ timeslots, filters }) {
         />
       }
     >
-      <Head title="Relatório de Cotas" />
+      <Head title="Relatório de Janelas" />
 
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-4">

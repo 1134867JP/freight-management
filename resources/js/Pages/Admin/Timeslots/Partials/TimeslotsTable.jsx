@@ -25,7 +25,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
     return (
       <EmptyState
         title="Nenhum horário encontrado com os filtros atuais."
-        description="Ajuste os filtros para visualizar mais Cotas."
+        description="Ajuste os filtros para visualizar outras janelas."
       />
     );
   }
@@ -38,7 +38,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
             <th className="w-[18%] px-4 py-3 font-semibold">Horário</th>
             <th className="w-[10%] px-4 py-3 font-semibold">Operação</th>
             <th className="w-[19%] px-4 py-3 font-semibold">Endereço</th>
-            <th className="w-[18%] px-4 py-3 font-semibold">Cota / Reservas</th>
+            <th className="w-[18%] px-4 py-3 font-semibold">Capacidade / Agendamentos</th>
             <th className="w-[10%] px-4 py-3 font-semibold">Status</th>
             <th className="w-[11%] px-4 py-3 font-semibold">Visibilidade</th>
             <th className="w-[14%] px-4 py-3 text-right font-semibold">Ações</th>

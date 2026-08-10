@@ -105,7 +105,7 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
         <div>
           <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-gray-100">Capacidade</h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <FormField label="Cota (Capacidade)" error={allErrors.capacity} required>
+            <FormField label="Capacidade da janela" error={allErrors.capacity} required>
               <FormField.Input
                 type="number"
                 min="1"
@@ -153,14 +153,14 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
               </FormField.Select>
             </FormField>
 
-            <FormField label="Modelo da Cota" error={allErrors.modelo} required>
+            <FormField label="Modelo da janela" error={allErrors.modelo} required>
               <FormField.Select
                 error={allErrors.modelo}
                 value={form.data.modelo}
                 onChange={(event) => form.setData('modelo', event.target.value)}
                 required
               >
-                <option value="aberta">Cota Aberta</option>
+                <option value="aberta">Janela aberta</option>
                 <option value="por_produto">Por Produto</option>
                 {usesDocks && <option value="por_produto_doca">Por Produto + Doca</option>}
               </FormField.Select>
@@ -256,7 +256,7 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
               value={form.data.description}
               onChange={(event) => form.setData('description', event.target.value)}
               rows="2"
-              placeholder="Informações adicionais sobre esta cota..."
+              placeholder="Informações adicionais sobre esta janela..."
             />
           </FormField>
         </div>

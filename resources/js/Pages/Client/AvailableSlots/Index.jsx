@@ -85,12 +85,12 @@ export default function Index({ timeslots, trucks, drivers }) {
     <AuthenticatedLayout
       header={
         <PageHeader
-          title="Cotas Disponíveis"
+          title="Agendar horário"
           subtitle="Selecione um horário e reserve sua operação"
         />
       }
     >
-      <Head title="Cotas Disponíveis" />
+      <Head title="Agendar horário" />
 
       <div className="py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

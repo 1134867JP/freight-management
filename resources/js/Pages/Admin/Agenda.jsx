@@ -203,7 +203,7 @@ export default function Agenda({ timeslots }) {
               </div>
 
               <p className="mb-3 text-xs text-gray-400 dark:text-gray-500">
-                Clique para ver os detalhes do dia · <span className="font-medium">Duplo clique para adicionar uma cota</span>
+                Clique para ver os detalhes do dia · <span className="font-medium">Duplo clique para adicionar uma janela</span>
               </p>
 
               <div className="grid grid-cols-7 gap-2">
@@ -249,7 +249,7 @@ export default function Agenda({ timeslots }) {
                             </div>
                           </>
                         ) : (
-                          <div className="text-[11px] text-gray-400 dark:text-gray-600">Sem Cotas</div>
+                          <div className="text-[11px] text-gray-400 dark:text-gray-600">Sem janelas</div>
                         )}
                       </div>
                     </button>

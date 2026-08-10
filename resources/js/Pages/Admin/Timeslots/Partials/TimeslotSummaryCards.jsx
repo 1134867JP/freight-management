@@ -3,7 +3,7 @@ import React from 'react';
 const arrCardsConfig = [
   {
     key: 'total',
-    label: 'Total de Cotas',
+    label: 'Total de janelas',
     tone: 'border-gray-200 bg-gray-50 text-gray-800 dark:border-gray-700 dark:bg-gray-700/40 dark:text-gray-200',
   },
   {

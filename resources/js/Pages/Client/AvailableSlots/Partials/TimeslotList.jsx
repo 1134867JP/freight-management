@@ -118,7 +118,7 @@ export default function TimeslotList({ timeslots, selectedSlot, onReserveSlot, c
             <EmptyState
               icon={<CalendarIcon />}
               title="Nenhum horário disponível no momento."
-              description="Aguarde novas cotas serem abertas pelo administrador."
+              description="Aguarde novas janelas serem abertas pelo administrador."
             />
           )}
 

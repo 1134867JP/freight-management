@@ -158,8 +158,8 @@ export default function Index({ timeslots }) {
     <AuthenticatedLayout
       header={
         <PageHeader
-          title="Cotas"
-          subtitle="Gerencie os Cotas disponíveis do pátio"
+          title="Janelas de agendamento"
+          subtitle="Gerencie horários e capacidade disponível para o pátio"
           actions={
             <Button onClick={() => router.visit(route('timeslots.create'))}>
               Novo horário
@@ -168,7 +168,7 @@ export default function Index({ timeslots }) {
         />
       }
     >
-      <Head title="Cotas" />
+      <Head title="Janelas de agendamento" />
 
       <div className="py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

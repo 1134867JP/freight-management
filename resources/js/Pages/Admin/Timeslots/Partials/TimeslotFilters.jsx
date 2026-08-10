@@ -74,7 +74,7 @@ export default function TimeslotFilters({
               className="mt-0"
             >
               <option value="datetime">Data/Hora</option>
-              <option value="capacity">Cota</option>
+              <option value="capacity">Capacidade</option>
               <option value="reservations">Reservas</option>
               <option value="status">Status</option>
             </FormField.Select>

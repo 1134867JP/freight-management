@@ -106,7 +106,7 @@ export default function Produtos({ produtos }) {
       header={
         <PageHeader
           title="Produtos"
-          subtitle="Gerencie os produtos vinculáveis às cotas"
+          subtitle="Gerencie os produtos vinculáveis às janelas"
           actions={
             <Button onClick={() => setShowCreateModal(true)}>
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -149,7 +149,7 @@ export default function Produtos({ produtos }) {
                 <EmptyState
                   icon={<ProdutoIcon />}
                   title="Nenhum produto cadastrado."
-                  description="Crie um produto para vinculá-lo às cotas de agendamento."
+                  description="Crie um produto para vinculá-lo às janelas de agendamento."
                 />
               </div>
             ) : (

@@ -34,21 +34,31 @@ function greeting() {
 
 function OccupancyChart({ occupancy = [] }) {
   const maxCount = Math.max(...occupancy.map((item) => item.count), 1);
+  const hasOccupancy = occupancy.some((item) => Number(item.count) > 0);
 
   return (
     <Card className="h-full">
       <Card.Header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-bold text-slate-900 dark:text-white">Ocupação dos próximos 7 dias</h2>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Reservas ativas por data</p>
+          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Agendamentos ativos por data</p>
         </div>
         <Link href={route('reports.admin.timeslots')} className="text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400">
           Abrir relatório
         </Link>
       </Card.Header>
       <Card.Content className="pb-4">
-        {occupancy.length === 0 ? (
-          <div className="flex h-56 items-center justify-center text-sm text-slate-400">Sem dados de ocupação para o período.</div>
+        {!hasOccupancy ? (
+          <div className="flex h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-6 text-center dark:border-slate-800 dark:bg-slate-950/40">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-brand-600 shadow-sm dark:bg-slate-900">
+              <Icon name="calendar" className="h-5 w-5" />
+            </span>
+            <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-200">Nenhum agendamento nos próximos 7 dias</p>
+            <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">Publique uma janela para disponibilizar horários aos clientes.</p>
+            <Link href={route('timeslots.index')} className="mt-4 text-sm font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400">
+              Gerenciar janelas →
+            </Link>
+          </div>
         ) : (
           <div className="grid h-64 grid-cols-7 items-end gap-2 sm:gap-3" role="img" aria-label="Gráfico de reservas por dia">
             {occupancy.map((item) => {
@@ -61,7 +71,7 @@ function OccupancyChart({ occupancy = [] }) {
                     <div
                       className="w-full rounded-xl bg-gradient-to-t from-brand-700 via-brand-600 to-blue-400 transition-all duration-500"
                       style={{ height: `${height}%` }}
-                      title={`${item.count} reserva(s)`}
+                      title={`${item.count} agendamento(s)`}
                     />
                   </div>
                   <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400 sm:text-xs">
@@ -88,8 +98,8 @@ function CapacitySummary({ stats }) {
   return (
     <Card className="h-full">
       <Card.Header>
-        <h2 className="font-bold text-slate-900 dark:text-white">Distribuição das cotas</h2>
-        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Capacidade anunciada no período</p>
+        <h2 className="font-bold text-slate-900 dark:text-white">Status das janelas</h2>
+        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Quantidade de janelas por situação</p>
       </Card.Header>
       <Card.Content className="space-y-6">
         {rows.map((row) => (
@@ -121,7 +131,7 @@ export default function Dashboard({ stats, occupancy }) {
   const quickActions = [
     ...(usesQueues ? [{ title: 'Painel do pátio', description: 'Acompanhe filas, vagas e docas em tempo real.', routeName: 'admin.yard-board', icon: 'yard', tone: 'brand', badge: 'Ao vivo' }] : []),
     ...(usesQueues ? [{ title: 'Portaria', description: 'Faça check-in e check-out com menos etapas.', routeName: 'admin.gate', icon: 'gate', tone: 'warning' }] : []),
-    { title: 'Gerenciar cotas', description: 'Crie e ajuste a capacidade da operação.', routeName: 'timeslots.index', icon: 'calendar', tone: 'violet' },
+    { title: 'Gerenciar janelas', description: 'Crie horários e ajuste a capacidade da operação.', routeName: 'timeslots.index', icon: 'calendar', tone: 'violet' },
     { title: 'Agenda operacional', description: 'Visualize horários e reservas em uma única grade.', routeName: 'admin.agenda', icon: 'schedule', tone: 'brand' },
     { title: 'Fretes', description: 'Aprove, acompanhe e finalize movimentações.', routeName: 'freights.approvalList', icon: 'truck', tone: 'success' },
     { title: 'Relatórios', description: 'Analise dados e exporte os resultados da operação.', routeName: 'reports.admin.freights', icon: 'chart', tone: 'slate' },
@@ -133,18 +143,18 @@ export default function Dashboard({ stats, occupancy }) {
 
       <div className="py-6 sm:py-8">
         <div className="mx-auto max-w-[1600px] space-y-7 px-4 sm:px-6 lg:px-8">
-          <section className="relative overflow-hidden rounded-3xl bg-[#0a1830] p-6 text-white shadow-xl shadow-slate-900/10 sm:p-8">
+          <section className="relative overflow-hidden rounded-2xl bg-[#0a1830] p-5 text-white shadow-xl shadow-slate-900/10 sm:p-6">
             <div className="pointer-events-none absolute -right-10 -top-28 h-72 w-72 rounded-full bg-blue-500/25 blur-3xl" />
             <div className="pointer-events-none absolute bottom-0 right-1/4 h-28 w-80 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent blur-2xl" />
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-blue-100">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-blue-100">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   Visão operacional atualizada
                 </div>
                 <p className="text-sm font-medium text-slate-400">{greeting()}, {firstName}</p>
-                <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">Controle sua operação em um só lugar.</h1>
-                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
+                <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Controle sua operação em um só lugar.</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
                   Acompanhe capacidade, ocupação e próximos passos sem perder tempo procurando informações.
                 </p>
               </div>
@@ -152,7 +162,7 @@ export default function Dashboard({ stats, occupancy }) {
               <div className="flex flex-wrap gap-3">
                 <Link href={route('timeslots.index')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-950 shadow-lg transition hover:bg-blue-50">
                   <Icon name="calendar" className="h-4 w-4 text-brand-600" />
-                  Nova cota
+                  Nova janela
                 </Link>
                 <Link href={route('freights.approvalList')} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-bold text-white transition hover:bg-white/[0.12]">
                   Ver fretes
@@ -163,7 +173,7 @@ export default function Dashboard({ stats, occupancy }) {
           </section>
 
           <section aria-label="Indicadores da operação" className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-            <MetricCard label="Cotas anunciadas" value={stats?.total_timeslots ?? 0} tone="neutral" icon={<Icon name="calendar" />} detail="Capacidade total" />
+            <MetricCard label="Janelas cadastradas" value={stats?.total_timeslots ?? 0} tone="neutral" icon={<Icon name="calendar" />} detail="Total no sistema" />
             <MetricCard label="Disponíveis" value={stats?.available_timeslots ?? 0} tone="success" icon={<Icon name="check" />} detail="Abertas para reserva" />
             <MetricCard label="Reservados" value={stats?.reserved_timeslots ?? 0} tone="brand" icon={<Icon name="clipboard" />} detail="Com agendamento" />
             <MetricCard label="Lotados" value={stats?.full_timeslots ?? 0} tone="warning" icon={<Icon name="alert" />} detail="Sem capacidade" />

@@ -65,7 +65,7 @@ export default function Dashboard({ stats }) {
             <MetricCard label="Descarregando" value={stats?.unloading_my_freights ?? 0} tone="brand" icon={<Icon name="unloading" />} />
             <MetricCard label="Finalizados" value={stats?.completed_my_freights ?? 0} tone="success" icon={<Icon name="check" />} />
             <MetricCard label="Cancelados" value={stats?.cancelled_my_freights ?? 0} tone="danger" icon={<Icon name="close" />} />
-            <MetricCard label="Cotas hoje" value={stats?.available_today ?? 0} tone="violet" icon={<Icon name="calendar" />} detail="Disponíveis agora" />
+            <MetricCard label="Horários hoje" value={stats?.available_today ?? 0} tone="violet" icon={<Icon name="calendar" />} detail="Disponíveis agora" />
           </section>
 
           <section className="grid gap-5 lg:grid-cols-5">
@@ -89,7 +89,7 @@ export default function Dashboard({ stats }) {
             <div className="lg:col-span-3">
               <SectionHeading title="O que você precisa fazer?" description="Acesse as rotinas mais usadas sem navegar por vários menus." />
               <div className="grid gap-4 sm:grid-cols-3">
-                <QuickActionCard href={route('client.available')} title="Nova reserva" description="Escolha uma cota disponível para sua operação." tone="brand" icon={<Icon name="plus" />} />
+                <QuickActionCard href={route('client.available')} title="Novo agendamento" description="Escolha uma janela disponível para sua operação." tone="brand" icon={<Icon name="plus" />} />
                 <QuickActionCard href={route('client.reservations')} title="Meus fretes" description="Consulte status, horários e histórico." tone="success" icon={<Icon name="truck" />} />
                 <QuickActionCard href={route('client.drivers')} title="Motoristas" description="Mantenha os dados da equipe atualizados." tone="violet" icon={<Icon name="driver" />} />
               </div>

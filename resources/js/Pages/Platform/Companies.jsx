@@ -257,7 +257,7 @@ export default function Companies({ companies, summary }) {
                     <div className="grid grid-cols-2 gap-3">
                       <MiniStat label="Admins" value={company.stats.company_admins_count} />
                       <MiniStat label="Clientes" value={company.stats.clients_count} />
-                      <MiniStat label="Cotas" value={company.stats.timeslots_count} />
+                      <MiniStat label="Janelas" value={company.stats.timeslots_count} />
                       <MiniStat label="Fretes" value={company.stats.freights_count} />
                     </div>
                   </div>
@@ -397,7 +397,7 @@ export default function Companies({ companies, summary }) {
                 />
                 <span>
                   Docas
-                  <span className="ml-1 text-xs text-slate-400">(atribuição de doca a cotas e fretes)</span>
+                  <span className="ml-1 text-xs text-slate-400">(atribuição de doca a janelas e fretes)</span>
                 </span>
               </label>
             </div>
@@ -505,7 +505,7 @@ function formatState(value) {
 
 function formatActiveTimeslotMessage(value) {
   const count = Number(value || 0);
-  const label = count === 1 ? 'cota ativa' : 'cotas ativas';
+  const label = count === 1 ? 'janela ativa' : 'janelas ativas';
 
   return `Exclua ou feche as ${count} ${label} antes de remover a empresa.`;
 }

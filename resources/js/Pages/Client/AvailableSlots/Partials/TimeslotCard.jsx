@@ -20,7 +20,7 @@ function getModeloBadge(strModelo) {
     case 'por_produto_doca':
       return { label: 'Produto + Doca', className: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300' };
     default:
-      return { label: 'Cota aberta', className: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
+      return { label: 'Janela aberta', className: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' };
   }
 }
 
@@ -98,7 +98,7 @@ export default function TimeslotCard({ slot, selected, onReserve }) {
         </div>
       </div>
 
-      {/* Produto / Doca info para cotas por_produto */}
+      {/* Produto / Doca info para janelas por_produto */}
       {slot.produto && (
         <div className="mb-2 flex flex-wrap gap-1">
           <span className="inline-flex items-center rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 px-2 py-0.5 text-xs text-purple-700 dark:text-purple-300">

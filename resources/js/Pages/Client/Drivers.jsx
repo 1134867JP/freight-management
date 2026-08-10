@@ -289,7 +289,7 @@ export default function Drivers({ drivers }) {
           <FormField
             label="WhatsApp (opcional)"
             error={errors.phone}
-            hint="O QR Code de entrada será enviado para este número ao reservar uma cota."
+            hint="O QR Code de entrada será enviado para este número ao reservar uma janela."
           >
             <FormField.Input
               type="tel"

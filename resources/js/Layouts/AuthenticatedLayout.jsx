@@ -3,6 +3,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { Link, usePage } from '@inertiajs/react';
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 
+const SIDEBAR_STORAGE_KEY = 'cargohub.sidebar.collapsed';
+
 export default function AuthenticatedLayout({ header, children }) {
   useTheme();
 
@@ -12,6 +14,10 @@ export default function AuthenticatedLayout({ header, children }) {
   const permissions = auth.permissions;
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [openGroups, setOpenGroups] = useState({});
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+  });
 
   // menu engrenagem
   const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -24,6 +30,9 @@ export default function AuthenticatedLayout({ header, children }) {
   const logoUrl = company?.logo_url || '/storage/logo.png';
   const usesQueues = company?.uses_queues ?? true;
   const usesDocks  = company?.uses_docks  ?? true;
+  const canManageAdmins = permissions?.manage_admins ?? false;
+  const canManageEmployees = permissions?.manage_employees ?? false;
+  const canViewAuditLogs = permissions?.view_audit_logs ?? false;
   const roleLabel = isPlatformAdmin
     ? 'Super Admin'
     : isCompanyAdmin
@@ -45,69 +54,78 @@ export default function AuthenticatedLayout({ header, children }) {
     }
 
     if (isAdmin) {
-      const yardStructureChildren = [
+      const registrationChildren = [
+        { label: 'Clientes',  href: route('clients.index'),           active: route().current('clients.*') },
+        { label: 'Destinos',  href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*') },
+        { label: 'Produtos',  href: route('produtos.index'),          active: route().current('produtos.*') },
         ...(usesDocks   ? [{ label: 'Docas',             href: route('docas.index'),       active: route().current('docas.*')       }] : []),
         ...(usesQueues  ? [{ label: 'Zonas do Pátio',    href: route('yard-zones.index'),  active: route().current('yard-zones.*')  }] : []),
         ...(usesQueues  ? [{ label: 'Vagas do Pátio',    href: route('yard-spots.index'),  active: route().current('yard-spots.*')  }] : []),
-        ...(usesQueues  ? [{ label: 'Cavalos Mecânicos', href: route('yard-trucks.index'), active: route().current('yard-trucks.*') }] : []),
+        ...(usesQueues  ? [{ label: 'Veículos do Pátio', href: route('yard-trucks.index'), active: route().current('yard-trucks.*') }] : []),
       ];
 
-      const cadastrosItems = [
-        { label: 'Clientes',  href: route('clients.index'),           active: route().current('clients.*'),           icon: 'users'    },
-        { label: 'Endereços', href: route('dropoff-addresses.index'),  active: route().current('dropoff-addresses.*'), icon: 'location' },
-        { label: 'Produtos',  href: route('produtos.index'),           active: route().current('produtos.*'),          icon: 'box'      },
-        ...(yardStructureChildren.length > 0 ? [{
-          label: 'Estrutura do Pátio',
-          icon: 'zones',
-          group: 'yard-structure',
-          active: route().current('docas.*') || route().current('yard-zones.*') || route().current('yard-spots.*') || route().current('yard-trucks.*'),
-          children: yardStructureChildren,
-        }] : []),
+      const accessChildren = [
+        ...(canManageAdmins ? [{ label: 'Administradores', href: route('admins.index'), active: route().current('admins.*') }] : []),
+        ...(canManageEmployees ? [{ label: 'Funcionários e permissões', href: route('employees.index'), active: route().current('employees.*') }] : []),
+        ...(canViewAuditLogs ? [{ label: 'Logs de auditoria', href: route('audit-logs.index'), active: route().current('audit-logs.*') }] : []),
       ];
 
       return [
         {
           section: 'Operação',
           items: [
-            { label: 'Painel',   href: route('admin.dashboard'),       active: route().current('admin.dashboard'), icon: 'dashboard' },
+            { label: 'Visão geral', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
             ...((usesQueues || usesDocks) ? [{ label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' }] : []),
-            { label: 'Fretes',   href: route('freights.approvalList'), active: route().current('freights.*'),      icon: 'freight'   },
+            { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
           ],
         },
         ...(usesQueues ? [{
           section: 'Pátio',
           items: [
-            { label: 'Painel do Pátio',        href: route('admin.yard-board'),  active: route().current('admin.yard-board'),   icon: 'yardboard' },
-            { label: 'Mapa do Pátio',          href: route('admin.yard-map'),    active: route().current('admin.yard-map'),     icon: 'map'       },
-            { label: 'Ordens de Movimentação', href: route('admin.move-orders'), active: route().current('admin.move-orders*'), icon: 'moveorder' },
-            { label: 'KPIs',                   href: route('admin.kpi'),         active: route().current('admin.kpi'),          icon: 'kpi'       },
+            { label: 'Visão operacional', href: route('admin.yard-board'), active: route().current('admin.yard-board'), icon: 'yardboard' },
+            { label: 'Mapa do pátio', href: route('admin.yard-map'), active: route().current('admin.yard-map'), icon: 'map' },
+            { label: 'Movimentações', href: route('admin.move-orders'), active: route().current('admin.move-orders*'), icon: 'moveorder' },
           ],
         }] : []),
         {
           section: 'Agendamento',
           items: [
-            { label: 'Cotas',  href: route('timeslots.index'), active: route().current('timeslots.*'),  icon: 'calendar' },
             { label: 'Agenda', href: route('admin.agenda'),    active: route().current('admin.agenda'), icon: 'schedule' },
+            { label: 'Janelas', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
           ],
         },
-        { section: 'Cadastros', items: cadastrosItems },
         {
-          section: 'Dados',
+          section: 'Gestão',
           items: [
+            { label: 'Indicadores', href: route('admin.kpi'), active: route().current('admin.kpi'), icon: 'kpi' },
             {
               label: 'Relatórios',
               icon: 'chart',
               group: 'reports-admin',
               active: route().current('reports.admin.*'),
               children: [
-                { label: 'Cotas',   href: route('reports.admin.timeslots'), active: route().current('reports.admin.timeslots') },
-                { label: 'Fretes',  href: route('reports.admin.freights'),  active: route().current('reports.admin.freights')  },
+                { label: 'Janelas de agendamento', href: route('reports.admin.timeslots'), active: route().current('reports.admin.timeslots') },
+                { label: 'Fretes', href: route('reports.admin.freights'), active: route().current('reports.admin.freights') },
               ],
             },
+            {
+              label: 'Cadastros',
+              icon: 'box',
+              group: 'registrations',
+              active: registrationChildren.some((item) => item.active),
+              children: registrationChildren,
+            },
+            ...(accessChildren.length > 0 ? [{
+              label: 'Equipe e acesso',
+              icon: 'users',
+              group: 'access',
+              active: accessChildren.some((item) => item.active),
+              children: accessChildren,
+            }] : []),
           ],
         },
         {
-          section: 'Configurações',
+          section: 'Integrações',
           items: [
             {
               label: 'WhatsApp',
@@ -125,63 +143,64 @@ export default function AuthenticatedLayout({ header, children }) {
       {
         section: 'Operação',
         items: [
-          { label: 'Painel', href: route('client.dashboard'), active: route().current('client.dashboard'), icon: 'dashboard' },
-          { label: 'Cotas Disponíveis', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
-          { label: 'Minhas Reservas', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'clipboard' },
+          { label: 'Visão geral', href: route('client.dashboard'), active: route().current('client.dashboard'), icon: 'dashboard' },
+          { label: 'Agendar horário', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
+          { label: 'Meus agendamentos', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'clipboard' },
+        ],
+      },
+      {
+        section: 'Cadastros',
+        items: [
           { label: 'Caminhões', href: route('client.trucks'), active: route().current('client.trucks'), icon: 'truck' },
           { label: 'Motoristas', href: route('client.drivers'), active: route().current('client.drivers'), icon: 'driver' },
         ],
       },
       {
-        section: 'Dados',
+        section: 'Análise',
         items: [
-          {
-            label: 'Relatórios',
-            icon: 'chart',
-            group: 'reports-client',
-            active: route().current('reports.client.*'),
-            children: [
-              { label: 'Meus Fretes', href: route('reports.client.reservations'), active: route().current('reports.client.reservations') },
-            ],
-          },
+          { label: 'Histórico de fretes', href: route('reports.client.reservations'), active: route().current('reports.client.*'), icon: 'chart' },
         ],
       },
     ];
-  }, [isAdmin, isPlatformAdmin, usesQueues, usesDocks]);
+  }, [canManageAdmins, canManageEmployees, canViewAuditLogs, isAdmin, isPlatformAdmin, usesQueues, usesDocks]);
 
-  const SideLink = ({ href, active, label, icon, onNavigate }) => (
+  const currentNavigation = useMemo(() => {
+    for (const section of menuSections) {
+      for (const item of section.items) {
+        if (item.children) {
+          const activeChild = item.children.find((child) => child.active);
+          if (activeChild) {
+            return { section: section.section, label: activeChild.label, parent: item.label };
+          }
+        }
+
+        if (item.active) return { section: section.section, label: item.label, parent: null };
+      }
+    }
+
+    return { section: 'Central de operações', label: company?.name || 'CargoHub YMS', parent: null };
+  }, [company?.name, menuSections]);
+
+  const SideLink = ({ href, active, label, icon, onNavigate, compact = false }) => (
     <Link
       href={href}
       onClick={onNavigate}
-      className={`group flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-150 ${
+      className={`group relative flex min-h-10 items-center rounded-xl py-2 text-sm transition-all duration-150 ${compact ? 'justify-center px-2' : 'gap-3 px-3'} ${
         active
           ? 'bg-white font-semibold text-slate-950 shadow-[0_5px_18px_rgba(2,6,23,0.22)]'
           : 'font-medium text-slate-400 hover:bg-white/[0.07] hover:text-white'
       }`}
       aria-current={active ? 'page' : undefined}
+      aria-label={compact ? label : undefined}
+      title={compact ? label : undefined}
     >
       {icon && (
         <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${active ? 'bg-brand-50 text-brand-600' : 'text-slate-500 group-hover:text-slate-200'}`}>
           <MenuIcon name={icon} className="h-4 w-4" />
         </span>
       )}
-      <span className="truncate">{label}</span>
-      {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-500" />}
-    </Link>
-  );
-
-  const SubLink = ({ href, active, label, onNavigate }) => (
-    <Link
-      href={href}
-      onClick={onNavigate}
-      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition ${
-        active
-          ? 'bg-brand-500/15 font-semibold text-brand-200'
-          : 'text-slate-500 hover:bg-white/[0.05] hover:text-slate-200'
-      }`}
-    >
-      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${active ? 'bg-brand-400' : 'bg-slate-700'}`} />
-      {label}
+      {!compact && <span className="truncate">{label}</span>}
+      {active && !compact && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-500" />}
     </Link>
   );
 
@@ -189,19 +208,28 @@ export default function AuthenticatedLayout({ header, children }) {
     setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
-  const NavGroup = ({ item, onNavigate }) => {
+  const NavGroup = ({ item, onNavigate, compact = false }) => {
     const isOpen = openGroups[item.group] !== undefined ? openGroups[item.group] : (item.active ?? false);
     return (
       <div>
         <button
           type="button"
-          onClick={() => toggleGroup(item.group)}
-          className={`flex min-h-10 w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition ${
+          onClick={() => {
+            if (compact) {
+              setSidebarCollapsed(false);
+              setOpenGroups((prev) => ({ ...prev, [item.group]: true }));
+              return;
+            }
+            toggleGroup(item.group);
+          }}
+          className={`flex min-h-10 w-full items-center rounded-xl py-2 text-sm font-medium transition ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
             item.active
               ? 'bg-brand-500/15 text-brand-200'
               : 'text-slate-400 hover:bg-white/[0.07] hover:text-white'
           }`}
           aria-expanded={isOpen}
+          aria-label={compact ? item.label : undefined}
+          title={compact ? item.label : undefined}
         >
           <span className="flex items-center gap-3">
             {item.icon && (
@@ -209,13 +237,15 @@ export default function AuthenticatedLayout({ header, children }) {
                 <MenuIcon name={item.icon} className="h-4 w-4 shrink-0" />
               </span>
             )}
-            {item.label}
+            {!compact && item.label}
           </span>
-          <svg className={`h-4 w-4 text-slate-600 transition ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          {!compact && (
+            <svg className={`h-4 w-4 text-slate-600 transition ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
         </button>
-        {isOpen && (
+        {isOpen && !compact && (
           <div className="ml-5 mt-1 space-y-1 border-l border-slate-800 pl-3">
             {item.children.map((child) => (
               <Link
@@ -237,20 +267,19 @@ export default function AuthenticatedLayout({ header, children }) {
     );
   };
 
-  const NavigationContent = ({ onNavigate = undefined }) => (
-    <nav aria-label="Navegação principal" className="flex-1 space-y-6 overflow-y-auto px-4 py-5">
-      {menuSections.map((objSection) => (
-        <div key={objSection.section ?? '_main'}>
-          {objSection.section && (
+  const NavigationContent = ({ onNavigate = undefined, compact = false }) => (
+    <nav aria-label="Navegação principal" className={`flex-1 overflow-y-auto py-5 ${compact ? 'space-y-2 px-3' : 'space-y-6 px-4'}`}>
+      {menuSections.map((objSection, index) => (
+        <div key={objSection.section ?? '_main'} className={compact && index > 0 ? 'border-t border-white/[0.06] pt-2' : ''}>
+          {objSection.section && !compact && (
             <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600">
               {objSection.section}
             </p>
           )}
           <div className="space-y-1">
             {objSection.items.map((item) => {
-              if (item.children) return <NavGroup key={item.label} item={item} onNavigate={onNavigate} />;
-              if (item.sub) return <SubLink key={item.label} {...item} onNavigate={onNavigate} />;
-              return <SideLink key={item.label} {...item} onNavigate={onNavigate} />;
+              if (item.children) return <NavGroup key={item.label} item={item} onNavigate={onNavigate} compact={compact} />;
+              return <SideLink key={item.label} {...item} onNavigate={onNavigate} compact={compact} />;
             })}
           </div>
         </div>
@@ -289,17 +318,21 @@ export default function AuthenticatedLayout({ header, children }) {
     return () => { document.body.style.overflow = previousOverflow; };
   }, [showMobileMenu]);
 
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 lg:flex lg:h-screen lg:overflow-hidden">
-      <aside className="relative hidden w-[280px] shrink-0 overflow-hidden border-r border-slate-800/80 bg-[#07111f] lg:flex lg:flex-col">
+      <aside className={`relative hidden shrink-0 overflow-hidden border-r border-slate-800/80 bg-[#07111f] transition-[width] duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? 'w-[88px]' : 'w-[280px]'}`}>
         <div className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full bg-blue-600/15 blur-3xl" />
-        <div className="relative border-b border-white/[0.06] px-5 py-5">
+        <div className={`relative border-b border-white/[0.06] py-5 ${sidebarCollapsed ? 'px-6' : 'px-5'}`}>
           <Link href={route('dashboard')} aria-label="Ir para o painel">
-            <BrandLogo inverse />
+            <BrandLogo inverse compact={sidebarCollapsed} />
           </Link>
 
           {company?.name && !isPlatformAdmin && (
-            <div className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.04] p-3">
+            <div className={`mt-5 flex items-center rounded-xl border border-white/[0.07] bg-white/[0.04] ${sidebarCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`} title={sidebarCollapsed ? company.name : undefined}>
               {company?.logo_url ? (
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white p-1.5">
                   <img src={logoUrl} className="max-h-full max-w-full object-contain" alt="" />
@@ -309,35 +342,36 @@ export default function AuthenticatedLayout({ header, children }) {
                   {company.name.charAt(0).toUpperCase()}
                 </span>
               )}
-              <span className="min-w-0">
+              {!sidebarCollapsed && <span className="min-w-0">
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Ambiente</span>
                 <span className="block truncate text-sm font-semibold text-slate-200">{company.name}</span>
-              </span>
+              </span>}
             </div>
           )}
         </div>
 
-        <NavigationContent />
+        <NavigationContent compact={sidebarCollapsed} />
 
         <div className="relative border-t border-white/[0.06] p-4" ref={accountMenuRef}>
           <button
             type="button"
             onClick={() => setShowAccountMenu((v) => !v)}
-            className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-white/[0.06]"
+            className={`flex w-full items-center rounded-xl p-2 text-left transition hover:bg-white/[0.06] ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
             aria-expanded={showAccountMenu}
+            aria-label={sidebarCollapsed ? `Abrir menu de ${user.name}` : undefined}
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-blue-950/30">
               {user.name.charAt(0).toUpperCase()}
             </span>
-            <span className="min-w-0 flex-1">
+            {!sidebarCollapsed && <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold text-white">{user.name}</span>
               <span className="block text-xs text-slate-500">{roleLabel}</span>
-            </span>
-            <GearIcon className="h-4 w-4 text-slate-600" />
+            </span>}
+            {!sidebarCollapsed && <GearIcon className="h-4 w-4 text-slate-600" />}
           </button>
 
           {showAccountMenu && (
-            <div className="absolute bottom-[72px] left-4 right-4 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-1.5 shadow-2xl shadow-black/40">
+            <div className={`overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-1.5 shadow-2xl shadow-black/40 ${sidebarCollapsed ? 'fixed bottom-4 left-[96px] z-50 w-56' : 'absolute bottom-[72px] left-4 right-4'}`}>
               <Link
                 href={route('profile.edit')}
                 className="block rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
@@ -345,36 +379,6 @@ export default function AuthenticatedLayout({ header, children }) {
               >
                 Perfil
               </Link>
-
-              {permissions?.manage_admins && (
-                <Link
-                  href={route('admins.index')}
-                  className="block rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
-                  onClick={() => setShowAccountMenu(false)}
-                >
-                  Administradores
-                </Link>
-              )}
-
-              {permissions?.manage_employees && (
-                <Link
-                  href={route('employees.index')}
-                  className="block rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
-                  onClick={() => setShowAccountMenu(false)}
-                >
-                  Funcionários
-                </Link>
-              )}
-
-              {permissions?.view_audit_logs && (
-                <Link
-                  href={route('audit-logs.index')}
-                  className="block rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
-                  onClick={() => setShowAccountMenu(false)}
-                >
-                  Logs
-                </Link>
-              )}
 
               <Link
                 href={route('logout')}
@@ -396,18 +400,32 @@ export default function AuthenticatedLayout({ header, children }) {
             <BrandLogo compact />
           </Link>
 
-          <div className="hidden min-w-0 lg:block">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Central de operações</p>
-            <p className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">{company?.name || 'CargoHub YMS'}</p>
+          <div className="hidden min-w-0 items-center gap-3 lg:flex">
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed((value) => !value)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
+              aria-label={sidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+              title={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
+            >
+              <svg className={`h-4 w-4 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m14 6-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <div className="min-w-0">
+              <p className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+                {currentNavigation.section || 'Central de operações'}
+              </p>
+              <p className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                {currentNavigation.parent ? `${currentNavigation.parent} · ${currentNavigation.label}` : currentNavigation.label}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 sm:inline-flex dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
-                <span className="relative h-2 w-2 rounded-full bg-emerald-500" />
-              </span>
-              Sistema operacional
+            <span className="hidden max-w-64 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 sm:inline-flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+              <MenuIcon name="buildings" className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <span className="truncate">{company?.name || 'CargoHub YMS'}</span>
             </span>
             <button
               type="button"
