@@ -82,7 +82,8 @@ jobs:
             cd $APP_DIR
 
             echo "==> Atualizando codigo..."
-            git pull origin main
+            git remote set-url origin https://github.com/1134867JP/freight-management.git
+            git pull --ff-only origin main
 
             echo "==> Build dos assets frontend..."
             docker run --rm \
