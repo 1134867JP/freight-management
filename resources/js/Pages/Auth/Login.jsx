@@ -20,7 +20,13 @@ export default function Login({ status, canResetPassword }) {
 
   return (
     <GuestLayout>
-      <Head title="Log in" />
+      <Head title="Entrar" />
+
+      <div className="mb-7">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-600">Bem-vindo de volta</p>
+        <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-950">Acesse sua operação</h1>
+        <p className="mt-2 text-sm leading-relaxed text-slate-500">Use suas credenciais para entrar no CargoHub.</p>
+      </div>
 
       {status && (
         <div role="status" className="mb-4 text-sm font-medium text-green-600">
@@ -52,29 +58,29 @@ export default function Login({ status, canResetPassword }) {
           />
         </FormField>
 
-        <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 cursor-pointer">
+        <div className="flex items-center justify-between gap-4">
+          <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
               name="remember"
               checked={data.remember}
               onChange={(e) => setData('remember', e.target.checked)}
-              className="rounded border-gray-300 text-brand-600 shadow-sm focus:ring-brand-500"
+              className="rounded border-slate-300 text-brand-600 shadow-sm focus:ring-brand-500"
             />
-            <span className="text-sm text-gray-500">Lembra-me</span>
+            <span className="text-sm text-slate-600">Manter conectado</span>
           </label>
 
           {canResetPassword && (
             <Link
               href={route('password.request')}
-              className="text-sm text-brand-600 hover:text-brand-700 hover:underline"
+              className="text-sm font-semibold text-brand-600 hover:text-brand-700 hover:underline"
             >
               Esqueceu a senha?
             </Link>
           )}
         </div>
 
-        <Button type="submit" loading={processing} className="w-full">
+        <Button type="submit" size="lg" loading={processing} className="w-full">
           Entrar
         </Button>
       </form>

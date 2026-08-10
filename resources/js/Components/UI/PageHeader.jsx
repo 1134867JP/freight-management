@@ -8,26 +8,26 @@ export default function PageHeader({
   eyebrow = null,
 }) {
   return (
-    <div className="mb-6 flex flex-col gap-4 border-b border-gray-200 pb-5 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700">
+    <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-4">
         {icon ? (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-blue-100 text-brand-600 ring-1 ring-brand-100 dark:from-brand-950/60 dark:to-slate-900 dark:text-brand-300 dark:ring-brand-900">
             {icon}
           </div>
         ) : (
-          <div className="h-9 w-1 shrink-0 rounded-full bg-teal-500" />
+          <div className="h-10 w-1 shrink-0 rounded-full bg-gradient-to-b from-brand-400 to-brand-700" />
         )}
         <div>
           {eyebrow && (
-            <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-400">
               {eyebrow}
             </p>
           )}
-          <h1 className="text-2xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl font-extrabold leading-tight tracking-tight text-slate-950 sm:text-3xl dark:text-white">
             {title}
           </h1>
           {subtitle && (
-            <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">{subtitle}</p>
           )}
         </div>
       </div>

@@ -24,21 +24,21 @@ function Spinner() {
 
 const VARIANT_CLASSES = {
   primary:
-    'bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500 border-transparent shadow-sm',
+    'border-transparent bg-brand-600 text-white shadow-[0_1px_2px_rgba(30,64,175,0.25),0_6px_16px_rgba(37,99,235,0.16)] hover:bg-brand-700 hover:shadow-md focus:ring-brand-500',
   secondary:
-    'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 focus:ring-brand-400 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600',
+    'border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 focus:ring-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800',
   danger:
-    'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 border-transparent shadow-sm',
+    'border-transparent bg-rose-600 text-white shadow-sm hover:bg-rose-700 focus:ring-rose-500',
   ghost:
-    'bg-transparent text-gray-600 hover:bg-gray-100 border-transparent focus:ring-brand-400 dark:text-gray-300 dark:hover:bg-gray-700',
+    'border-transparent bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-brand-400 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
   soft:
-    'bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100 focus:ring-brand-500 dark:bg-brand-900/30 dark:text-brand-400 dark:border-brand-800 dark:hover:bg-brand-900/50',
+    'border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 focus:ring-brand-500 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-300 dark:hover:bg-brand-900/60',
 };
 
 const SIZE_CLASSES = {
-  sm: 'px-3 py-1.5 text-xs gap-1.5',
-  md: 'px-4 py-2 text-sm gap-2',
-  lg: 'px-5 py-2.5 text-base gap-2',
+  sm: 'min-h-8 px-3 py-1.5 text-xs gap-1.5',
+  md: 'min-h-10 px-4 py-2 text-sm gap-2',
+  lg: 'min-h-11 px-5 py-2.5 text-sm gap-2',
 };
 
 export default function Button({
@@ -60,10 +60,10 @@ export default function Button({
       disabled={isDisabled}
       aria-busy={loading}
       className={[
-        'inline-flex items-center justify-center rounded-lg border font-semibold',
-        'transition-colors duration-150',
+        'inline-flex items-center justify-center rounded-xl border font-semibold',
+        'transition-all duration-150 active:translate-y-px',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:active:translate-y-0',
         VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.primary,
         SIZE_CLASSES[size] ?? SIZE_CLASSES.md,
         className,
