@@ -9,6 +9,7 @@ use App\Models\YardSpot;
 use App\Models\YardZone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,8 +32,10 @@ class YardSpotController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $companyId = $request->user()->company_id;
+
         $data = $request->validate([
-            'yard_zone_id'      => ['required', 'integer', 'exists:yard_zones,id'],
+            'yard_zone_id'      => ['required', 'integer', Rule::exists('yard_zones', 'id')->where('company_id', $companyId)],
             'nome'              => ['required', 'string', 'max:20'],
             'suporta_reefer'    => ['boolean'],
             'suporta_oversized' => ['boolean'],
@@ -50,8 +53,10 @@ class YardSpotController extends Controller
 
     public function update(Request $request, YardSpot $yardSpot): RedirectResponse
     {
+        $companyId = $request->user()->company_id;
+
         $data = $request->validate([
-            'yard_zone_id'      => ['required', 'integer', 'exists:yard_zones,id'],
+            'yard_zone_id'      => ['required', 'integer', Rule::exists('yard_zones', 'id')->where('company_id', $companyId)],
             'nome'              => ['required', 'string', 'max:20'],
             'suporta_reefer'    => ['boolean'],
             'suporta_oversized' => ['boolean'],
@@ -82,8 +87,10 @@ class YardSpotController extends Controller
 
     public function assign(Request $request, Freight $freight): RedirectResponse
     {
+        $companyId = $request->user()->company_id;
+
         $request->validate([
-            'spot_id' => ['required', 'integer', 'exists:yard_spots,id'],
+            'spot_id' => ['required', 'integer', Rule::exists('yard_spots', 'id')->where('company_id', $companyId)],
         ]);
 
         $spot = YardSpot::findOrFail($request->integer('spot_id'));

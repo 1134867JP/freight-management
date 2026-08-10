@@ -47,7 +47,7 @@ class KpiController extends Controller
 
         $docaUtilization = $this->docaUtilization($companyId, $since);
 
-        $activeNow = Freight::where('company_id', $companyId)->active()->get(['id', 'arrived_at', 'status', 'dwell_limit_minutos']);
+        $activeNow = Freight::where('company_id', $companyId)->inYard()->get(['id', 'arrived_at', 'status', 'dwell_limit_minutos']);
 
         $waitingFreights = $activeNow->where('status', FreightStatus::Arrived);
         $avgWaitMinutes  = $waitingFreights->isNotEmpty()

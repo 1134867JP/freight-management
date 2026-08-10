@@ -32,12 +32,12 @@ class YardMapController extends Controller
             'spots' => function ($q) {
                 $q->orderBy('nome')
                   ->with(['freights' => function ($fq) {
-                      $fq->active()->with('produto:id,nome');
+                      $fq->inYard()->with('produto:id,nome');
                   }]);
             },
         ])
             ->where('company_id', $companyId)
-            ->active()
+            ->inYard()
             ->orderBy('ordem')
             ->orderBy('nome')
             ->get()
@@ -55,7 +55,7 @@ class YardMapController extends Controller
         $docas = Doca::where('company_id', $companyId)
             ->active()
             ->orderBy('nome')
-            ->with(['freights' => fn ($q) => $q->active()])
+            ->with(['freights' => fn ($q) => $q->inYard()])
             ->get()
             ->map(fn ($doca) => [
                 'id'     => $doca->id,
@@ -66,7 +66,7 @@ class YardMapController extends Controller
             ]);
 
         $noLocation = Freight::where('company_id', $companyId)
-            ->active()
+            ->inYard()
             ->whereNull('current_spot_id')
             ->whereNull('doca_id')
             ->orderBy('arrived_at')
@@ -116,7 +116,7 @@ class YardMapController extends Controller
 
     private function buildStats(int $companyId): array
     {
-        $active = Freight::where('company_id', $companyId)->active()->get();
+        $active = Freight::where('company_id', $companyId)->inYard()->get();
 
         return [
             'total_no_patio'   => $active->count(),

@@ -7,6 +7,7 @@ use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToCompany;
 use App\Support\WhatsAppPhone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Auditable, BelongsToCompany, HasFactory, Notifiable;
+    use Auditable, BelongsToCompany, HasFactory, Notifiable, SoftDeletes;
 
     public const ROLE_PLATFORM_ADMIN = 'platform_admin';
 

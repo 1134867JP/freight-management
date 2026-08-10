@@ -3,6 +3,8 @@
 namespace App\Actions\Freight;
 
 use App\Actions\Doca\ReleaseDoca;
+use App\Actions\MoveOrder\CancelMoveOrder;
+use App\Actions\Yard\AssignYardSpot;
 use App\Enums\FreightStatus;
 use App\Exceptions\Freight\FreightAlreadyCancelledException;
 use App\Models\Freight;
@@ -12,6 +14,8 @@ class CancelReservation
 {
     public function __construct(
         private readonly ReleaseDoca $releaseDoca,
+        private readonly AssignYardSpot $assignYardSpot,
+        private readonly CancelMoveOrder $cancelMoveOrder,
     ) {}
 
     /**
@@ -20,11 +24,15 @@ class CancelReservation
     public function execute(Freight $freight, ?string $adminNotes = null): bool
     {
         return DB::transaction(function () use ($freight, $adminNotes) {
-            if ($freight->status === FreightStatus::Completed) {
+            $lockedFreight = Freight::query()
+                ->lockForUpdate()
+                ->findOrFail($freight->id);
+
+            if ($lockedFreight->status === FreightStatus::Completed) {
                 throw new FreightAlreadyCancelledException();
             }
 
-            if ($freight->status === FreightStatus::Cancelled) {
+            if ($lockedFreight->status === FreightStatus::Cancelled) {
                 return false;
             }
 
@@ -33,15 +41,25 @@ class CancelReservation
                 $update['admin_notes'] = $adminNotes;
             }
 
-            $freight->update($update);
+            $lockedFreight->moveOrders()
+                ->active()
+                ->lockForUpdate()
+                ->get()
+                ->each(fn ($order) => $this->cancelMoveOrder->execute($order));
 
-            $timeslot = $freight->timeslot;
+            $lockedFreight->update($update);
+
+            $timeslot = $lockedFreight->timeslot()
+                ->lockForUpdate()
+                ->first();
+
             if ($timeslot) {
                 $timeslot->clampReservations();
                 $timeslot->save();
             }
 
-            $this->releaseDoca->execute($freight);
+            $this->releaseDoca->execute($lockedFreight);
+            $this->assignYardSpot->release($lockedFreight);
 
             return true;
         });

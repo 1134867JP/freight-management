@@ -16,6 +16,7 @@ class FreightExportController extends Controller
 
         $query = Freight::with(['user', 'timeslot'])
             ->where('freights.company_id', $user->company_id)
+            ->search($request->input('search'))
             ->orderBy('freights.created_at', 'desc');
 
         if ($request->filled('operation_type') && $request->input('operation_type') !== 'all') {

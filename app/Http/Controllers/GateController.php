@@ -42,7 +42,11 @@ class GateController extends Controller
 
         $completedToday = Freight::with(['user', 'timeslot', 'doca'])
             ->where('status', FreightStatus::Completed)
-            ->whereDate('updated_at', $today)
+            ->where(function ($query) use ($today) {
+                $query
+                    ->whereNull('departed_at')
+                    ->orWhereDate('departed_at', $today);
+            })
             ->orderBy('updated_at', 'desc')
             ->get();
 

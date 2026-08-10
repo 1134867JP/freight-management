@@ -28,11 +28,12 @@ class StartUnload
             return;
         }
 
-        $arrived_at = $freight->arrived_at ?? ($freight->status === FreightStatus::Arrived ? now() : null);
+        if ($freight->status !== FreightStatus::Arrived || $freight->arrived_at === null) {
+            throw new RuntimeException('Faça o check-in do veículo antes de iniciar a descarga.');
+        }
 
         $freight->update([
-            'status'     => FreightStatus::Unloading,
-            'arrived_at' => $arrived_at,
+            'status' => FreightStatus::Unloading,
         ]);
 
         YardBoardUpdated::dispatch($freight->company_id);

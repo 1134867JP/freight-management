@@ -61,6 +61,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if ($objUser && ! $objUser->isPlatformAdmin() && ! $objUser->company?->is_active) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'O acesso desta empresa está desativado.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

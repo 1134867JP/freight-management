@@ -11,6 +11,7 @@ use App\Models\Doca;
 use App\Models\Freight;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -57,8 +58,10 @@ class DocaController extends Controller
 
     public function assign(Request $request, Freight $freight): RedirectResponse
     {
+        $companyId = $request->user()->company_id;
+
         $request->validate([
-            'doca_id' => ['required', 'integer', 'exists:docas,id'],
+            'doca_id' => ['required', 'integer', Rule::exists('docas', 'id')->where('company_id', $companyId)],
         ]);
 
         $doca = Doca::findOrFail($request->integer('doca_id'));

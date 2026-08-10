@@ -3,7 +3,6 @@
 namespace App\Actions\Freight;
 
 use App\Enums\FreightStatus;
-use App\Exceptions\Freight\DuplicateActivePlateException;
 use App\Models\Freight;
 use App\Models\Timeslot;
 use App\Models\Truck;
@@ -43,12 +42,33 @@ class CreateReservation
             $invoicePath,
             $driverPhone,
         ) {
+            /**
+             * A capacidade precisa ser conferida sobre a mesma linha que será
+             * usada para criar a reserva. Em PostgreSQL, o lock serializa duas
+             * tentativas simultâneas para a última vaga do horário.
+             */
+            $timeslot = Timeslot::query()
+                ->lockForUpdate()
+                ->findOrFail($timeslot->id);
+
             if ((int) $user->company_id !== (int) $timeslot->company_id) {
                 throw new \RuntimeException('O horário selecionado não pertence à empresa do cliente.');
             }
 
+            if ($timeslot->status === Timeslot::STATUS_CLOSED || $timeslot->end_time->isPast()) {
+                throw ValidationException::withMessages([
+                    'timeslot_id' => 'Este horário está encerrado e não aceita novas reservas.',
+                ]);
+            }
+
             if (! $timeslot->isVisibleTo($user->id)) {
                 throw new \RuntimeException('O horário selecionado não está disponível para este cliente.');
+            }
+
+            if ($timeslot->freights()->occupying()->count() >= (int) $timeslot->capacity) {
+                throw ValidationException::withMessages([
+                    'timeslot_id' => 'Este horário atingiu a capacidade máxima.',
+                ]);
             }
 
             $plateExists = Freight::query()

@@ -5,6 +5,7 @@ import Button from '@/Components/UI/Button';
 import Card from '@/Components/UI/Card';
 import FormField from '@/Components/UI/FormField';
 import PageHeader from '@/Components/UI/PageHeader';
+import Pagination from '@/Components/UI/Pagination';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import { Head, router, usePage } from '@inertiajs/react';
 import AssignDocaModal from './Partials/AssignDocaModal';
@@ -12,14 +13,14 @@ import FinalizeFreightModal from './Partials/FinalizeFreightModal';
 import FreightsTable from './Partials/FreightsTable';
 import UploadAttachmentModal from './Partials/UploadAttachmentModal';
 
-export default function Index({ freights, docasDisponiveis }) {
+export default function Index({ freights, docasDisponiveis, filters = {}, statusCounts = {} }) {
   const { auth } = usePage().props;
   const usesDocks = auth.company?.uses_docks ?? true;
   const list = useMemo(() => freights?.data || [], [freights]);
-  const [filterSearch, setFilterSearch] = useState('');
-  const [filterOp, setFilterOp] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterDate, setFilterDate] = useState('');
+  const [filterSearch, setFilterSearch] = useState(filters.search ?? '');
+  const [filterOp, setFilterOp] = useState(filters.operation_type ?? 'all');
+  const [filterStatus, setFilterStatus] = useState(filters.status ?? 'all');
+  const [filterDate, setFilterDate] = useState(filters.date ?? '');
   const [finalizeModal, setFinalizeModal] = useState({ open: false, freight: null });
   const [grossWeight, setGrossWeight] = useState('');
   const [netWeight, setNetWeight] = useState('');
@@ -29,72 +30,14 @@ export default function Index({ freights, docasDisponiveis }) {
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [assignDocaModal, setAssignDocaModal] = useState({ open: false, freight: null });
 
-  const normalizeStatus = (status) => {
-    if (status === 'arrived') return 'arrived';
-    if (status === 'loading') return 'loading';
-    if (status === 'unloading') return 'unloading';
-    if (status === 'completed') return 'completed';
-    if (status === 'cancelled') return 'cancelled';
-    return 'reserved';
+  const statusSummary = {
+    reserved: Number(statusCounts.reserved ?? 0),
+    arrived: Number(statusCounts.arrived ?? 0),
+    loading: Number(statusCounts.loading ?? 0),
+    unloading: Number(statusCounts.unloading ?? 0),
+    completed: Number(statusCounts.completed ?? 0),
+    cancelled: Number(statusCounts.cancelled ?? 0),
   };
-
-  const getDateKey = (value) => {
-    if (!value) return '';
-    const vlDate = new Date(value);
-    const nrYear = vlDate.getFullYear();
-    const nrMonth = String(vlDate.getMonth() + 1).padStart(2, '0');
-    const nrDay = String(vlDate.getDate()).padStart(2, '0');
-    return `${nrYear}-${nrMonth}-${nrDay}`;
-  };
-
-  const statusSummary = useMemo(
-    () =>
-      list.reduce(
-        (arrAccumulator, objFreight) => {
-          const strStatus = normalizeStatus(objFreight.status);
-          arrAccumulator[strStatus] = (arrAccumulator[strStatus] || 0) + 1;
-          return arrAccumulator;
-        },
-        {
-          reserved: 0,
-          arrived: 0,
-          loading: 0,
-          unloading: 0,
-          completed: 0,
-          cancelled: 0,
-        },
-      ),
-    [list],
-  );
-
-  const filteredFreights = useMemo(() => {
-    const strSearch = filterSearch.trim().toLowerCase();
-
-    return list.filter((objFreight) => {
-      if (strSearch) {
-        const strClientName = (objFreight.user?.name || '').toLowerCase();
-        const strPlate = (objFreight.truck_plate || '').toLowerCase();
-        const blMatchesSearch = strClientName.includes(strSearch) || strPlate.includes(strSearch);
-
-        if (!blMatchesSearch) return false;
-      }
-
-      if (filterOp !== 'all' && objFreight.operation_type !== filterOp) {
-        return false;
-      }
-
-      if (filterStatus !== 'all' && normalizeStatus(objFreight.status) !== filterStatus) {
-        return false;
-      }
-
-      if (filterDate) {
-        const strFreightDate = getDateKey(objFreight.timeslot?.start_time);
-        if (strFreightDate !== filterDate) return false;
-      }
-
-      return true;
-    });
-  }, [list, filterSearch, filterOp, filterStatus, filterDate]);
 
   const confirm = useConfirm();
 
@@ -111,11 +54,7 @@ export default function Index({ freights, docasDisponiveis }) {
 
   const startOperation = (objFreight) => {
     if (objFreight.operation_type === 'load') {
-      router.patch(
-        route('freights.start-load', objFreight.id),
-        {},
-        { preserveScroll: true },
-      );
+      router.patch(route('freights.start-load', objFreight.id), {}, { preserveScroll: true });
       return;
     }
 
@@ -148,15 +87,31 @@ export default function Index({ freights, docasDisponiveis }) {
     );
   };
 
+  const applyFilters = () => {
+    const params = {};
+    if (filterSearch.trim()) params.search = filterSearch.trim();
+    if (filterOp !== 'all') params.operation_type = filterOp;
+    if (filterStatus !== 'all') params.status = filterStatus;
+    if (filterDate) params.date = filterDate;
+
+    router.get(route('freights.approvalList'), params, {
+      preserveState: true,
+      preserveScroll: true,
+      replace: true,
+    });
+  };
+
   const resetFilters = () => {
     setFilterSearch('');
     setFilterOp('all');
     setFilterStatus('all');
     setFilterDate('');
+    router.get(route('freights.approvalList'), {}, { preserveScroll: true, replace: true });
   };
 
   const exportCsvUrl = () => {
     const params = new URLSearchParams();
+    if (filterSearch.trim()) params.set('search', filterSearch.trim());
     if (filterOp !== 'all') params.set('operation_type', filterOp);
     if (filterStatus !== 'all') params.set('status', filterStatus);
     if (filterDate) params.set('date_from', filterDate);
@@ -204,37 +159,68 @@ export default function Index({ freights, docasDisponiveis }) {
           <FlashMessages />
 
           <Card className="rounded-lg p-4 sm:p-6">
-            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-6" aria-label="Resumo dos fretes">
+            <div
+              className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-6"
+              aria-label="Resumo dos fretes"
+            >
               <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-700">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">Reservados</p>
-                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{statusSummary.reserved}</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                  Reservados
+                </p>
+                <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {statusSummary.reserved}
+                </p>
               </div>
               <div className="rounded-lg border border-sky-200 bg-sky-50 p-4 dark:border-sky-800 dark:bg-sky-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-sky-700 dark:text-sky-400">No Pátio</p>
-                <p className="mt-2 text-2xl font-bold text-sky-800 dark:text-sky-300">{statusSummary.arrived}</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-sky-700 dark:text-sky-400">
+                  No Pátio
+                </p>
+                <p className="mt-2 text-2xl font-bold text-sky-800 dark:text-sky-300">
+                  {statusSummary.arrived}
+                </p>
               </div>
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-400">Carregando</p>
-                <p className="mt-2 text-2xl font-bold text-amber-800 dark:text-amber-300">{statusSummary.loading}</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-400">
+                  Carregando
+                </p>
+                <p className="mt-2 text-2xl font-bold text-amber-800 dark:text-amber-300">
+                  {statusSummary.loading}
+                </p>
               </div>
               <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-400">Descarregando</p>
-                <p className="mt-2 text-2xl font-bold text-blue-800 dark:text-blue-300">{statusSummary.unloading}</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-400">
+                  Descarregando
+                </p>
+                <p className="mt-2 text-2xl font-bold text-blue-800 dark:text-blue-300">
+                  {statusSummary.unloading}
+                </p>
               </div>
               <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-green-700 dark:text-green-400">Finalizados</p>
-                <p className="mt-2 text-2xl font-bold text-green-800 dark:text-green-300">{statusSummary.completed}</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-green-700 dark:text-green-400">
+                  Finalizados
+                </p>
+                <p className="mt-2 text-2xl font-bold text-green-800 dark:text-green-300">
+                  {statusSummary.completed}
+                </p>
               </div>
               <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-                <p className="text-xs font-semibold uppercase tracking-widest text-red-700 dark:text-red-400">Cancelados</p>
-                <p className="mt-2 text-2xl font-bold text-red-800 dark:text-red-300">{statusSummary.cancelled}</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-red-700 dark:text-red-400">
+                  Cancelados
+                </p>
+                <p className="mt-2 text-2xl font-bold text-red-800 dark:text-red-300">
+                  {statusSummary.cancelled}
+                </p>
               </div>
             </div>
 
             <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/30">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">Filtros</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{filteredFreights.length} resultado(s)</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                  Filtros
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {freights?.total ?? list.length} resultado(s)
+                </p>
               </div>
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-5">
                 <FormField id="freight-search" label="Buscar" className="space-y-1">
@@ -243,9 +229,9 @@ export default function Index({ freights, docasDisponiveis }) {
                     type="search"
                     value={filterSearch}
                     onChange={(event) => setFilterSearch(event.target.value)}
-                    placeholder="Cliente ou placa"
+                    placeholder="Cliente, placa, motorista, produto ou doca"
                     className="mt-0"
-                    aria-label="Buscar por cliente ou placa"
+                    aria-label="Buscar fretes"
                   />
                 </FormField>
 
@@ -290,11 +276,10 @@ export default function Index({ freights, docasDisponiveis }) {
                 </FormField>
 
                 <div className="flex items-end gap-2">
-                  <Button
-                    onClick={resetFilters}
-                    variant="secondary"
-                    className="flex-1"
-                  >
+                  <Button onClick={applyFilters} className="flex-1">
+                    Aplicar
+                  </Button>
+                  <Button onClick={resetFilters} variant="secondary" className="flex-1">
                     Limpar
                   </Button>
                   <a
@@ -302,7 +287,12 @@ export default function Index({ freights, docasDisponiveis }) {
                     className="flex items-center gap-1.5 rounded-md border border-green-500 bg-green-50 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-100 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40"
                   >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                      <path
+                        d="M12 3v13m0 0-4-4m4 4 4-4M4 20h16"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                     CSV
                   </a>
@@ -311,16 +301,25 @@ export default function Index({ freights, docasDisponiveis }) {
             </div>
 
             <FreightsTable
-              freights={filteredFreights}
+              freights={list}
               onCancelReservation={cancelReservation}
               onStartOperation={startOperation}
               onOpenFinalizeModal={(objFreight) =>
                 setFinalizeModal({ open: true, freight: objFreight })
               }
               onOpenAttachmentModal={openAttachmentModal}
-              onOpenAssignDocaModal={usesDocks ? (objFreight) =>
-                setAssignDocaModal({ open: true, freight: objFreight }) : undefined
+              onOpenAssignDocaModal={
+                usesDocks
+                  ? (objFreight) => setAssignDocaModal({ open: true, freight: objFreight })
+                  : undefined
               }
+            />
+
+            <Pagination
+              links={freights?.links}
+              currentPage={freights?.current_page}
+              lastPage={freights?.last_page}
+              className="mt-5 border-t border-gray-200 pt-4 dark:border-gray-700"
             />
           </Card>
         </div>

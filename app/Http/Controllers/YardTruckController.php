@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\YardTruck;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,10 +31,18 @@ class YardTruckController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $companyId = $request->user()->company_id;
+
         $data = $request->validate([
             'identificador' => ['required', 'string', 'max:30'],
             'modelo'        => ['nullable', 'string', 'max:100'],
-            'operador_id'   => ['nullable', 'integer', 'exists:users,id'],
+            'operador_id'   => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereIn('role', [User::ROLE_COMPANY_ADMIN, User::ROLE_COMPANY_EMPLOYEE]),
+            ],
             'notas'         => ['nullable', 'string'],
             'is_active'     => ['boolean'],
         ]);
@@ -47,10 +56,18 @@ class YardTruckController extends Controller
 
     public function update(Request $request, YardTruck $yardTruck): RedirectResponse
     {
+        $companyId = $request->user()->company_id;
+
         $data = $request->validate([
             'identificador' => ['required', 'string', 'max:30'],
             'modelo'        => ['nullable', 'string', 'max:100'],
-            'operador_id'   => ['nullable', 'integer', 'exists:users,id'],
+            'operador_id'   => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereIn('role', [User::ROLE_COMPANY_ADMIN, User::ROLE_COMPANY_EMPLOYEE]),
+            ],
             'notas'         => ['nullable', 'string'],
             'is_active'     => ['boolean'],
         ]);

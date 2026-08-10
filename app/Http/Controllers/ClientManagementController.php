@@ -62,7 +62,7 @@ class ClientManagementController extends Controller
         return redirect()->back()->with('success', 'Cliente atualizado com sucesso!');
     }
 
-    // ADMIN: Deletar cliente
+    // ADMIN: Desativar o acesso sem apagar o histórico operacional
     public function destroy(User $user)
     {
         abort_unless($user->role === User::ROLE_CLIENT, 403, 'Apenas clientes podem ser removidos aqui.');
@@ -70,6 +70,6 @@ class ClientManagementController extends Controller
 
         $user->delete();
 
-        return redirect()->back()->with('success', 'Cliente removido com sucesso!');
+        return redirect()->back()->with('success', 'Cliente desativado. O histórico foi preservado.');
     }
 }

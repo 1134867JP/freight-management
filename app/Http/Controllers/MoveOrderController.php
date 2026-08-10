@@ -10,11 +10,13 @@ use App\Enums\MoveOrderStatus;
 use App\Models\Doca;
 use App\Models\Freight;
 use App\Models\MoveOrder;
+use App\Models\User;
 use App\Models\YardSpot;
 use App\Models\YardTruck;
 use App\Models\YardZone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,7 +45,7 @@ class MoveOrderController extends Controller
             ->paginate(30);
 
         $activeFreights = Freight::where('company_id', $companyId)
-            ->active()
+            ->inYard()
             ->orderBy('truck_plate')
             ->get(['id', 'truck_plate', 'driver_name', 'status', 'current_spot_id', 'doca_id']);
 
@@ -74,12 +76,21 @@ class MoveOrderController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $companyId = $request->user()->company_id;
+        $destinationTable = $request->input('destino_tipo') === 'doca' ? 'docas' : 'yard_spots';
+
         $data = $request->validate([
-            'freight_id'    => ['required', 'integer', 'exists:freights,id'],
+            'freight_id'    => ['required', 'integer', Rule::exists('freights', 'id')->where('company_id', $companyId)],
             'destino_tipo'  => ['required', 'in:spot,doca'],
-            'destino_id'    => ['required', 'integer'],
-            'yard_truck_id' => ['nullable', 'integer', 'exists:yard_trucks,id'],
-            'operador_id'   => ['nullable', 'integer', 'exists:users,id'],
+            'destino_id'    => ['required', 'integer', Rule::exists($destinationTable, 'id')->where('company_id', $companyId)],
+            'yard_truck_id' => ['nullable', 'integer', Rule::exists('yard_trucks', 'id')->where('company_id', $companyId)],
+            'operador_id'   => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')
+                    ->where('company_id', $companyId)
+                    ->whereIn('role', [User::ROLE_COMPANY_ADMIN, User::ROLE_COMPANY_EMPLOYEE]),
+            ],
             'notas'         => ['nullable', 'string', 'max:500'],
         ]);
 

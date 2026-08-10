@@ -63,6 +63,48 @@ class Freight extends Model
         return $query->where('status', FreightStatus::Cancelled->value);
     }
 
+    public function scopeInYard(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query): void {
+            $query
+                ->whereIn('status', [
+                    FreightStatus::Arrived->value,
+                    FreightStatus::Loading->value,
+                    FreightStatus::Unloading->value,
+                ])
+                ->orWhere(function (Builder $query): void {
+                    $query
+                        ->where('status', FreightStatus::Completed->value)
+                        ->whereNull('departed_at');
+                });
+        });
+    }
+
+    public function scopeSearch(Builder $query, ?string $search): Builder
+    {
+        $search = trim((string) $search);
+
+        if ($search === '') {
+            return $query;
+        }
+
+        $term = '%'.mb_strtolower($search).'%';
+
+        return $query->where(function (Builder $query) use ($term): void {
+            $query
+                ->whereRaw('LOWER(truck_plate) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(driver_name) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(cargo_description) LIKE ?', [$term])
+                ->orWhereHas('user', fn (Builder $user) => $user->whereRaw('LOWER(name) LIKE ?', [$term]))
+                ->orWhereHas('produto', fn (Builder $produto) => $produto->whereRaw('LOWER(nome) LIKE ?', [$term]))
+                ->orWhereHas('doca', function (Builder $doca) use ($term): void {
+                    $doca
+                        ->whereRaw('LOWER(nome) LIKE ?', [$term])
+                        ->orWhereRaw('LOWER(codigo) LIKE ?', [$term]);
+                });
+        });
+    }
+
     public function scopeCompleted(Builder $query): Builder
     {
         return $query->where('status', FreightStatus::Completed->value);
@@ -70,7 +112,7 @@ class Freight extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function timeslot(): BelongsTo

@@ -37,32 +37,29 @@ class FreightController extends Controller
     // ADMIN: List freights
     public function approvalList(Request $request)
     {
-        $query = Freight::with(['user', 'timeslot', 'attachments', 'doca'])
-            ->orderBy('created_at', 'desc');
-
-        if ($request->filled('search')) {
-            $s = $request->search;
-            $query->where(function ($q) use ($s) {
-                $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$s}%"))
-                  ->orWhere('truck_plate', 'like', "%{$s}%");
-            });
-        }
+        $baseQuery = Freight::query()
+            ->search($request->input('search'));
 
         if ($request->filled('operation_type') && $request->operation_type !== 'all') {
-            $query->where('operation_type', $request->operation_type);
-        }
-
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+            $baseQuery->where('operation_type', $request->operation_type);
         }
 
         if ($request->filled('date')) {
-            $query->whereHas('timeslot', fn ($q) => $q->whereDate('start_time', $request->date));
+            $baseQuery->whereHas('timeslot', fn ($q) => $q->whereDate('start_time', $request->date));
         }
 
-        $statusCounts = Freight::selectRaw('status, count(*) as total')
+        $statusCounts = (clone $baseQuery)
+            ->selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $baseQuery->where('status', $request->status);
+        }
+
+        $query = $baseQuery
+            ->with(['user', 'timeslot', 'attachments', 'doca'])
+            ->orderBy('created_at', 'desc');
 
         $company = auth()->user()->company;
         $docasDisponiveis = $company->usesDocks()
@@ -391,7 +388,9 @@ class FreightController extends Controller
 
         try {
             $oldPath = DB::transaction(function () use ($freight, $file, $type, $newPath) {
-                $existing = $freight->attachments()->where('type', $type)->first();
+                $existing = $type === FreightAttachment::TYPE_INVOICE
+                    ? $freight->attachments()->where('type', $type)->first()
+                    : null;
                 $oldPath  = $existing?->path;
 
                 $existing?->delete();

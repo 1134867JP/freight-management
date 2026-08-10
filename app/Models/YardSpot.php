@@ -46,7 +46,7 @@ class YardSpot extends Model
 
     public function currentFreight(): ?Freight
     {
-        return $this->freights()->active()->first();
+        return $this->freights()->inYard()->first();
     }
 
     public function scopeActive(Builder $query): Builder
