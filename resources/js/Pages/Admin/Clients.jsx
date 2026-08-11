@@ -105,8 +105,8 @@ export default function Clients({ clients }) {
       return null;
     },
     password: (value) => {
-      if (!isEditing && (!value || value.length < 6))
-        return 'Senha deve ter ao menos 6 caracteres.';
+      if (!isEditing && (!value || value.length < 8))
+        return 'Senha deve ter ao menos 8 caracteres.';
       return null;
     },
   });
@@ -342,8 +342,9 @@ export default function Clients({ clients }) {
           </FormField>
 
           <FormField
-            label={isEditing ? 'Nova senha (opcional)' : 'Senha'}
+            label={isEditing ? 'Nova senha temporária (opcional)' : 'Senha temporária'}
             error={allErrors.password}
+            hint="O usuário deverá criar uma nova senha no próximo acesso."
             required={!isEditing}
           >
             <FormField.Input

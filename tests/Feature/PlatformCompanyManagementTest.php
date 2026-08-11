@@ -58,6 +58,7 @@ class PlatformCompanyManagementTest extends TestCase
             'company_id' => $company->id,
             'email' => 'admin@acme.test',
             'role' => User::ROLE_COMPANY_ADMIN,
+            'must_change_password' => true,
         ]);
 
         $company->refresh();
@@ -132,6 +133,7 @@ class PlatformCompanyManagementTest extends TestCase
             'email' => 'novo@empresa.test',
             'role' => User::ROLE_COMPANY_ADMIN,
             'whatsapp_phone' => '5511888888888',
+            'must_change_password' => true,
         ]);
 
         $company->refresh();

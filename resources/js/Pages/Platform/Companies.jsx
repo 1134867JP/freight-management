@@ -34,13 +34,22 @@ export default function Companies({ companies, summary }) {
   const [currentLogoUrl, setCurrentLogoUrl] = useState(null);
   const [selectedLogoUrl, setSelectedLogoUrl] = useState(null);
 
-  const { data, setData, post, processing, errors, clearErrors, transform } = useForm(initialFormData());
+  const { data, setData, post, processing, errors, clearErrors, transform } =
+    useForm(initialFormData());
 
   const cards = useMemo(
     () => [
       { label: 'Empresas', value: summary?.companies_count ?? 0, tone: 'text-gray-900' },
-      { label: 'Empresas ativas', value: summary?.active_companies_count ?? 0, tone: 'text-emerald-700' },
-      { label: 'Instâncias prontas', value: summary?.instances_ready_count ?? 0, tone: 'text-blue-700' },
+      {
+        label: 'Empresas ativas',
+        value: summary?.active_companies_count ?? 0,
+        tone: 'text-emerald-700',
+      },
+      {
+        label: 'Instâncias prontas',
+        value: summary?.instances_ready_count ?? 0,
+        tone: 'text-blue-700',
+      },
       { label: 'Clientes totais', value: summary?.clients_count ?? 0, tone: 'text-amber-700' },
     ],
     [summary],
@@ -135,7 +144,9 @@ export default function Companies({ companies, summary }) {
       return;
     }
 
-    const ok = await confirm(`Tem certeza que deseja excluir a empresa ${company.name}? Esta ação removerá os dados vinculados.`);
+    const ok = await confirm(
+      `Tem certeza que deseja excluir a empresa ${company.name}? Esta ação removerá os dados vinculados.`,
+    );
     if (!ok) return;
 
     router.delete(route('platform.companies.destroy', company.id), {
@@ -144,7 +155,9 @@ export default function Companies({ companies, summary }) {
   };
 
   const deleteInstance = async (companyId) => {
-    const ok = await confirm('Excluir instância WhatsApp desta empresa? Esta ação remove a conexão no provedor.');
+    const ok = await confirm(
+      'Excluir instância WhatsApp desta empresa? Esta ação remove a conexão no provedor.',
+    );
     if (!ok) return;
 
     router.delete(route('platform.companies.instance.destroy', companyId), {
@@ -152,7 +165,7 @@ export default function Companies({ companies, summary }) {
     });
   };
 
-  const logoPreviewUrl = data.remove_logo ? null : selectedLogoUrl ?? currentLogoUrl;
+  const logoPreviewUrl = data.remove_logo ? null : (selectedLogoUrl ?? currentLogoUrl);
 
   return (
     <AuthenticatedLayout
@@ -160,13 +173,7 @@ export default function Companies({ companies, summary }) {
         <PageHeader
           title="Painel Global"
           subtitle="Cadastre empresas, gerencie admins e acompanhe o status de conexão WhatsApp de cada empresa."
-          actions={
-            <Button
-              onClick={openCreate}
-            >
-              + Nova Empresa
-            </Button>
-          }
+          actions={<Button onClick={openCreate}>+ Nova Empresa</Button>}
         />
       }
     >
@@ -178,46 +185,62 @@ export default function Companies({ companies, summary }) {
 
           <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {cards.map((card) => (
-              <div key={card.label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <p className="text-xs font-medium text-slate-500 dark:text-gray-400">{card.label}</p>
-                <p className={`mt-1.5 text-2xl font-bold tabular-nums ${card.tone}`}>{card.value}</p>
+              <div
+                key={card.label}
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              >
+                <p className="text-xs font-medium text-slate-500 dark:text-gray-400">
+                  {card.label}
+                </p>
+                <p className={`mt-1.5 text-2xl font-bold tabular-nums ${card.tone}`}>
+                  {card.value}
+                </p>
               </div>
             ))}
           </section>
 
           <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
             {companies.map((company) => (
-              <article key={company.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <article
+                key={company.id}
+                className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800"
+              >
                 <div className="flex flex-col gap-5 border-b border-slate-200 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700 dark:bg-slate-900/40">
                   <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
                       {company.logo_url ? (
-                        <img src={company.logo_url} alt={company.name} className="h-full w-full object-cover" />
+                        <img
+                          src={company.logo_url}
+                          alt={company.name}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
-                        <span className="text-xl font-bold">{company.name.slice(0, 2).toUpperCase()}</span>
+                        <span className="text-xl font-bold">
+                          {company.name.slice(0, 2).toUpperCase()}
+                        </span>
                       )}
                     </div>
 
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold text-slate-950 dark:text-white">{company.name}</h3>
+                        <h3 className="text-lg font-semibold text-slate-950 dark:text-white">
+                          {company.name}
+                        </h3>
                         <StatusBadge
                           label={company.is_active ? 'Ativa' : 'Inativa'}
                           tone={company.is_active ? 'success' : 'neutral'}
                         />
                         {company.pilot_mode && <StatusBadge label="Modo piloto" tone="info" />}
                       </div>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Slug: {company.slug}</p>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        Slug: {company.slug}
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex flex-col items-start gap-2 sm:items-end">
                     <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() => openEdit(company)}
-                        variant="secondary"
-                        size="sm"
-                      >
+                      <Button onClick={() => openEdit(company)} variant="secondary" size="sm">
                         Editar empresa
                       </Button>
                       <Button
@@ -225,11 +248,7 @@ export default function Companies({ companies, summary }) {
                         disabled={!company.can_delete}
                         variant="danger"
                         size="sm"
-                        className={
-                          company.can_delete
-                            ? ''
-                            : 'cursor-not-allowed'
-                        }
+                        className={company.can_delete ? '' : 'cursor-not-allowed'}
                       >
                         Excluir empresa
                       </Button>
@@ -248,9 +267,15 @@ export default function Companies({ companies, summary }) {
                     <SectionTitle>Admin principal</SectionTitle>
                     {company.admin ? (
                       <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-gray-700">
-                        <p className="font-medium text-slate-900 dark:text-gray-100">{company.admin.name}</p>
-                        <p className="mt-1 text-sm text-slate-600 dark:text-gray-400">{company.admin.email}</p>
-                        <p className="mt-1 text-sm text-slate-500 dark:text-gray-500">WhatsApp: {formatPhone(company.admin.whatsapp_phone, 'Não informado')}</p>
+                        <p className="font-medium text-slate-900 dark:text-gray-100">
+                          {company.admin.name}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-600 dark:text-gray-400">
+                          {company.admin.email}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-gray-500">
+                          WhatsApp: {formatPhone(company.admin.whatsapp_phone, 'Não informado')}
+                        </p>
                       </div>
                     ) : (
                       <EmptyBlock text="Nenhum admin cadastrado." />
@@ -325,7 +350,11 @@ export default function Companies({ companies, summary }) {
               />
             </FormField>
 
-            <FormField label="Slug" hint="Se vazio, será gerado a partir do nome." error={errors.company_slug}>
+            <FormField
+              label="Slug"
+              hint="Se vazio, será gerado a partir do nome."
+              error={errors.company_slug}
+            >
               <FormField.Input
                 type="text"
                 error={errors.company_slug}
@@ -352,7 +381,9 @@ export default function Companies({ companies, summary }) {
             </FormField>
 
             <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-gray-700 dark:bg-slate-950/30">
-              <p className="text-sm font-medium text-slate-700 dark:text-gray-300">Status e branding</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-gray-300">
+                Status e branding
+              </p>
               <label className="flex items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
                 <input
                   type="checkbox"
@@ -372,7 +403,11 @@ export default function Companies({ companies, summary }) {
                 Remover logo atual
               </label>
               {logoPreviewUrl && (
-                <img src={logoPreviewUrl} alt="Preview da logo" className="h-20 rounded-xl object-contain" />
+                <img
+                  src={logoPreviewUrl}
+                  alt="Preview da logo"
+                  className="h-20 rounded-xl object-contain"
+                />
               )}
             </div>
 
@@ -386,9 +421,12 @@ export default function Companies({ companies, summary }) {
                   className="mt-0.5 rounded border-slate-300 text-blue-700 focus:ring-blue-500"
                 />
                 <span>
-                  <span className="block font-medium text-slate-900 dark:text-white">Modo piloto</span>
+                  <span className="block font-medium text-slate-900 dark:text-white">
+                    Modo piloto
+                  </span>
                   <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
-                    Mostra somente visão geral, agendamento, fretes, clientes e destinos. Os demais módulos permanecem salvos, mas ficam fora do menu.
+                    Mostra somente visão geral, agendamento, fretes, clientes e destinos. Os demais
+                    módulos permanecem salvos, mas ficam fora do menu.
                   </span>
                 </span>
               </label>
@@ -401,7 +439,9 @@ export default function Companies({ companies, summary }) {
                 />
                 <span>
                   Filas / Operação
-                  <span className="ml-1 text-xs text-slate-400">(portaria, status de frete, pátio)</span>
+                  <span className="ml-1 text-xs text-slate-400">
+                    (portaria, status de frete, pátio)
+                  </span>
                 </span>
               </label>
               <label className="flex cursor-pointer items-center gap-3 text-sm text-slate-700 dark:text-gray-300">
@@ -413,7 +453,9 @@ export default function Companies({ companies, summary }) {
                 />
                 <span>
                   Docas
-                  <span className="ml-1 text-xs text-slate-400">(atribuição de doca a janelas e fretes)</span>
+                  <span className="ml-1 text-xs text-slate-400">
+                    (atribuição de doca a janelas e fretes)
+                  </span>
                 </span>
               </label>
             </div>
@@ -444,7 +486,11 @@ export default function Companies({ companies, summary }) {
               />
             </FormField>
 
-            <FormField label="WhatsApp" hint="Com DDI e apenas números." error={errors.admin_whatsapp_phone}>
+            <FormField
+              label="WhatsApp"
+              hint="Com DDI e apenas números."
+              error={errors.admin_whatsapp_phone}
+            >
               <FormField.Input
                 type="tel"
                 error={errors.admin_whatsapp_phone}
@@ -455,8 +501,14 @@ export default function Companies({ companies, summary }) {
             </FormField>
 
             <FormField
-              label={editingCompany ? 'Nova senha do admin' : 'Senha do admin'}
-              hint={editingCompany ? 'Preencha apenas se quiser trocar.' : null}
+              label={
+                editingCompany ? 'Nova senha temporária do admin' : 'Senha temporária do admin'
+              }
+              hint={
+                editingCompany
+                  ? 'Preencha apenas para redefinir. O admin deverá trocá-la no próximo acesso.'
+                  : 'O admin deverá criar uma nova senha no primeiro acesso.'
+              }
               error={errors.admin_password}
             >
               <FormField.Input
@@ -470,10 +522,7 @@ export default function Companies({ companies, summary }) {
           </section>
 
           <FormActions className="border-t border-slate-200 pt-6">
-            <Button
-              onClick={resetForm}
-              variant="secondary"
-            >
+            <Button onClick={resetForm} variant="secondary">
               Cancelar
             </Button>
             <Button type="submit" disabled={processing} variant="primary">

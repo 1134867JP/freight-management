@@ -35,6 +35,7 @@ class ClientManagementController extends Controller
             'email' => $validated['email'],
             'whatsapp_phone' => $validated['whatsapp_phone'] ?? null,
             'password' => Hash::make($validated['password']),
+            'must_change_password' => true,
             'role' => User::ROLE_CLIENT,
         ]);
 
@@ -56,7 +57,10 @@ class ClientManagementController extends Controller
         ]);
 
         if (! empty($validated['password'])) {
-            $user->update(['password' => Hash::make($validated['password'])]);
+            $user->update([
+                'password' => Hash::make($validated['password']),
+                'must_change_password' => true,
+            ]);
         }
 
         return redirect()->back()->with('success', 'Cliente atualizado com sucesso!');

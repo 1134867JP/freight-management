@@ -176,6 +176,7 @@ class PlatformCompanyController extends Controller
 
         if (filled($validated['admin_password'] ?? null)) {
             $payload['password'] = Hash::make($validated['admin_password']);
+            $payload['must_change_password'] = true;
         }
 
         if ($admin) {

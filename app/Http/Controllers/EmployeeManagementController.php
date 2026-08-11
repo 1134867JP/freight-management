@@ -34,6 +34,7 @@ class EmployeeManagementController extends Controller
             'email' => $validated['email'],
             'whatsapp_phone' => $validated['whatsapp_phone'] ?? null,
             'password' => Hash::make($validated['password']),
+            'must_change_password' => true,
             'role' => User::ROLE_COMPANY_EMPLOYEE,
             'permissions' => User::defaultEmployeePermissions(),
         ]);
@@ -55,7 +56,10 @@ class EmployeeManagementController extends Controller
         ]);
 
         if (! empty($validated['password'])) {
-            $employee_user->update(['password' => Hash::make($validated['password'])]);
+            $employee_user->update([
+                'password' => Hash::make($validated['password']),
+                'must_change_password' => true,
+            ]);
         }
 
         return redirect()->back()->with('success', 'Funcionário atualizado com sucesso!');

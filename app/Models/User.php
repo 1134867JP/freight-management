@@ -47,6 +47,7 @@ class User extends Authenticatable
         'email',
         'whatsapp_phone',
         'password',
+        'must_change_password',
         'role',
         'permissions',
         'theme_preference',
@@ -72,6 +73,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
             'permissions' => 'array',
         ];
     }

@@ -34,6 +34,7 @@ class AdminManagementController extends Controller
             'email' => $validated['email'],
             'whatsapp_phone' => $validated['whatsapp_phone'] ?? null,
             'password' => Hash::make($validated['password']),
+            'must_change_password' => true,
             'role' => User::ROLE_COMPANY_ADMIN,
         ]);
 
@@ -55,7 +56,10 @@ class AdminManagementController extends Controller
         ]);
 
         if (! empty($validated['password'])) {
-            $admin_user->update(['password' => Hash::make($validated['password'])]);
+            $admin_user->update([
+                'password' => Hash::make($validated['password']),
+                'must_change_password' => true,
+            ]);
         }
 
         return redirect()->back()->with('success', 'Administrador atualizado com sucesso!');
