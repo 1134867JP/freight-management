@@ -45,8 +45,15 @@ class PostgresReservationConcurrencyTest extends TestCase
         mkdir($runDirectory, 0700, true);
         $startSignal = $runDirectory.'/start';
         $children = [];
+        $clientIds = $clients->pluck('id')->all();
+        $timeslotId = $timeslot->id;
 
-        foreach ($clients as $index => $client) {
+        // Não permita que os processos filhos herdem o mesmo socket PDO. Cada
+        // reserva precisa abrir sua própria conexão para reproduzir duas
+        // requisições independentes concorrendo pelo lock do PostgreSQL.
+        DB::disconnect();
+
+        foreach ($clientIds as $index => $clientId) {
             $resultFile = $runDirectory.'/result-'.$index;
             $processId = pcntl_fork();
 
@@ -55,16 +62,16 @@ class PostgresReservationConcurrencyTest extends TestCase
             }
 
             if ($processId === 0) {
-                DB::disconnect();
-
                 while (! is_file($startSignal)) {
                     usleep(1_000);
                 }
 
                 try {
+                    DB::reconnect();
+
                     app(CreateReservation::class)->execute(
-                        $client,
-                        $timeslot,
+                        User::query()->findOrFail($clientId),
+                        Timeslot::query()->findOrFail($timeslotId),
                         'CON'.($index + 1).'234',
                         'Motorista '.($index + 1),
                         'Carga concorrente',
