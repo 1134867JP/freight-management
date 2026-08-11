@@ -34,6 +34,7 @@ export default function AuthenticatedLayout({ header, children }) {
   const canManageAdmins = permissions?.manage_admins ?? false;
   const canManageEmployees = permissions?.manage_employees ?? false;
   const canViewAuditLogs = permissions?.view_audit_logs ?? false;
+  const canManageWhatsApp = permissions?.manage_whatsapp ?? false;
   const roleLabel = isPlatformAdmin
     ? 'Super Admin'
     : isCompanyAdmin
@@ -67,6 +68,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
       if (pilotMode) {
         const pilotRegistrations = registrationChildren.slice(0, 2);
+        const pilotAccessChildren = [
+          ...(canManageAdmins ? [{ label: 'Administradores', href: route('admins.index'), active: route().current('admins.*') }] : []),
+          ...(canManageEmployees ? [{ label: 'Funcionários e permissões', href: route('employees.index'), active: route().current('employees.*') }] : []),
+        ];
 
         return [
           {
@@ -93,8 +98,26 @@ export default function AuthenticatedLayout({ header, children }) {
                 active: pilotRegistrations.some((item) => item.active),
                 children: pilotRegistrations,
               },
+              ...(pilotAccessChildren.length > 0 ? [{
+                label: 'Equipe e acesso',
+                icon: 'users',
+                group: 'access',
+                active: pilotAccessChildren.some((item) => item.active),
+                children: pilotAccessChildren,
+              }] : []),
             ],
           },
+          ...(canManageWhatsApp ? [{
+            section: 'Integrações',
+            items: [
+              {
+                label: 'WhatsApp',
+                href: route('admin.whatsapp'),
+                active: route().current('admin.whatsapp*'),
+                icon: 'whatsapp',
+              },
+            ],
+          }] : []),
         ];
       }
 
@@ -158,7 +181,7 @@ export default function AuthenticatedLayout({ header, children }) {
             }] : []),
           ],
         },
-        {
+        ...(canManageWhatsApp ? [{
           section: 'Integrações',
           items: [
             {
@@ -168,7 +191,7 @@ export default function AuthenticatedLayout({ header, children }) {
               icon: 'whatsapp',
             },
           ],
-        },
+        }] : []),
       ];
     }
 
@@ -209,7 +232,7 @@ export default function AuthenticatedLayout({ header, children }) {
         ],
       },
     ];
-  }, [canManageAdmins, canManageEmployees, canViewAuditLogs, isAdmin, isPlatformAdmin, pilotMode, usesQueues, usesDocks]);
+  }, [canManageAdmins, canManageEmployees, canManageWhatsApp, canViewAuditLogs, isAdmin, isPlatformAdmin, pilotMode, usesQueues, usesDocks]);
 
   const currentNavigation = useMemo(() => {
     for (const section of menuSections) {

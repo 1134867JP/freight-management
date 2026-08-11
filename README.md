@@ -130,7 +130,7 @@ Requisitos operacionais:
 
 ### Criação de cotas pelo WhatsApp
 
-O CargoHub também pode receber comandos de administradores pelo evento `MESSAGES_UPSERT` da Evolution. O bot interpreta o pedido, resolve o cliente dentro da mesma empresa e solicita confirmação antes de criar o `Timeslot`.
+O CargoHub também pode receber comandos de administradores e funcionários autorizados pelo evento `MESSAGES_UPSERT` da Evolution. O bot interpreta o pedido, resolve o cliente dentro da mesma empresa e solicita confirmação antes de criar o `Timeslot`.
 
 Configuração adicional:
 
@@ -159,7 +159,8 @@ Criar 10 cotas às 10h no cliente X amanhã
 
 Regras de segurança e consistência:
 
-- somente um `company_admin` ativo, da mesma empresa e com o telefone cadastrado, é reconhecido;
+- `company_admin` tem acesso automaticamente; `company_employee` precisa da permissão `create_timeslots_via_whatsapp`;
+- o telefone cadastrado precisa identificar um único usuário autorizado dentro da empresa;
 - mensagens de grupos, mensagens enviadas pelo próprio número e remetentes não autorizados são ignorados;
 - a cota só é gravada após `CONFIRMAR`; `CANCELAR` descarta o pedido;
 - comandos pendentes expiram e reentregas do mesmo webhook são idempotentes;

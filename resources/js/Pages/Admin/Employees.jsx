@@ -18,6 +18,8 @@ const PERMISSION_LABELS = {
   view_audit_logs: { label: 'Logs de auditoria', description: 'Visualizar o histórico de ações do sistema.' },
   manage_admins: { label: 'Gerenciar administradores', description: 'Criar, editar e excluir administradores.' },
   manage_employees: { label: 'Gerenciar funcionários', description: 'Criar, editar e excluir outros funcionários e suas permissões.' },
+  manage_whatsapp: { label: 'Gerenciar integração WhatsApp', description: 'Conectar, atualizar ou remover o WhatsApp da empresa.' },
+  create_timeslots_via_whatsapp: { label: 'Criar cotas pelo WhatsApp', description: 'Enviar comandos pelo número cadastrado e confirmar novas cotas.' },
 };
 
 const AVATAR_COLORS = [
@@ -156,6 +158,8 @@ export default function Employees({ employees, currentUserId }) {
         view_audit_logs: false,
         manage_admins: false,
         manage_employees: false,
+        manage_whatsapp: false,
+        create_timeslots_via_whatsapp: false,
         ...(employee.permissions ?? {}),
       },
     });

@@ -151,11 +151,13 @@ Route::middleware('auth')->group(function () {
             Route::patch('/employees/{employee_user}/permissions', [EmployeeManagementController::class, 'updatePermissions'])->name('employees.permissions');
         });
 
-        // WhatsApp
-        Route::get('/whatsapp', [WhatsAppController::class, 'show'])->name('admin.whatsapp');
-        Route::post('/whatsapp/sync', [WhatsAppController::class, 'sync'])->name('admin.whatsapp.sync');
-        Route::post('/whatsapp/refresh', [WhatsAppController::class, 'refresh'])->name('admin.whatsapp.refresh');
-        Route::delete('/whatsapp', [WhatsAppController::class, 'destroy'])->name('admin.whatsapp.destroy');
+        // WhatsApp — conexão e credenciais ficam restritas a usuários autorizados.
+        Route::middleware('permission:manage_whatsapp')->group(function () {
+            Route::get('/whatsapp', [WhatsAppController::class, 'show'])->name('admin.whatsapp');
+            Route::post('/whatsapp/sync', [WhatsAppController::class, 'sync'])->name('admin.whatsapp.sync');
+            Route::post('/whatsapp/refresh', [WhatsAppController::class, 'refresh'])->name('admin.whatsapp.refresh');
+            Route::delete('/whatsapp', [WhatsAppController::class, 'destroy'])->name('admin.whatsapp.destroy');
+        });
     });
 
     // -------------------------

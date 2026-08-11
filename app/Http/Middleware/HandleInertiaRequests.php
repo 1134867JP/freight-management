@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -49,9 +50,11 @@ class HandleInertiaRequests extends Middleware
         $permissions = null;
         if ($user) {
             $permissions = [
-                'view_audit_logs' => $user->hasPermission('view_audit_logs'),
-                'manage_admins' => $user->hasPermission('manage_admins'),
-                'manage_employees' => $user->hasPermission('manage_employees'),
+                User::PERMISSION_VIEW_AUDIT_LOGS => $user->hasPermission(User::PERMISSION_VIEW_AUDIT_LOGS),
+                User::PERMISSION_MANAGE_ADMINS => $user->hasPermission(User::PERMISSION_MANAGE_ADMINS),
+                User::PERMISSION_MANAGE_EMPLOYEES => $user->hasPermission(User::PERMISSION_MANAGE_EMPLOYEES),
+                User::PERMISSION_MANAGE_WHATSAPP => $user->hasPermission(User::PERMISSION_MANAGE_WHATSAPP),
+                User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP => $user->hasPermission(User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP),
             ];
         }
 
