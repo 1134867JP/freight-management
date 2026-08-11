@@ -19,6 +19,7 @@ class TimeslotWhatsAppBot
     public function __construct(
         private readonly TimeslotCommandParser $parser,
         private readonly CreateTimeslot $createTimeslot,
+        private readonly YmsConversationalManager $conversationalManager,
     ) {}
 
     public function handle(WhatsAppInstance $instance, array $message): ?array
@@ -37,36 +38,62 @@ class TimeslotWhatsAppBot
             return null;
         }
 
+        $canCreateTimeslots = $user->hasPermission(User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP);
+        $canUseAssistant = $this->conversationalManager->isEnabled()
+            && $user->hasPermission(User::PERMISSION_USE_YMS_ASSISTANT);
+
+        if (! $canCreateTimeslots && ! $canUseAssistant) {
+            return null;
+        }
+
         $text = trim((string) $message['text']);
         $normalized = $this->normalizeCommand($text);
 
         if (preg_match('/^confirmar\b/u', $normalized) === 1) {
-            return $this->confirm($instance, $user, $message);
+            return $canCreateTimeslots ? $this->confirm($instance, $user, $message) : null;
         }
 
         if (preg_match('/^cancelar\b/u', $normalized) === 1) {
-            return $this->cancel($instance, $user, $message);
+            return $canCreateTimeslots ? $this->cancel($instance, $user, $message) : null;
         }
 
         if (in_array($normalized, ['ajuda', 'help', 'menu'], true)) {
             return $this->help($instance, $user, $message);
         }
 
-        if (! str_contains($normalized, 'cota')) {
-            return null;
+        if ($this->looksLikeTimeslotCreation($normalized)) {
+            if (! $canCreateTimeslots) {
+                return null;
+            }
+
+            if (mb_strlen($text) > 2000) {
+                return $this->reject(
+                    $instance,
+                    $user,
+                    $message,
+                    'create_timeslot',
+                    'A mensagem é muito longa. '.$this->parser->example(),
+                );
+            }
+
+            return $this->startCreation($instance, $user, $message);
         }
 
-        if (mb_strlen($text) > 2000) {
+        if ($canUseAssistant) {
+            return $this->conversationalManager->handle($instance, $user, $message);
+        }
+
+        if (str_contains($normalized, 'cota') && $canCreateTimeslots) {
             return $this->reject(
                 $instance,
                 $user,
                 $message,
                 'create_timeslot',
-                'A mensagem é muito longa. '.$this->parser->example(),
+                'Não consegui identificar uma criação de cota. '.$this->parser->example(),
             );
         }
 
-        return $this->startCreation($instance, $user, $message);
+        return null;
     }
 
     private function startCreation(WhatsAppInstance $instance, User $user, array $message): ?array
@@ -332,19 +359,39 @@ class TimeslotWhatsAppBot
                 return null;
             }
 
+            $lines = [];
+
+            if ($user->hasPermission(User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP)) {
+                $lines = [
+                    'Para criar uma cota, envie:',
+                    '10 cotas | Cliente X | amanhã | 10:00',
+                    'Depois, responda CONFIRMAR ou CANCELAR.',
+                ];
+            }
+
+            if (
+                $this->conversationalManager->isEnabled()
+                && $user->hasPermission(User::PERMISSION_USE_YMS_ASSISTANT)
+            ) {
+                $lines = [
+                    ...$lines,
+                    ...($lines === [] ? [] : ['']),
+                    'Consultas disponíveis:',
+                    '• Quantas cotas ainda temos hoje?',
+                    '• Quantos veículos estão no pátio?',
+                    '• Quais veículos estão atrasados?',
+                    '• Quais docas estão livres?',
+                    '• Faça um resumo da operação de hoje.',
+                ];
+            }
+
             return $this->recordStandaloneReply(
                 $instance,
                 $user,
                 $message,
                 'help',
                 WhatsAppCommand::STATUS_EXECUTED,
-                implode("\n", [
-                    'Para criar uma cota, envie:',
-                    '10 cotas | Cliente X | amanhã | 10:00',
-                    '',
-                    'Também entendo: Criar 10 cotas às 10h para o cliente X amanhã.',
-                    'Depois, responda CONFIRMAR ou CANCELAR.',
-                ]),
+                implode("\n", $lines),
             );
         });
     }
@@ -436,7 +483,6 @@ class TimeslotWhatsAppBot
             ->whereIn('role', [User::ROLE_COMPANY_ADMIN, User::ROLE_COMPANY_EMPLOYEE])
             ->whereNotNull('whatsapp_phone')
             ->get()
-            ->filter(fn (User $user) => $user->hasPermission(User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP))
             ->filter(fn (User $user) => $user->routeWhatsAppPhone() === $phone)
             ->values();
 
@@ -551,6 +597,16 @@ class TimeslotWhatsAppBot
             ->squish()
             ->trim(" \t\n\r\0\x0B.!?")
             ->toString();
+    }
+
+    private function looksLikeTimeslotCreation(string $normalized): bool
+    {
+        if (! str_contains($normalized, 'cota')) {
+            return false;
+        }
+
+        return preg_match('/\b\d{1,4}\s+cotas?\b/u', $normalized) === 1
+            || preg_match('/\b(?:criar|crie|abrir|abra|adicionar|adicione|gerar)\b.*\bcotas?\b/u', $normalized) === 1;
     }
 
     private function normalizeClientName(string $value): string

@@ -80,6 +80,7 @@ class EmployeeManagementController extends Controller
             'permissions.'.User::PERMISSION_MANAGE_EMPLOYEES => 'required|boolean',
             'permissions.'.User::PERMISSION_MANAGE_WHATSAPP => 'required|boolean',
             'permissions.'.User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP => 'required|boolean',
+            'permissions.'.User::PERMISSION_USE_YMS_ASSISTANT => 'required|boolean',
         ]);
 
         $currentPermissions = $employee_user->permissions ?? User::defaultEmployeePermissions();

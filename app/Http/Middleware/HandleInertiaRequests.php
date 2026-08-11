@@ -55,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                 User::PERMISSION_MANAGE_EMPLOYEES => $user->hasPermission(User::PERMISSION_MANAGE_EMPLOYEES),
                 User::PERMISSION_MANAGE_WHATSAPP => $user->hasPermission(User::PERMISSION_MANAGE_WHATSAPP),
                 User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP => $user->hasPermission(User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP),
+                User::PERMISSION_USE_YMS_ASSISTANT => $user->hasPermission(User::PERMISSION_USE_YMS_ASSISTANT),
             ];
         }
 

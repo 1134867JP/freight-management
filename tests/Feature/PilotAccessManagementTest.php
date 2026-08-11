@@ -54,7 +54,8 @@ class PilotAccessManagementTest extends TestCase
                 ->where('auth.permissions.manage_admins', true)
                 ->where('auth.permissions.manage_employees', true)
                 ->where('auth.permissions.manage_whatsapp', true)
-                ->where('auth.permissions.create_timeslots_via_whatsapp', true));
+                ->where('auth.permissions.create_timeslots_via_whatsapp', true)
+                ->where('auth.permissions.use_yms_assistant', true));
     }
 
     public function test_employee_needs_permission_to_manage_whatsapp_connection(): void

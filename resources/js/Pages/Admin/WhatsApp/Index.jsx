@@ -117,6 +117,8 @@ export default function Index({ configured, instance, bot, commands = [] }) {
 
               <BotAccessCard bot={bot} instance={instance} />
 
+              <AssistantCard assistant={bot?.assistant} />
+
               <CommandHistory commands={commands} />
             </div>
           )}
@@ -150,8 +152,8 @@ function BotAccessCard({ bot, instance }) {
       </div>
 
       <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-gray-300">
-        Administradores e funcionários autorizados, com WhatsApp cadastrado, podem solicitar
-        cotas. O sistema identifica quantidade, cliente, data e horário, mas só salva depois da resposta{' '}
+        Administradores e funcionários autorizados, com WhatsApp cadastrado, podem solicitar cotas.
+        O sistema identifica quantidade, cliente, data e horário, mas só salva depois da resposta{' '}
         <strong>CONFIRMAR</strong>.
       </p>
 
@@ -185,6 +187,60 @@ function BotAccessCard({ bot, instance }) {
       {webhookReady && (
         <p className="mt-3 text-xs text-slate-500 dark:text-gray-400">
           Webhook registrado em {formatDateTime(instance.bot_webhook_configured_at)}.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function AssistantCard({ assistant }) {
+  const ready = Boolean(assistant?.enabled && assistant?.configured);
+  const status = ready
+    ? { label: 'Ativo', tone: 'success' }
+    : assistant?.enabled
+      ? { label: 'Aguardando chave', tone: 'warning' }
+      : { label: 'Desativado', tone: 'neutral' };
+
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-gray-400">
+            Gerente conversacional
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-gray-100">
+            Consultas operacionais pelo WhatsApp
+          </h2>
+        </div>
+        <StatusBadge label={status.label} tone={status.tone} />
+      </div>
+
+      <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-gray-300">
+        A IA interpreta somente a pergunta. Os números são consultados diretamente no CargoHub,
+        respeitando a empresa e as permissões do usuário. Nenhuma alteração é executada por este
+        fluxo.
+      </p>
+
+      <div className="mt-4 grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-gray-600 dark:bg-gray-900/40 dark:text-gray-300 sm:grid-cols-2">
+        <span>Quantas cotas ainda temos hoje?</span>
+        <span>Quantos veículos estão no pátio?</span>
+        <span>Quais veículos estão atrasados?</span>
+        <span>Quais docas estão livres?</span>
+        <span>Como está a operação do Cliente X?</span>
+        <span>Faça um resumo da operação de hoje.</span>
+      </div>
+
+      {assistant?.enabled && (
+        <p className="mt-3 text-xs text-slate-500 dark:text-gray-400">
+          Provedor: {assistant.provider || 'groq'} · Modelo: {assistant.model || 'não configurado'}{' '}
+          · Limite interno: {assistant.daily_limit ?? 300} interpretações por dia. Se a IA ficar
+          indisponível, perguntas conhecidas usam o interpretador de contingência.
+        </p>
+      )}
+
+      {assistant?.enabled && !assistant?.configured && (
+        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+          Configure a chave gratuita da Groq no servidor para ativar a interpretação por IA.
         </p>
       )}
     </section>
@@ -226,7 +282,7 @@ function CommandHistory({ commands }) {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-gray-700">
               {commands.map((command) => {
-                const presentation = commandStatus(command.status);
+                const presentation = commandStatus(command.status, command.intent);
                 return (
                   <tr key={command.id} className="align-top">
                     <td className="whitespace-nowrap px-5 py-4">
@@ -249,12 +305,29 @@ function CommandHistory({ commands }) {
                           {command.error_message}
                         </p>
                       )}
+                      {command.intent?.startsWith('assistant_') &&
+                        command.response_message &&
+                        !command.error_message && (
+                          <p className="mt-2 line-clamp-3 text-xs leading-5 text-slate-500 dark:text-gray-400">
+                            Resposta: {command.response_message}
+                          </p>
+                        )}
                     </td>
                     <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-700 dark:text-gray-300">
                       <p>{command.client_name || '—'}</p>
                       {command.start_time && (
                         <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">
                           {formatDateTime(command.start_time)} · {command.capacity} cotas
+                        </p>
+                      )}
+                      {command.query_date && (
+                        <p className="mt-1 text-xs text-slate-500 dark:text-gray-400">
+                          Consulta: {formatQueryDate(command.query_date)} ·{' '}
+                          {command.interpreter_source === 'ai' ? 'IA' : 'contingência'}
+                          {command.interpreter_source === 'ai' &&
+                          command.interpreter_latency_ms != null
+                            ? ` · ${command.interpreter_latency_ms} ms · ${command.interpreter_tokens ?? 0} tokens`
+                            : ''}
                         </p>
                       )}
                     </td>
@@ -277,11 +350,14 @@ function CommandHistory({ commands }) {
   );
 }
 
-function commandStatus(status) {
+function commandStatus(status, intent) {
   const map = {
     received: { label: 'Recebido', tone: 'info' },
     pending_confirmation: { label: 'Aguardando confirmação', tone: 'warning' },
-    executed: { label: 'Criado', tone: 'success' },
+    executed: {
+      label: intent?.startsWith('assistant_') || intent === 'help' ? 'Respondido' : 'Criado',
+      tone: 'success',
+    },
     cancelled: { label: 'Cancelado', tone: 'neutral' },
     expired: { label: 'Expirado', tone: 'neutral' },
     rejected: { label: 'Rejeitado', tone: 'danger' },
@@ -289,6 +365,12 @@ function commandStatus(status) {
   };
 
   return map[status] || { label: status || 'Desconhecido', tone: 'neutral' };
+}
+
+function formatQueryDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return value || '—';
+  const [year, month, day] = value.split('-');
+  return `${day}/${month}/${year}`;
 }
 
 function ErrorRecovery({ message, action, instance, onRetry, onDelete }) {

@@ -36,6 +36,8 @@ class User extends Authenticatable
 
     public const PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP = 'create_timeslots_via_whatsapp';
 
+    public const PERMISSION_USE_YMS_ASSISTANT = 'use_yms_assistant';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -131,6 +133,7 @@ class User extends Authenticatable
             self::PERMISSION_MANAGE_EMPLOYEES => false,
             self::PERMISSION_MANAGE_WHATSAPP => false,
             self::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP => false,
+            self::PERMISSION_USE_YMS_ASSISTANT => false,
         ];
     }
 

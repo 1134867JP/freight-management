@@ -51,4 +51,18 @@ return [
         ],
     ],
 
+    'yms_assistant' => [
+        'enabled' => env('YMS_ASSISTANT_ENABLED', false),
+        'provider' => env('YMS_ASSISTANT_PROVIDER', 'groq'),
+        'base_url' => env('GROQ_BASE_URL', 'https://api.groq.com/openai/v1'),
+        'api_key' => env('GROQ_API_KEY'),
+        'model' => env('GROQ_MODEL', 'openai/gpt-oss-20b'),
+        'timeout' => (int) env('YMS_ASSISTANT_TIMEOUT', 5),
+        'max_completion_tokens' => (int) env('YMS_ASSISTANT_MAX_COMPLETION_TOKENS', 256),
+        'reasoning_effort' => env('YMS_ASSISTANT_REASONING_EFFORT', 'low'),
+        'per_user_per_minute' => (int) env('YMS_ASSISTANT_PER_USER_PER_MINUTE', 10),
+        'global_per_minute' => (int) env('YMS_ASSISTANT_GLOBAL_PER_MINUTE', 25),
+        'daily_limit' => (int) env('YMS_ASSISTANT_DAILY_LIMIT', 300),
+    ],
+
 ];

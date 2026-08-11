@@ -48,6 +48,14 @@ class WhatsAppController extends Controller
                     'timeslot_id' => $command->timeslot_id,
                     'start_time' => $command->parsed_payload['start_time'] ?? null,
                     'capacity' => $command->parsed_payload['capacity'] ?? null,
+                    'query_date' => $command->parsed_payload['query']['date'] ?? null,
+                    'interpreter_source' => $command->parsed_payload['interpreter']['source'] ?? null,
+                    'interpreter_latency_ms' => $command->parsed_payload['interpreter']['latency_ms'] ?? null,
+                    'interpreter_tokens' => isset($command->parsed_payload['interpreter'])
+                        ? (int) ($command->parsed_payload['interpreter']['prompt_tokens'] ?? 0)
+                            + (int) ($command->parsed_payload['interpreter']['completion_tokens'] ?? 0)
+                        : null,
+                    'response_message' => $command->response_message,
                     'error_message' => $command->error_message,
                     'created_at' => $command->created_at?->toIso8601String(),
                 ])
@@ -64,6 +72,15 @@ class WhatsAppController extends Controller
                     && filter_var($webhookUrl, FILTER_VALIDATE_URL),
                 'confirmation_ttl_minutes' => (int) config('services.evolution.bot.confirmation_ttl_minutes', 10),
                 'timeslot_duration_minutes' => (int) config('services.evolution.bot.timeslot_duration_minutes', 60),
+                'assistant' => [
+                    'enabled' => (bool) config('services.yms_assistant.enabled'),
+                    'configured' => filled(config('services.yms_assistant.base_url'))
+                        && filled(config('services.yms_assistant.api_key'))
+                        && filled(config('services.yms_assistant.model')),
+                    'provider' => (string) config('services.yms_assistant.provider', 'groq'),
+                    'model' => (string) config('services.yms_assistant.model', ''),
+                    'daily_limit' => (int) config('services.yms_assistant.daily_limit', 300),
+                ],
             ],
             'commands' => $commands,
         ]);

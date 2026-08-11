@@ -48,6 +48,8 @@ são medidos.
 - uma instância de WhatsApp por empresa;
 - criação de cotas por mensagem para administradores e funcionários autorizados;
 - confirmação antes da gravação, expiração, idempotência e protocolo de auditoria.
+- gerente conversacional de leitura para consultar cotas, pátio, atrasos, docas e
+  indicadores, com IA gratuita e fallback local.
 
 ## Perfis de acesso
 
@@ -59,9 +61,9 @@ são medidos.
 | Cliente                     | `client`           | Mantém motoristas e caminhões, reserva horários e acompanha suas operações.    |
 
 As permissões delegáveis a funcionários são: visualizar auditoria, gerenciar
-administradores, gerenciar funcionários, gerenciar WhatsApp e criar cotas pelo
-WhatsApp. Um funcionário não pode elevar as próprias permissões nem delegar uma
-permissão que não possua.
+administradores, gerenciar funcionários, gerenciar WhatsApp, criar cotas pelo
+WhatsApp e consultar o gerente YMS. Um funcionário não pode elevar as próprias
+permissões nem delegar uma permissão que não possua.
 
 ## Fluxo operacional
 
@@ -214,6 +216,18 @@ EVOLUTION_WEBHOOK_SECRET=gere-um-segredo-longo-e-aleatorio
 EVOLUTION_BOT_CONFIRMATION_TTL=10
 EVOLUTION_BOT_TIMESLOT_DURATION=60
 EVOLUTION_BOT_MAX_CAPACITY=500
+
+YMS_ASSISTANT_ENABLED=true
+YMS_ASSISTANT_PROVIDER=groq
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+GROQ_API_KEY=sua-chave-gratuita
+GROQ_MODEL=openai/gpt-oss-20b
+YMS_ASSISTANT_TIMEOUT=5
+YMS_ASSISTANT_MAX_COMPLETION_TOKENS=256
+YMS_ASSISTANT_REASONING_EFFORT=low
+YMS_ASSISTANT_PER_USER_PER_MINUTE=10
+YMS_ASSISTANT_GLOBAL_PER_MINUTE=25
+YMS_ASSISTANT_DAILY_LIMIT=300
 ```
 
 Depois de alterar a configuração:
@@ -243,11 +257,38 @@ Regras do bot:
 
 - administradores da empresa são autorizados automaticamente;
 - funcionários precisam da permissão `create_timeslots_via_whatsapp`;
+- funcionários precisam da permissão independente `use_yms_assistant` para fazer
+  consultas operacionais;
 - o telefone deve identificar um único usuário autorizado dentro da empresa;
 - grupos, mensagens enviadas pelo próprio número e remetentes sem permissão são ignorados;
 - `CONFIRMAR` grava a cota e `CANCELAR` descarta a solicitação;
 - comandos pendentes expiram e reentregas do mesmo webhook são idempotentes;
 - cada solicitação recebe um protocolo `#WA-XXXXXX` e fica disponível na auditoria.
+
+O gerente conversacional aceita, no piloto, perguntas como:
+
+```text
+Quantas cotas ainda temos hoje?
+Quantos veículos estão no pátio?
+Quais veículos estão atrasados?
+Quais agendamentos ainda não chegaram?
+Quais docas estão livres?
+Como está a operação do Cliente X?
+Qual foi o tempo médio de atendimento hoje?
+Houve alguma falha ou pendência hoje?
+Faça um resumo da operação de hoje.
+```
+
+A Groq interpreta somente intenção, data e nome de cliente informado na própria
+pergunta. O Laravel consulta e formata os dados reais; resultados operacionais não
+são reenviados à IA. Se a API estiver indisponível ou atingir o limite, perguntas
+conhecidas usam o interpretador local. O limite interno de 300 chamadas por dia e
+o raciocínio em nível `low` deixam margem para os limites gratuitos de requisições
+e tokens do modelo. Ative **Zero Data Retention** nas configurações da organização
+Groq antes do piloto.
+
+Detalhes de arquitetura, segurança, consultas e critérios de validação estão em
+[`docs/pilot/YMS_ASSISTANT.md`](docs/pilot/YMS_ASSISTANT.md).
 
 As chaves das instâncias são cifradas no banco. Para proteger credenciais antigas
 depois de uma migração, execute:

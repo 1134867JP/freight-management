@@ -35,6 +35,10 @@ const PERMISSION_LABELS = {
     label: 'Criar cotas pelo WhatsApp',
     description: 'Enviar comandos pelo número cadastrado e confirmar novas cotas.',
   },
+  use_yms_assistant: {
+    label: 'Consultar o gerente YMS',
+    description: 'Consultar cotas, pátio, atrasos, docas e indicadores pelo WhatsApp.',
+  },
 };
 
 const AVATAR_COLORS = [
@@ -201,6 +205,7 @@ export default function Employees({ employees, currentUserId }) {
         manage_employees: false,
         manage_whatsapp: false,
         create_timeslots_via_whatsapp: false,
+        use_yms_assistant: false,
         ...(employee.permissions ?? {}),
       },
     });
