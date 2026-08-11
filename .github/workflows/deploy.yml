@@ -192,26 +192,19 @@ jobs:
             docker exec -u root freight-app chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
             docker exec -u root freight-app chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-            HEALTH_PORT=$(docker image inspect freight-management-app --format '{{json .Config.ExposedPorts}}' | awk -F'"' '{ print $2 }' | cut -d/ -f1)
-            HEALTH_PORT=${HEALTH_PORT:-80}
+            HEALTH_BASE_URL=$(docker inspect freight-app --format '{{range .Config.Env}}{{println .}}{{end}}' | sed -n 's/^APP_URL=//p' | head -n 1)
 
-            echo "==> Verificando saúde do novo release na porta $HEALTH_PORT..."
+            if [ -z "$HEALTH_BASE_URL" ]; then
+              echo "APP_URL não está disponível no container."
+              rollback_release
+            fi
+
+            HEALTH_URL=${HEALTH_BASE_URL%/}/up
+
+            echo "==> Verificando saúde do novo release pelo proxy web..."
             HEALTHY=false
             for ATTEMPT in 1 2 3 4 5 6 7 8 9 10 11 12; do
-              if docker exec -e CARGOHUB_HEALTH_PORT="$HEALTH_PORT" freight-app php -r '
-                $port = (int) getenv("CARGOHUB_HEALTH_PORT");
-                $socket = @fsockopen("127.0.0.1", $port, $errorCode, $errorMessage, 3);
-
-                if ($socket === false) {
-                    exit(1);
-                }
-
-                fwrite($socket, "GET /up HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n");
-                $status = (string) fgets($socket);
-                fclose($socket);
-
-                exit(preg_match("~^HTTP/1\\.[01] 2\\d\\d~", $status) === 1 ? 0 : 1);
-              '; then
+              if curl --fail --silent --show-error --location --max-time 5 "$HEALTH_URL" >/dev/null; then
                 HEALTHY=true
                 break
               fi
