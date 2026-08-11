@@ -112,7 +112,11 @@ class PostgresReservationConcurrencyTest extends TestCase
 
         $diagnostic = $results->implode(PHP_EOL);
 
-        $this->assertSame(1, $results->where('success')->count(), $diagnostic);
+        $this->assertSame(
+            1,
+            $results->filter(fn (string $result): bool => $result === 'success')->count(),
+            $diagnostic,
+        );
         $this->assertSame(
             1,
             $results->filter(fn (string $result): bool => str_starts_with($result, 'rejected:'))->count(),
