@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WhatsAppCommand extends Model
 {
+    protected $table = 'whatsapp_commands';
+
     public const STATUS_RECEIVED = 'received';
 
     public const STATUS_PENDING_CONFIRMATION = 'pending_confirmation';
