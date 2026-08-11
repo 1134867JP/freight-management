@@ -15,7 +15,7 @@ import UploadAttachmentModal from './Partials/UploadAttachmentModal';
 
 export default function Index({ freights, docasDisponiveis, filters = {}, statusCounts = {} }) {
   const { auth } = usePage().props;
-  const usesDocks = auth.company?.uses_docks ?? true;
+  const usesDocks = (auth.company?.uses_docks ?? true) && !(auth.company?.pilot_mode ?? false);
   const list = useMemo(() => freights?.data || [], [freights]);
   const [filterSearch, setFilterSearch] = useState(filters.search ?? '');
   const [filterOp, setFilterOp] = useState(filters.operation_type ?? 'all');

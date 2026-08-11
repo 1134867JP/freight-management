@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '@/Components/UI/Button';
+import { usePage } from '@inertiajs/react';
 
 export default function FreightActionsAdmin({
   freight,
@@ -8,12 +9,14 @@ export default function FreightActionsAdmin({
   onOpenFinalize,
   onOpenAssignDoca,
 }) {
+  const { auth } = usePage().props;
   const strStatus = freight.status;
   const blInProgress = strStatus === 'loading' || strStatus === 'unloading';
   const blReserved = strStatus === 'reserved';
   const blArrived = strStatus === 'arrived';
+  const requiresGateCheckIn = (auth.company?.uses_queues ?? true) && !(auth.company?.pilot_mode ?? false);
 
-  const canStart = blArrived;
+  const canStart = blArrived || (blReserved && !requiresGateCheckIn);
   const canFinalize = blInProgress;
   const canCancel = blReserved || blArrived || blInProgress;
   const canAssignDoca = (blArrived || blInProgress) && Boolean(onOpenAssignDoca);
@@ -26,7 +29,7 @@ export default function FreightActionsAdmin({
   return (
     <td className="w-[24%] px-4 py-3 align-middle">
       <div className="flex flex-wrap gap-2">
-        {blReserved && (
+        {blReserved && requiresGateCheckIn && (
           <span className="self-center text-xs font-medium text-gray-500 dark:text-gray-400">
             Aguardando check-in
           </span>

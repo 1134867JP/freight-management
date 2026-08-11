@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Truck;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTruckRequest extends FormRequest
 {
@@ -15,12 +16,16 @@ class StoreTruckRequest extends FormRequest
 
     public function rules(): array
     {
+        $idUser = $this->user()?->id;
+
         return [
             'plate' => [
                 'required',
                 'string',
                 'max:7',
                 'regex:/^[A-Z]{3}\d[A-Z0-9]\d{2}$/',
+                Rule::unique('trucks', 'plate')
+                    ->where(fn ($query) => $query->where('user_id', $idUser)),
             ],
             'type' => 'required|string|max:20',
             'model' => 'nullable|string|max:100',
@@ -33,6 +38,14 @@ class StoreTruckRequest extends FormRequest
     {
         return [
             'plate.regex' => 'A placa deve estar no formato ABC1234 ou ABC1D23 (Mercosul).',
+            'plate.unique' => 'Esta placa já está cadastrada para o seu usuário.',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'plate' => strtoupper(preg_replace('/[^A-Z0-9]/i', '', (string) $this->input('plate'))),
+        ]);
     }
 }

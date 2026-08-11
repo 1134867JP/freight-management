@@ -21,10 +21,24 @@ class StartLoad
         }
 
         if ($freight->status === FreightStatus::Completed) {
-            throw new FreightAlreadyCompletedException();
+            throw new FreightAlreadyCompletedException;
         }
 
         if ($freight->status === FreightStatus::Loading) {
+            return;
+        }
+
+        $freight->loadMissing('company');
+        $canSkipGateCheckIn = $freight->company?->isPilotMode() || ! $freight->company?->usesQueues();
+
+        if ($freight->status === FreightStatus::Reserved && $canSkipGateCheckIn) {
+            $freight->update([
+                'status' => FreightStatus::Loading,
+                'arrived_at' => $freight->arrived_at ?? now(),
+            ]);
+
+            YardBoardUpdated::dispatch($freight->company_id);
+
             return;
         }
 

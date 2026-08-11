@@ -18,7 +18,7 @@ import {
 } from '@/Features/Freight/utils/freightPresentation';
 import { FREIGHT_STATUS_CONFIG } from '@/utils/statusPresentation';
 import { formatDate, formatDateTime, formatTime, formatWeight } from '@/utils/formatters';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 
 const baseChip =
   'inline-flex items-center rounded px-2 py-1 text-xs font-medium';
@@ -95,6 +95,8 @@ function AttachmentsCell({ freight, onUploadNF }) {
 }
 
 export default function MyReservations({ freights: freightsPaginated, filters = {} }) {
+  const { auth } = usePage().props;
+  const usesGate = (auth.company?.uses_queues ?? true) && !(auth.company?.pilot_mode ?? false);
   const list = freightsPaginated?.data || [];
   const [form, setForm] = useState({
     date_from: filters.date_from || '',
@@ -317,7 +319,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                             </Button>
                           )}
 
-                          {freight.qr_token && (
+                          {usesGate && freight.qr_token && (
                             <Button
                               onClick={() => setQrFreight(freight)}
                               size="sm"
@@ -326,7 +328,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                             </Button>
                           )}
 
-                          {!hasActions(freight) && !freight.qr_token && (
+                          {!hasActions(freight) && !(usesGate && freight.qr_token) && (
                             <span className="text-xs text-gray-400 dark:text-gray-500">Sem ações</span>
                           )}
                         </div>

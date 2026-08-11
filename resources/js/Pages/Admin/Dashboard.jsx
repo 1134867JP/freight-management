@@ -126,7 +126,8 @@ function CapacitySummary({ stats }) {
 export default function Dashboard({ stats, occupancy }) {
   const { auth } = usePage().props;
   const firstName = auth.user.name.split(' ')[0];
-  const usesQueues = auth.company?.uses_queues ?? true;
+  const pilotMode = auth.company?.pilot_mode ?? false;
+  const usesQueues = (auth.company?.uses_queues ?? true) && !pilotMode;
 
   const quickActions = [
     ...(usesQueues ? [{ title: 'Painel do pátio', description: 'Acompanhe filas, vagas e docas da operação.', routeName: 'admin.yard-board', icon: 'yard', tone: 'brand' }] : []),
@@ -134,7 +135,7 @@ export default function Dashboard({ stats, occupancy }) {
     { title: 'Gerenciar janelas', description: 'Crie horários e ajuste a capacidade da operação.', routeName: 'timeslots.index', icon: 'calendar', tone: 'violet' },
     { title: 'Agenda operacional', description: 'Visualize horários e reservas em uma única grade.', routeName: 'admin.agenda', icon: 'schedule', tone: 'brand' },
     { title: 'Fretes', description: 'Aprove, acompanhe e finalize movimentações.', routeName: 'freights.approvalList', icon: 'truck', tone: 'success' },
-    { title: 'Relatórios', description: 'Analise dados e exporte os resultados da operação.', routeName: 'reports.admin.freights', icon: 'chart', tone: 'slate' },
+    ...(!pilotMode ? [{ title: 'Relatórios', description: 'Analise dados e exporte os resultados da operação.', routeName: 'reports.admin.freights', icon: 'chart', tone: 'slate' }] : []),
   ];
 
   return (

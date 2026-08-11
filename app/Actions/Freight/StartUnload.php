@@ -21,10 +21,24 @@ class StartUnload
         }
 
         if ($freight->status === FreightStatus::Completed) {
-            throw new FreightAlreadyCompletedException();
+            throw new FreightAlreadyCompletedException;
         }
 
         if ($freight->status === FreightStatus::Unloading) {
+            return;
+        }
+
+        $freight->loadMissing('company');
+        $canSkipGateCheckIn = $freight->company?->isPilotMode() || ! $freight->company?->usesQueues();
+
+        if ($freight->status === FreightStatus::Reserved && $canSkipGateCheckIn) {
+            $freight->update([
+                'status' => FreightStatus::Unloading,
+                'arrived_at' => $freight->arrived_at ?? now(),
+            ]);
+
+            YardBoardUpdated::dispatch($freight->company_id);
+
             return;
         }
 

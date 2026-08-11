@@ -6,6 +6,7 @@ use App\Actions\Freight\CreateReservation;
 use App\Actions\Freight\GateCheckIn;
 use App\Actions\Freight\GateCheckOut;
 use App\Actions\Freight\StartLoad;
+use App\Actions\Freight\StartUnload;
 use App\Actions\MoveOrder\CancelMoveOrder;
 use App\Actions\MoveOrder\CompleteMoveOrder;
 use App\Actions\MoveOrder\CreateMoveOrder;
@@ -101,6 +102,31 @@ class YmsIntegrityTest extends TestCase
         (new StartLoad)->execute($freight->fresh());
 
         $this->assertSame('loading', $freight->fresh()->status->value);
+        $this->assertNotNull($freight->fresh()->arrived_at);
+    }
+
+    public function test_pilot_mode_can_start_load_without_gate_check_in(): void
+    {
+        $this->company->update(['pilot_mode' => true]);
+        $freight = $this->createFreight(['status' => 'reserved']);
+
+        (new StartLoad)->execute($freight);
+
+        $this->assertSame('loading', $freight->fresh()->status->value);
+        $this->assertNotNull($freight->fresh()->arrived_at);
+    }
+
+    public function test_pilot_mode_can_start_unload_without_gate_check_in(): void
+    {
+        $this->company->update(['pilot_mode' => true]);
+        $freight = $this->createFreight([
+            'status' => 'reserved',
+            'operation_type' => 'unload',
+        ]);
+
+        (new StartUnload)->execute($freight);
+
+        $this->assertSame('unloading', $freight->fresh()->status->value);
         $this->assertNotNull($freight->fresh()->arrived_at);
     }
 

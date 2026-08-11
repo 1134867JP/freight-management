@@ -14,7 +14,7 @@ class FreightWhatsAppNotifier
             return;
         }
 
-        $freight->loadMissing(['timeslot.dropoffAddress']);
+        $freight->loadMissing(['company', 'timeslot.dropoffAddress']);
 
         $lines = [
             "Olá, {$freight->driver_name}! Sua reserva de frete foi confirmada.",
@@ -29,20 +29,22 @@ class FreightWhatsAppNotifier
             $lines[] = 'Local: '.$location;
         }
 
-        $lines[] = '';
-        $lines[] = '📱 Código de entrada na portaria:';
-        $lines[] = $freight->qr_token;
-        $lines[] = '';
-        $lines[] = 'Apresente este código ao porteiro para check-in rápido.';
+        if ($freight->company?->usesQueues() && ! $freight->company?->isPilotMode()) {
+            $lines[] = '';
+            $lines[] = '📱 Código de entrada na portaria:';
+            $lines[] = $freight->qr_token;
+            $lines[] = '';
+            $lines[] = 'Apresente este código ao porteiro para check-in rápido.';
+        }
 
         SendWhatsAppMessageJob::dispatch(
             $freight->driver_phone,
             implode("\n", $lines),
             [
-                'company_id'     => $freight->company_id,
-                'event'          => 'driver_freight_confirmed',
+                'company_id' => $freight->company_id,
+                'event' => 'driver_freight_confirmed',
                 'recipient_role' => 'driver',
-                'freight_id'     => $freight->id,
+                'freight_id' => $freight->id,
             ],
             $freight->company_id,
         )->afterCommit();
