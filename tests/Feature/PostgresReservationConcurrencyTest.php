@@ -79,7 +79,11 @@ class PostgresReservationConcurrencyTest extends TestCase
                     );
                     file_put_contents($resultFile, 'success');
                 } catch (\Throwable $exception) {
-                    file_put_contents($resultFile, 'rejected:'.get_class($exception));
+                    file_put_contents($resultFile, implode(':', [
+                        'rejected',
+                        get_class($exception),
+                        preg_replace('/\s+/', ' ', $exception->getMessage()),
+                    ]));
                 }
 
                 exit(0);
@@ -106,8 +110,14 @@ class PostgresReservationConcurrencyTest extends TestCase
 
         DB::reconnect();
 
-        $this->assertSame(1, $results->where('success')->count());
-        $this->assertSame(1, $results->filter(fn (string $result): bool => str_starts_with($result, 'rejected:'))->count());
+        $diagnostic = $results->implode(PHP_EOL);
+
+        $this->assertSame(1, $results->where('success')->count(), $diagnostic);
+        $this->assertSame(
+            1,
+            $results->filter(fn (string $result): bool => str_starts_with($result, 'rejected:'))->count(),
+            $diagnostic,
+        );
         $this->assertSame(1, DB::table('freights')->where('timeslot_id', $timeslot->id)->count());
     }
 }
