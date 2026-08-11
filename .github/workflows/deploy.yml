@@ -167,7 +167,7 @@ jobs:
 
             rollback_release() {
               trap - ERR
-              echo "==> Health check falhou; restaurando release anterior..."
+              echo "==> Falha no novo release; restaurando release anterior..."
 
               if [ -n "$PREVIOUS_TARGET" ] && [ -d "$PREVIOUS_TARGET" ]; then
                 ln -s "$PREVIOUS_TARGET" "$NEXT_LINK"
@@ -192,10 +192,26 @@ jobs:
             docker exec -u root freight-app chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
             docker exec -u root freight-app chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-            echo "==> Verificando saúde do novo release..."
+            HEALTH_PORT=$(docker image inspect freight-management-app --format '{{json .Config.ExposedPorts}}' | awk -F'"' '{ print $2 }' | cut -d/ -f1)
+            HEALTH_PORT=${HEALTH_PORT:-80}
+
+            echo "==> Verificando saúde do novo release na porta $HEALTH_PORT..."
             HEALTHY=false
             for ATTEMPT in 1 2 3 4 5 6 7 8 9 10 11 12; do
-              if docker exec freight-app php -r '$response = @file_get_contents("http://127.0.0.1/up"); exit($response === false ? 1 : 0);'; then
+              if docker exec -e CARGOHUB_HEALTH_PORT="$HEALTH_PORT" freight-app php -r '
+                $port = (int) getenv("CARGOHUB_HEALTH_PORT");
+                $socket = @fsockopen("127.0.0.1", $port, $errorCode, $errorMessage, 3);
+
+                if ($socket === false) {
+                    exit(1);
+                }
+
+                fwrite($socket, "GET /up HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n");
+                $status = (string) fgets($socket);
+                fclose($socket);
+
+                exit(preg_match("~^HTTP/1\\.[01] 2\\d\\d~", $status) === 1 ? 0 : 1);
+              '; then
                 HEALTHY=true
                 break
               fi
@@ -204,6 +220,11 @@ jobs:
             done
 
             if [ "$HEALTHY" != true ]; then
+              echo "==> Diagnóstico do container antes do rollback:"
+              docker image inspect freight-management-app --format 'Imagem: ports={{json .Config.ExposedPorts}} entrypoint={{json .Config.Entrypoint}} cmd={{json .Config.Cmd}}' || true
+              docker inspect freight-app --format 'Container: state={{json .State}}' || true
+              docker logs --tail 200 freight-app || true
+              docker exec freight-app php artisan about || true
               rollback_release
             fi
 
