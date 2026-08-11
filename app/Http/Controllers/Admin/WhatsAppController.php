@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\WhatsAppCommand;
 use App\Models\WhatsAppInstance;
 use App\Services\WhatsApp\EvolutionInstanceManager;
 use Illuminate\Http\RedirectResponse;
@@ -14,14 +15,57 @@ class WhatsAppController extends Controller
 {
     public function show(): Response
     {
-        $instance = auth()->user()->company?->whatsappInstance;
+        $company = auth()->user()->company;
+        $instance = $company?->whatsappInstance;
 
         $configured = filled(config('services.evolution.base_url'))
             && filled(config('services.evolution.api_key'));
 
+        if ($company) {
+            WhatsAppCommand::query()
+                ->where('company_id', $company->id)
+                ->where('status', WhatsAppCommand::STATUS_PENDING_CONFIRMATION)
+                ->where('expires_at', '<=', now())
+                ->update(['status' => WhatsAppCommand::STATUS_EXPIRED]);
+        }
+
+        $commands = $company
+            ? WhatsAppCommand::query()
+                ->where('company_id', $company->id)
+                ->with(['user:id,name', 'client:id,name', 'timeslot:id'])
+                ->latest('id')
+                ->limit(25)
+                ->get()
+                ->map(fn (WhatsAppCommand $command): array => [
+                    'id' => $command->id,
+                    'protocol' => $command->protocol(),
+                    'message' => $command->message,
+                    'intent' => $command->intent,
+                    'status' => $command->status,
+                    'sender_name' => $command->user?->name,
+                    'client_name' => $command->client?->name
+                        ?? ($command->parsed_payload['client_name'] ?? null),
+                    'timeslot_id' => $command->timeslot_id,
+                    'start_time' => $command->parsed_payload['start_time'] ?? null,
+                    'capacity' => $command->parsed_payload['capacity'] ?? null,
+                    'error_message' => $command->error_message,
+                    'created_at' => $command->created_at?->toIso8601String(),
+                ])
+            : collect();
+
+        $webhookUrl = $this->botWebhookUrl();
+
         return Inertia::render('Admin/WhatsApp/Index', [
             'configured' => $configured,
             'instance'   => $instance ? $this->serializeInstance($instance) : null,
+            'bot' => [
+                'enabled' => (bool) config('services.evolution.bot.enabled'),
+                'configured' => filled(config('services.evolution.bot.webhook_secret'))
+                    && filter_var($webhookUrl, FILTER_VALIDATE_URL),
+                'confirmation_ttl_minutes' => (int) config('services.evolution.bot.confirmation_ttl_minutes', 10),
+                'timeslot_duration_minutes' => (int) config('services.evolution.bot.timeslot_duration_minutes', 60),
+            ],
+            'commands' => $commands,
         ]);
     }
 
@@ -142,6 +186,12 @@ class WhatsAppController extends Controller
     private function serializeInstance(WhatsAppInstance $instance): array
     {
         $settings = $instance->settings ?? [];
+        $secret = (string) config('services.evolution.bot.webhook_secret', '');
+        $storedHash = $settings['bot_webhook_secret_hash'] ?? null;
+        $webhookMatchesConfig = $secret !== ''
+            && is_string($storedHash)
+            && hash_equals($storedHash, hash('sha256', $secret))
+            && ($settings['bot_webhook_url'] ?? null) === $this->botWebhookUrl();
 
         return [
             'id'               => $instance->id,
@@ -151,6 +201,17 @@ class WhatsAppController extends Controller
             'connected'        => $settings['connected'] ?? false,
             'qr_code'          => $settings['qr_code'] ?? null,
             'last_synced_at'   => $settings['last_synced_at'] ?? null,
+            'bot_webhook_configured_at' => $settings['bot_webhook_configured_at'] ?? null,
+            'bot_webhook_matches_config' => $webhookMatchesConfig,
         ];
+    }
+
+    private function botWebhookUrl(): string
+    {
+        $url = trim((string) config('services.evolution.bot.webhook_url', ''));
+
+        return $url !== ''
+            ? $url
+            : rtrim((string) config('app.url'), '/').'/api/webhooks/evolution';
     }
 }

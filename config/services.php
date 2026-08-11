@@ -41,6 +41,14 @@ return [
         'api_key' => env('EVOLUTION_API_KEY'),
         'instance' => env('EVOLUTION_INSTANCE'),
         'timeout' => (int) env('EVOLUTION_TIMEOUT', 10),
+        'bot' => [
+            'enabled' => env('EVOLUTION_BOT_ENABLED', false),
+            'webhook_url' => env('EVOLUTION_WEBHOOK_URL'),
+            'webhook_secret' => env('EVOLUTION_WEBHOOK_SECRET'),
+            'confirmation_ttl_minutes' => (int) env('EVOLUTION_BOT_CONFIRMATION_TTL', 10),
+            'timeslot_duration_minutes' => (int) env('EVOLUTION_BOT_TIMESLOT_DURATION', 60),
+            'max_capacity' => (int) env('EVOLUTION_BOT_MAX_CAPACITY', 500),
+        ],
     ],
 
 ];

@@ -135,6 +135,11 @@ class User extends Authenticatable
         return $this->hasMany(Timeslot::class, 'created_by');
     }
 
+    public function whatsappCommands(): HasMany
+    {
+        return $this->hasMany(WhatsAppCommand::class);
+    }
+
     public function visibleTimeslots(): BelongsToMany
     {
         return $this->belongsToMany(Timeslot::class, 'client_timeslot', 'user_id', 'timeslot_id');

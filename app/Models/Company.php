@@ -111,4 +111,9 @@ class Company extends Model
     {
         return $this->hasOne(WhatsAppInstance::class);
     }
+
+    public function whatsappCommands(): HasMany
+    {
+        return $this->hasMany(WhatsAppCommand::class);
+    }
 }

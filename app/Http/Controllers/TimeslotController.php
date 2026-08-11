@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Timeslot\CreateTimeslot;
 use App\Actions\Timeslot\SyncVisibilityClients;
 use App\Http\Requests\Timeslot\StoreTimeslotRequest;
 use App\Http\Requests\Timeslot\UpdateTimeslotRequest;
@@ -14,7 +15,6 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -115,27 +115,14 @@ class TimeslotController extends Controller
         ]);
     }
 
-    public function store(StoreTimeslotRequest $request): RedirectResponse
+    public function store(StoreTimeslotRequest $request, CreateTimeslot $createTimeslot): RedirectResponse
     {
         $arrValidated = $request->validated();
 
         $arrClientIds = $arrValidated['client_ids'] ?? [];
         unset($arrValidated['client_ids']);
 
-        $arrValidated['status'] = 'available';
-        $arrValidated['created_by'] = $request->user()->id;
-
-        // Limpar produto/doca se modelo não exige
-        if ($arrValidated['modelo'] === Timeslot::MODELO_ABERTA) {
-            $arrValidated['produto_id'] = null;
-            $arrValidated['doca_id'] = null;
-        } elseif ($arrValidated['modelo'] === Timeslot::MODELO_POR_PRODUTO) {
-            $arrValidated['doca_id'] = null;
-        }
-
-        $objTimeslot = Timeslot::create($arrValidated);
-
-        (new SyncVisibilityClients)->execute($objTimeslot, $arrClientIds);
+        $createTimeslot->execute($request->user(), $arrValidated, $arrClientIds);
 
         return redirect()
             ->route('timeslots.index')

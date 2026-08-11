@@ -29,6 +29,7 @@ class EvolutionInstanceManager
         }
 
         $this->ensureExists($instance);
+        $this->configureInboundWebhook($instance);
 
         // Check current state to decide the approach
         $currentState = null;
@@ -67,6 +68,7 @@ class EvolutionInstanceManager
                 $this->delete($instance);
             } catch (\Throwable) {}
             $this->ensureExists($instance);
+            $this->configureInboundWebhook($instance);
 
             $connectResponse = $this->request($instance)
                 ->get('/instance/connect/'.rawurlencode($instance->instance_name));
@@ -101,6 +103,8 @@ class EvolutionInstanceManager
         if (! $this->isReady($instance)) {
             throw new RuntimeException('Instância não configurada. Verifique a configuração global da Evolution.');
         }
+
+        $this->configureInboundWebhook($instance);
 
         $payload = $this->fetchConnectionStatePayload($instance);
         $state = $this->extractConnectionState($payload) ?? 'unknown';
@@ -147,6 +151,55 @@ class EvolutionInstanceManager
         if ($response->failed() && $response->status() !== 404) {
             $response->throw();
         }
+    }
+
+    public function configureInboundWebhook(WhatsAppInstance $instance): void
+    {
+        if (! config('services.evolution.bot.enabled')) {
+            return;
+        }
+
+        $secret = (string) config('services.evolution.bot.webhook_secret', '');
+        $url = trim((string) config('services.evolution.bot.webhook_url', ''));
+
+        if ($url === '') {
+            $url = rtrim((string) config('app.url'), '/').'/api/webhooks/evolution';
+        }
+
+        if ($secret === '' || ! filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new RuntimeException(
+                'Bot do WhatsApp não configurado. Verifique EVOLUTION_WEBHOOK_SECRET e EVOLUTION_WEBHOOK_URL.',
+            );
+        }
+
+        $response = $this->request($instance)
+            ->post('/webhook/set/'.rawurlencode($instance->instance_name), [
+                'webhook' => [
+                    'enabled' => true,
+                    'url' => $url,
+                    'byEvents' => false,
+                    'base64' => false,
+                    'headers' => [
+                        'Authorization' => 'Bearer '.$secret,
+                    ],
+                    'events' => ['MESSAGES_UPSERT'],
+                ],
+            ]);
+
+        try {
+            $response->throw();
+        } catch (RequestException $exception) {
+            throw new RuntimeException(
+                'Falha ao configurar o webhook do bot na Evolution: '.$exception->getMessage(),
+                previous: $exception,
+            );
+        }
+
+        $settings = $instance->settings ?? [];
+        $settings['bot_webhook_configured_at'] = now()->toIso8601String();
+        $settings['bot_webhook_url'] = $url;
+        $settings['bot_webhook_secret_hash'] = hash('sha256', $secret);
+        $instance->update(['settings' => $settings]);
     }
 
     private function ensureExists(WhatsAppInstance $instance): void

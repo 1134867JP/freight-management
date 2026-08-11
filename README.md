@@ -128,6 +128,44 @@ Requisitos operacionais:
 - o `queue worker` precisa estar rodando para os envios assíncronos
 - os usuários devem ter `WhatsApp` preenchido com DDI e apenas números, por exemplo `5511999999999`
 
+### Criação de cotas pelo WhatsApp
+
+O CargoHub também pode receber comandos de administradores pelo evento `MESSAGES_UPSERT` da Evolution. O bot interpreta o pedido, resolve o cliente dentro da mesma empresa e solicita confirmação antes de criar o `Timeslot`.
+
+Configuração adicional:
+
+```bash
+EVOLUTION_BOT_ENABLED=true
+EVOLUTION_WEBHOOK_URL=https://seu-dominio.com/api/webhooks/evolution
+EVOLUTION_WEBHOOK_SECRET=gere-um-segredo-longo-e-aleatorio
+EVOLUTION_BOT_CONFIRMATION_TTL=10
+EVOLUTION_BOT_TIMESLOT_DURATION=60
+EVOLUTION_BOT_MAX_CAPACITY=500
+```
+
+Depois de alterar essas variáveis, acesse **Admin > WhatsApp** e clique em **Atualizar estado**. Isso registra o webhook autenticado na instância da empresa.
+
+Formato recomendado:
+
+```text
+10 cotas | Cliente X | amanhã | 10:00
+```
+
+Também são aceitas frases como:
+
+```text
+Criar 10 cotas às 10h no cliente X amanhã
+```
+
+Regras de segurança e consistência:
+
+- somente um `company_admin` ativo, da mesma empresa e com o telefone cadastrado, é reconhecido;
+- mensagens de grupos, mensagens enviadas pelo próprio número e remetentes não autorizados são ignorados;
+- a cota só é gravada após `CONFIRMAR`; `CANCELAR` descarta o pedido;
+- comandos pendentes expiram e reentregas do mesmo webhook são idempotentes;
+- cada solicitação recebe um protocolo `#WA-XXXXXX` e aparece na auditoria da tela de WhatsApp;
+- quando a duração não é informada, a janela usa `EVOLUTION_BOT_TIMESLOT_DURATION`.
+
 ## Produção
 
 Existe uma stack pronta em `infra/production` com:
