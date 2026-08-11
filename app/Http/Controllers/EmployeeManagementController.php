@@ -67,10 +67,12 @@ class EmployeeManagementController extends Controller
         abort_unless($employee_user->company_id === $request->user()->company_id, 403);
 
         $validated = $request->validate([
-            'permissions' => 'required|array',
-            'permissions.view_audit_logs' => 'required|boolean',
-            'permissions.manage_admins' => 'required|boolean',
-            'permissions.manage_employees' => 'required|boolean',
+            'permissions' => 'required|array:'.implode(',', array_keys(User::defaultEmployeePermissions())),
+            'permissions.'.User::PERMISSION_VIEW_AUDIT_LOGS => 'required|boolean',
+            'permissions.'.User::PERMISSION_MANAGE_ADMINS => 'required|boolean',
+            'permissions.'.User::PERMISSION_MANAGE_EMPLOYEES => 'required|boolean',
+            'permissions.'.User::PERMISSION_MANAGE_WHATSAPP => 'required|boolean',
+            'permissions.'.User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP => 'required|boolean',
         ]);
 
         $employee_user->update(['permissions' => $validated['permissions']]);

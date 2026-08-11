@@ -191,6 +191,41 @@ class WhatsAppTimeslotBotTest extends TestCase
         Queue::assertNothingPushed();
     }
 
+    public function test_employee_needs_explicit_permission_to_create_timeslots_via_whatsapp(): void
+    {
+        $employee = User::factory()->forCompany($this->company)->create([
+            'role' => User::ROLE_COMPANY_EMPLOYEE,
+            'whatsapp_phone' => '5554888888888',
+            'permissions' => User::defaultEmployeePermissions(),
+        ]);
+
+        $this->sendWebhook(
+            $this->payload('msg-employee-denied', '10 cotas | Cliente X | amanhã | 10:00', $employee->whatsapp_phone),
+        )->assertOk();
+
+        $this->assertDatabaseCount('whatsapp_commands', 0);
+        Queue::assertNothingPushed();
+
+        $employee->update([
+            'permissions' => [
+                ...User::defaultEmployeePermissions(),
+                User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP => true,
+            ],
+        ]);
+
+        $this->sendWebhook(
+            $this->payload('msg-employee-authorized', '10 cotas | Cliente X | amanhã | 10:00', $employee->whatsapp_phone),
+        )->assertOk();
+
+        $this->assertDatabaseHas('whatsapp_commands', [
+            'company_id' => $this->company->id,
+            'user_id' => $employee->id,
+            'external_message_id' => 'msg-employee-authorized',
+            'status' => WhatsAppCommand::STATUS_PENDING_CONFIRMATION,
+        ]);
+        Queue::assertPushed(SendWhatsAppMessageJob::class, 1);
+    }
+
     public function test_missing_date_is_rejected_without_creating_timeslot(): void
     {
         $this->sendWebhook(

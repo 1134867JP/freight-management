@@ -433,9 +433,10 @@ class TimeslotWhatsAppBot
     {
         $matches = User::query()
             ->where('company_id', $instance->company_id)
-            ->where('role', User::ROLE_COMPANY_ADMIN)
+            ->whereIn('role', [User::ROLE_COMPANY_ADMIN, User::ROLE_COMPANY_EMPLOYEE])
             ->whereNotNull('whatsapp_phone')
             ->get()
+            ->filter(fn (User $user) => $user->hasPermission(User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP))
             ->filter(fn (User $user) => $user->routeWhatsAppPhone() === $phone)
             ->values();
 

@@ -26,6 +26,16 @@ class User extends Authenticatable
 
     public const ROLE_CLIENT = 'client';
 
+    public const PERMISSION_VIEW_AUDIT_LOGS = 'view_audit_logs';
+
+    public const PERMISSION_MANAGE_ADMINS = 'manage_admins';
+
+    public const PERMISSION_MANAGE_EMPLOYEES = 'manage_employees';
+
+    public const PERMISSION_MANAGE_WHATSAPP = 'manage_whatsapp';
+
+    public const PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP = 'create_timeslots_via_whatsapp';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -114,9 +124,11 @@ class User extends Authenticatable
     public static function defaultEmployeePermissions(): array
     {
         return [
-            'view_audit_logs' => false,
-            'manage_admins' => false,
-            'manage_employees' => false,
+            self::PERMISSION_VIEW_AUDIT_LOGS => false,
+            self::PERMISSION_MANAGE_ADMINS => false,
+            self::PERMISSION_MANAGE_EMPLOYEES => false,
+            self::PERMISSION_MANAGE_WHATSAPP => false,
+            self::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP => false,
         ];
     }
 

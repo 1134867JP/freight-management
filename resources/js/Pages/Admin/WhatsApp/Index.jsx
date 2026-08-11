@@ -150,8 +150,8 @@ function BotAccessCard({ bot, instance }) {
       </div>
 
       <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-gray-300">
-        Administradores com WhatsApp cadastrado podem solicitar cotas. O sistema identifica
-        quantidade, cliente, data e horário, mas só salva depois da resposta{' '}
+        Administradores e funcionários autorizados, com WhatsApp cadastrado, podem solicitar
+        cotas. O sistema identifica quantidade, cliente, data e horário, mas só salva depois da resposta{' '}
         <strong>CONFIRMAR</strong>.
       </p>
 
