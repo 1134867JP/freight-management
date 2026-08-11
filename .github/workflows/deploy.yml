@@ -33,7 +33,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: pdo_pgsql, pgsql
+          extensions: pdo_pgsql, pgsql, pcntl
           coverage: none
 
       - name: Install Composer dependencies
@@ -77,40 +77,140 @@ jobs:
           timeout: 60s
           command_timeout: 20m
           script: |
-            set -e
-            APP_DIR=/opt/apps/outro-site/freight-management
-            cd $APP_DIR
+            set -Eeuo pipefail
 
-            echo "==> Atualizando codigo..."
-            git remote set-url origin https://github.com/1134867JP/freight-management.git
-            git pull --ff-only origin main
+            BASE_DIR=/opt/apps/outro-site
+            APP_LINK=$BASE_DIR/freight-management
+            SHARED_DIR=$BASE_DIR/freight-management-shared
+            RELEASES_DIR=$BASE_DIR/freight-management-releases
+            REPOSITORY_DIR=$BASE_DIR/freight-management-repository.git
+            RELEASE_ID=${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+            RELEASE_DIR=$RELEASES_DIR/$RELEASE_ID
+            NEXT_LINK=$BASE_DIR/freight-management.next
+            PREVIOUS_TARGET=
 
-            echo "==> Build dos assets frontend..."
+            mkdir -p "$SHARED_DIR" "$RELEASES_DIR"
+
+            if [ ! -f "$SHARED_DIR/.env" ]; then
+              if [ ! -f "$APP_LINK/.env" ]; then
+                echo "Arquivo .env compartilhado não encontrado."
+                exit 1
+              fi
+
+              cp "$APP_LINK/.env" "$SHARED_DIR/.env"
+              chmod 600 "$SHARED_DIR/.env"
+            fi
+
+            if [ ! -d "$SHARED_DIR/storage" ]; then
+              if [ -d "$APP_LINK/storage" ]; then
+                cp -a "$APP_LINK/storage" "$SHARED_DIR/storage"
+              else
+                mkdir -p "$SHARED_DIR/storage/app" "$SHARED_DIR/storage/framework/cache" "$SHARED_DIR/storage/framework/sessions" "$SHARED_DIR/storage/framework/views" "$SHARED_DIR/storage/logs"
+              fi
+            fi
+
+            if [ ! -d "$REPOSITORY_DIR" ]; then
+              git clone --mirror https://github.com/1134867JP/freight-management.git "$REPOSITORY_DIR"
+            else
+              git --git-dir="$REPOSITORY_DIR" fetch --prune origin
+            fi
+
+            if [ -e "$RELEASE_DIR" ]; then
+              echo "O release $RELEASE_ID já existe."
+              exit 1
+            fi
+
+            git --git-dir="$REPOSITORY_DIR" worktree prune
+            git --git-dir="$REPOSITORY_DIR" worktree add --detach "$RELEASE_DIR" "${{ github.sha }}"
+
+            mkdir -p "$SHARED_DIR/storage/app/pilot"
+            if [ ! -f "$SHARED_DIR/storage/app/pilot/manual-observations.csv" ]; then
+              cp "$RELEASE_DIR/docs/pilot/manual-observations.example.csv" "$SHARED_DIR/storage/app/pilot/manual-observations.csv"
+            fi
+
+            echo "==> Preparando assets e dependências no novo release..."
             docker run --rm \
-              -v $APP_DIR:/app \
+              -v "$RELEASE_DIR:/app" \
               -w /app \
               node:20-alpine sh -c "npm ci && npm run build"
 
-            echo "==> Reiniciando servicos..."
-            docker compose up -d --remove-orphans --force-recreate
-
-            echo "==> Aguardando app subir..."
-            sleep 5
-
-            echo "==> Instalando dependencias PHP..."
             docker run --rm \
-              -v $APP_DIR:/app \
+              -v "$RELEASE_DIR:/app" \
               -v /tmp/composer-cache:/tmp/cache \
               composer:2 install --no-interaction --prefer-dist --optimize-autoloader --no-dev --working-dir=/app
 
-            echo "==> Ajustando permissoes..."
-            docker exec -u root freight-app chmod -R 775 storage bootstrap/cache
-            docker exec -u root freight-app chown -R www-data:www-data storage bootstrap/cache
+            docker compose --env-file "$SHARED_DIR/.env" -f "$RELEASE_DIR/docker-compose.yml" -p freight-management config >/dev/null
 
-            echo "==> Rodando migrations e caches..."
-            docker exec freight-app php artisan migrate --force
-            docker exec freight-app php artisan config:cache
-            docker exec freight-app php artisan route:cache
-            docker exec freight-app php artisan view:cache
+            echo "==> Validando banco e preparando caches..."
+            docker run --rm \
+              --network freight-management_internal \
+              -v "$RELEASE_DIR:/var/www/html" \
+              -v "$SHARED_DIR/.env:/var/www/html/.env:ro" \
+              -v "$SHARED_DIR/storage:/var/www/html/storage" \
+              -w /var/www/html \
+              freight-management-app php artisan migrate --force
 
-            echo "==> Deploy concluido com sucesso!"
+            docker run --rm \
+              --network freight-management_internal \
+              -v "$RELEASE_DIR:/var/www/html" \
+              -v "$SHARED_DIR/.env:/var/www/html/.env:ro" \
+              -v "$SHARED_DIR/storage:/var/www/html/storage" \
+              -w /var/www/html \
+              freight-management-app php artisan optimize
+
+            if [ -L "$APP_LINK" ]; then
+              PREVIOUS_TARGET=$(readlink -f "$APP_LINK")
+            elif [ -d "$APP_LINK" ]; then
+              PREVIOUS_TARGET=$BASE_DIR/freight-management-legacy-$(date +%Y%m%d%H%M%S)
+              mv "$APP_LINK" "$PREVIOUS_TARGET"
+            fi
+
+            rollback_release() {
+              trap - ERR
+              echo "==> Health check falhou; restaurando release anterior..."
+
+              if [ -n "$PREVIOUS_TARGET" ] && [ -d "$PREVIOUS_TARGET" ]; then
+                ln -s "$PREVIOUS_TARGET" "$NEXT_LINK"
+                mv -Tf "$NEXT_LINK" "$APP_LINK"
+                docker compose --env-file "$SHARED_DIR/.env" -f "$PREVIOUS_TARGET/docker-compose.yml" -p freight-management up -d --remove-orphans --force-recreate
+              fi
+
+              exit 1
+            }
+
+            echo "==> Ativando release de forma atômica..."
+            rm -f "$NEXT_LINK"
+            ln -s "$RELEASE_DIR" "$NEXT_LINK"
+            mv -Tf "$NEXT_LINK" "$APP_LINK"
+            RELEASE_ACTIVE=true
+            trap 'if [ "$RELEASE_ACTIVE" = true ]; then rollback_release; fi' ERR
+
+            if ! docker compose --env-file "$SHARED_DIR/.env" -f "$RELEASE_DIR/docker-compose.yml" -p freight-management up -d --remove-orphans --force-recreate; then
+              rollback_release
+            fi
+
+            docker exec -u root freight-app chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+            docker exec -u root freight-app chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+            echo "==> Verificando saúde do novo release..."
+            HEALTHY=false
+            for ATTEMPT in 1 2 3 4 5 6 7 8 9 10 11 12; do
+              if docker exec freight-app php -r '$response = @file_get_contents("http://127.0.0.1/up"); exit($response === false ? 1 : 0);'; then
+                HEALTHY=true
+                break
+              fi
+
+              sleep 5
+            done
+
+            if [ "$HEALTHY" != true ]; then
+              rollback_release
+            fi
+
+            docker exec freight-queue php artisan queue:restart
+            docker exec freight-app php artisan evolution:secure-keys
+
+            RELEASE_ACTIVE=false
+            trap - ERR
+
+            echo "==> Release $RELEASE_ID publicado com health check aprovado."

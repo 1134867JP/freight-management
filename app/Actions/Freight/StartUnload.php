@@ -6,50 +6,64 @@ use App\Enums\FreightStatus;
 use App\Events\YardBoardUpdated;
 use App\Exceptions\Freight\FreightAlreadyCompletedException;
 use App\Models\Freight;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class StartUnload
 {
-    public function execute(Freight $freight): void
+    public function execute(Freight $freight): bool
     {
-        if ($freight->operation_type !== 'unload') {
-            throw new RuntimeException('Esta ação é válida apenas para operações de descarga.');
-        }
+        $changed = DB::transaction(function () use ($freight): bool {
+            $lockedFreight = Freight::query()
+                ->with('company')
+                ->lockForUpdate()
+                ->findOrFail($freight->id);
 
-        if ($freight->status === FreightStatus::Cancelled) {
-            throw new RuntimeException('Não é possível iniciar uma reserva cancelada.');
-        }
+            if ($lockedFreight->operation_type !== 'unload') {
+                throw new RuntimeException('Esta ação é válida apenas para operações de descarga.');
+            }
 
-        if ($freight->status === FreightStatus::Completed) {
-            throw new FreightAlreadyCompletedException;
-        }
+            if ($lockedFreight->status === FreightStatus::Cancelled) {
+                throw new RuntimeException('Não é possível iniciar uma reserva cancelada.');
+            }
 
-        if ($freight->status === FreightStatus::Unloading) {
-            return;
-        }
+            if ($lockedFreight->status === FreightStatus::Completed) {
+                throw new FreightAlreadyCompletedException;
+            }
 
-        $freight->loadMissing('company');
-        $canSkipGateCheckIn = $freight->company?->isPilotMode() || ! $freight->company?->usesQueues();
+            if ($lockedFreight->status === FreightStatus::Unloading) {
+                return false;
+            }
 
-        if ($freight->status === FreightStatus::Reserved && $canSkipGateCheckIn) {
-            $freight->update([
+            $canSkipGateCheckIn = $lockedFreight->company?->isPilotMode()
+                || ! $lockedFreight->company?->usesQueues();
+
+            if ($lockedFreight->status === FreightStatus::Reserved && $canSkipGateCheckIn) {
+                $lockedFreight->update([
+                    'status' => FreightStatus::Unloading,
+                    'arrived_at' => $lockedFreight->arrived_at ?? now(),
+                    'operation_started_at' => $lockedFreight->operation_started_at ?? now(),
+                ]);
+
+                return true;
+            }
+
+            if ($lockedFreight->status !== FreightStatus::Arrived || $lockedFreight->arrived_at === null) {
+                throw new RuntimeException('Faça o check-in do veículo antes de iniciar a descarga.');
+            }
+
+            $lockedFreight->update([
                 'status' => FreightStatus::Unloading,
-                'arrived_at' => $freight->arrived_at ?? now(),
+                'operation_started_at' => $lockedFreight->operation_started_at ?? now(),
             ]);
 
+            return true;
+        });
+
+        if ($changed) {
             YardBoardUpdated::dispatch($freight->company_id);
-
-            return;
         }
 
-        if ($freight->status !== FreightStatus::Arrived || $freight->arrived_at === null) {
-            throw new RuntimeException('Faça o check-in do veículo antes de iniciar a descarga.');
-        }
-
-        $freight->update([
-            'status' => FreightStatus::Unloading,
-        ]);
-
-        YardBoardUpdated::dispatch($freight->company_id);
+        return $changed;
     }
 }

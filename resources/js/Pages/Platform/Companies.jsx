@@ -139,13 +139,13 @@ export default function Companies({ companies, summary }) {
 
   const confirm = useConfirm();
 
-  const deleteCompany = async (company) => {
-    if (!company.can_delete) {
+  const archiveCompany = async (company) => {
+    if (!company.can_archive) {
       return;
     }
 
     const ok = await confirm(
-      `Tem certeza que deseja excluir a empresa ${company.name}? Esta ação removerá os dados vinculados.`,
+      `Arquivar a empresa ${company.name}? Os acessos serão bloqueados e todo o histórico será preservado.`,
     );
     if (!ok) return;
 
@@ -244,21 +244,16 @@ export default function Companies({ companies, summary }) {
                         Editar empresa
                       </Button>
                       <Button
-                        onClick={() => deleteCompany(company)}
-                        disabled={!company.can_delete}
+                        onClick={() => archiveCompany(company)}
+                        disabled={!company.can_archive}
                         variant="danger"
                         size="sm"
-                        className={company.can_delete ? '' : 'cursor-not-allowed'}
+                        className={company.can_archive ? '' : 'cursor-not-allowed'}
                       >
-                        Excluir empresa
+                        {company.can_archive ? 'Arquivar empresa' : 'Empresa arquivada'}
                       </Button>
                     </div>
 
-                    {!company.can_delete && (
-                      <p className="text-xs text-amber-700 dark:text-amber-300">
-                        {formatActiveTimeslotMessage(company.stats.active_timeslots_count)}
-                      </p>
-                    )}
                   </div>
                 </div>
 
@@ -566,11 +561,4 @@ function formatState(value) {
   };
 
   return map[value] || value || 'Desconhecido';
-}
-
-function formatActiveTimeslotMessage(value) {
-  const count = Number(value || 0);
-  const label = count === 1 ? 'janela ativa' : 'janelas ativas';
-
-  return `Exclua ou feche as ${count} ${label} antes de remover a empresa.`;
 }

@@ -134,8 +134,21 @@ class FreightController extends Controller
         $validated = $request->validated();
 
         $invoicePath = null;
+        $invoiceAttachment = null;
         if ($validated['operation_type'] === 'unload' && $request->hasFile('invoice_path')) {
-            $invoicePath = $request->file('invoice_path')->store('notas_fiscais');
+            $file = $request->file('invoice_path');
+            $invoicePath = $file->store('notas_fiscais');
+
+            if ($invoicePath === false) {
+                return redirect()->back()->with('error', 'Falha ao salvar a nota fiscal.');
+            }
+
+            $invoiceAttachment = [
+                'path' => $invoicePath,
+                'original_name' => $file->getClientOriginalName(),
+                'size_bytes' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+            ];
         }
 
         try {
@@ -149,25 +162,8 @@ class FreightController extends Controller
                 weight: $validated['weight'] ?? null,
                 invoicePath: $invoicePath,
                 driverPhone: $validated['driver_phone'] ?? null,
+                invoiceAttachment: $invoiceAttachment,
             );
-
-            if ($invoicePath) {
-                $file = $request->file('invoice_path');
-                $freight->attachments()->create([
-                    'company_id'    => $freight->company_id,
-                    'type'          => FreightAttachment::TYPE_INVOICE,
-                    'path'          => $invoicePath,
-                    'original_name' => $file?->getClientOriginalName(),
-                    'size_bytes'    => $file?->getSize(),
-                    'mime_type'     => $file?->getMimeType(),
-                ]);
-            }
-
-            $this->whatsAppNotifier->notifyAdminReservationCreated($freight);
-            $this->whatsAppNotifier->notifyDriverFreightConfirmed($freight);
-            $this->emailNotifier->notifyAdminReservationCreated($freight);
-
-            return redirect()->route('client.reservations')->with('success', 'Reserva criada com sucesso!');
         } catch (\Throwable $e) {
             if ($invoicePath) {
                 Storage::disk(config('filesystems.default'))->delete($invoicePath);
@@ -175,6 +171,20 @@ class FreightController extends Controller
 
             return redirect()->back()->with('error', $e->getMessage());
         }
+
+        try {
+            $this->whatsAppNotifier->notifyAdminReservationCreated($freight);
+            $this->whatsAppNotifier->notifyDriverFreightConfirmed($freight);
+            $this->emailNotifier->notifyAdminReservationCreated($freight);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()
+                ->route('client.reservations')
+                ->with('warning', 'Reserva criada, mas uma ou mais notificações falharam.');
+        }
+
+        return redirect()->route('client.reservations')->with('success', 'Reserva criada com sucesso!');
     }
 
     // CLIENT: Cancel own reservation
@@ -285,12 +295,10 @@ class FreightController extends Controller
         $this->authorize('startLoad', $freight);
 
         try {
-            $shouldNotify = $freight->status !== FreightStatus::Loading;
-
-            (new StartLoad)->execute($freight);
+            $changed = (new StartLoad)->execute($freight);
             $freight->refresh();
 
-            if ($shouldNotify && $freight->status === FreightStatus::Loading) {
+            if ($changed && $freight->status === FreightStatus::Loading) {
                 $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
                 $this->emailNotifier->notifyClientOperationStarted($freight, $request->user());
             }
@@ -307,12 +315,10 @@ class FreightController extends Controller
         $this->authorize('startUnload', $freight);
 
         try {
-            $shouldNotify = $freight->status !== FreightStatus::Unloading;
-
-            (new StartUnload)->execute($freight);
+            $changed = (new StartUnload)->execute($freight);
             $freight->refresh();
 
-            if ($shouldNotify && $freight->status === FreightStatus::Unloading) {
+            if ($changed && $freight->status === FreightStatus::Unloading) {
                 $this->whatsAppNotifier->notifyClientOperationStarted($freight, $request->user());
                 $this->emailNotifier->notifyClientOperationStarted($freight, $request->user());
             }

@@ -109,29 +109,11 @@ class PlatformCompanyController extends Controller
 
     public function destroy(Company $company): RedirectResponse
     {
-        $activeTimeslotsCount = $company->timeslots()->active()->count();
-
-        if ($activeTimeslotsCount > 0) {
-            $label = $activeTimeslotsCount === 1 ? 'cota ativa' : 'cotas ativas';
-
-            return redirect()
-                ->route('platform.dashboard')
-                ->with('error', "A empresa não pode ser excluída porque possui {$activeTimeslotsCount} {$label}.");
-        }
-
-        $logoPath = $company->logo_path;
-
-        DB::transaction(function () use ($company): void {
-            $company->delete();
-        });
-
-        if (filled($logoPath)) {
-            Storage::delete($logoPath);
-        }
+        $company->update(['is_active' => false]);
 
         return redirect()
             ->route('platform.dashboard')
-            ->with('success', 'Empresa excluída com sucesso.');
+            ->with('success', 'Empresa arquivada com sucesso. O histórico foi preservado.');
     }
 
     private function syncCompanyLogo(Company $company, ?UploadedFile $logo, bool $removeLogo): void
@@ -216,7 +198,7 @@ class PlatformCompanyController extends Controller
                 'active_timeslots_count' => $company->active_timeslots_count,
                 'freights_count' => $company->freights_count,
             ],
-            'can_delete' => $company->active_timeslots_count === 0,
+            'can_archive' => $company->is_active,
             'whatsapp_instance' => $instance ? [
                 'id'               => $instance->id,
                 'instance_name'    => $instance->instance_name,

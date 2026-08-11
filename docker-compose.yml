@@ -21,6 +21,8 @@ services:
       AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT}
     volumes:
       - /opt/apps/outro-site/freight-management:/var/www/html
+      - /opt/apps/outro-site/freight-management-shared/.env:/var/www/html/.env:ro
+      - /opt/apps/outro-site/freight-management-shared/storage:/var/www/html/storage
       - /opt/apps/outro-site/freight-management/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     networks:
       - freight-management_internal
@@ -49,6 +51,8 @@ services:
       AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT}
     volumes:
       - /opt/apps/outro-site/freight-management:/var/www/html
+      - /opt/apps/outro-site/freight-management-shared/.env:/var/www/html/.env:ro
+      - /opt/apps/outro-site/freight-management-shared/storage:/var/www/html/storage
     networks:
       - freight-management_internal
     depends_on:
@@ -78,6 +82,8 @@ services:
       AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT}
     volumes:
       - /opt/apps/outro-site/freight-management:/var/www/html
+      - /opt/apps/outro-site/freight-management-shared/.env:/var/www/html/.env:ro
+      - /opt/apps/outro-site/freight-management-shared/storage:/var/www/html/storage
     networks:
       - freight-management_internal
     depends_on:

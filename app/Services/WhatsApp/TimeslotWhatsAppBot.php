@@ -242,7 +242,7 @@ class TimeslotWhatsAppBot
             $guard->setUser($user);
 
             try {
-                $timeslot = $this->createTimeslot->execute($user, [
+                $timeslot = $this->createTimeslot->executeViaWhatsApp($user, [
                     'start_time' => $parsed['start_time'],
                     'end_time' => $parsed['end_time'],
                     'operation_type' => $parsed['operation_type'],

@@ -37,7 +37,7 @@ class YardMapController extends Controller
             },
         ])
             ->where('company_id', $companyId)
-            ->inYard()
+            ->active()
             ->orderBy('ordem')
             ->orderBy('nome')
             ->get()

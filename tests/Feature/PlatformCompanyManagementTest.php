@@ -7,6 +7,7 @@ use App\Models\Timeslot;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -141,7 +142,7 @@ class PlatformCompanyManagementTest extends TestCase
         Storage::disk('s3')->assertMissing('company-logos/logo-antiga.png');
     }
 
-    public function test_platform_admin_can_delete_company_without_active_timeslots(): void
+    public function test_platform_admin_archives_company_and_preserves_history(): void
     {
         Storage::fake('s3');
 
@@ -178,24 +179,25 @@ class PlatformCompanyManagementTest extends TestCase
         $response = $this->actingAs($platformAdmin)->delete(route('platform.companies.destroy', $company));
 
         $response->assertRedirect(route('platform.dashboard'));
-        $response->assertSessionHas('success', 'Empresa excluída com sucesso.');
+        $response->assertSessionHas('success', 'Empresa arquivada com sucesso. O histórico foi preservado.');
 
-        $this->assertDatabaseMissing('companies', [
+        $this->assertDatabaseHas('companies', [
             'id' => $company->id,
+            'is_active' => false,
         ]);
 
-        $this->assertDatabaseMissing('users', [
+        $this->assertDatabaseHas('users', [
             'id' => $companyAdmin->id,
         ]);
 
-        $this->assertDatabaseMissing('timeslots', [
+        $this->assertDatabaseHas('timeslots', [
             'company_id' => $company->id,
         ]);
 
-        Storage::disk('s3')->assertMissing('company-logos/logo-arquivada.png');
+        Storage::disk('s3')->assertExists('company-logos/logo-arquivada.png');
     }
 
-    public function test_platform_admin_cannot_delete_company_with_active_timeslots(): void
+    public function test_platform_admin_can_archive_company_with_active_timeslots_without_deleting_them(): void
     {
         $platformAdmin = User::factory()->create([
             'company_id' => null,
@@ -220,10 +222,14 @@ class PlatformCompanyManagementTest extends TestCase
         $response = $this->actingAs($platformAdmin)->delete(route('platform.companies.destroy', $company));
 
         $response->assertRedirect(route('platform.dashboard'));
-        $response->assertSessionHas('error', 'A empresa não pode ser excluída porque possui 1 cota ativa.');
+        $response->assertSessionHas('success', 'Empresa arquivada com sucesso. O histórico foi preservado.');
 
         $this->assertDatabaseHas('companies', [
             'id' => $company->id,
+            'is_active' => false,
+        ]);
+        $this->assertDatabaseHas('timeslots', [
+            'company_id' => $company->id,
         ]);
     }
 
@@ -251,9 +257,15 @@ class PlatformCompanyManagementTest extends TestCase
             'name' => 'Instancia Acme',
             'instance_name' => 'acme-instance',
             'base_url' => 'http://localhost:8088',
-            'api_key' => 'instance-key',
             'is_active' => true,
         ]);
+
+        $instance = $company->fresh()->whatsappInstance;
+        $raw = DB::table('whatsapp_instances')->where('id', $instance->id)->first();
+
+        $this->assertSame('instance-key', $instance->api_key);
+        $this->assertNull($raw->api_key);
+        $this->assertNotSame('instance-key', $raw->api_key_encrypted);
     }
 
     public function test_platform_admin_can_sync_company_instance_and_store_qr_code(): void

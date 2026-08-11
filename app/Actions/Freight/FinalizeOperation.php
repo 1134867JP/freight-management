@@ -27,34 +27,42 @@ class FinalizeOperation
         ?float $netWeight = null
     ): void {
         DB::transaction(function () use ($freight, $grossWeight, $netWeight) {
-            if ($freight->status === FreightStatus::Cancelled) {
+            $lockedFreight = Freight::query()
+                ->lockForUpdate()
+                ->findOrFail($freight->id);
+
+            if ($lockedFreight->status === FreightStatus::Cancelled) {
                 throw new \RuntimeException('Não é possível finalizar uma reserva cancelada.');
             }
 
-            if ($freight->status === FreightStatus::Completed) {
+            if ($lockedFreight->status === FreightStatus::Completed) {
                 throw new FreightAlreadyCompletedException();
             }
 
-            if ($freight->operation_type === 'unload') {
+            if ($lockedFreight->operation_type === 'unload') {
                 if (! $grossWeight || ! $netWeight) {
                     throw new \RuntimeException('Para descarga, os pesos bruto e líquido são obrigatórios.');
                 }
 
-                if ($freight->status !== FreightStatus::Unloading) {
-                    throw new \RuntimeException("Para finalizar descarga, o status deve ser 'unloading'. Status atual: {$freight->status->value}");
+                if ($lockedFreight->status !== FreightStatus::Unloading) {
+                    throw new \RuntimeException("Para finalizar descarga, o status deve ser 'unloading'. Status atual: {$lockedFreight->status->value}");
                 }
 
-                $freight->update([
+                $lockedFreight->update([
                     'gross_weight' => $grossWeight,
                     'net_weight'   => $netWeight,
                     'status'       => FreightStatus::Completed->value,
+                    'completed_at' => now(),
                 ]);
             } else {
-                if ($freight->status !== FreightStatus::Loading) {
-                    throw new \RuntimeException("Para finalizar carga, o status deve ser 'loading'. Status atual: {$freight->status->value}");
+                if ($lockedFreight->status !== FreightStatus::Loading) {
+                    throw new \RuntimeException("Para finalizar carga, o status deve ser 'loading'. Status atual: {$lockedFreight->status->value}");
                 }
 
-                $update = ['status' => FreightStatus::Completed->value];
+                $update = [
+                    'status' => FreightStatus::Completed->value,
+                    'completed_at' => now(),
+                ];
 
                 if ($grossWeight !== null) {
                     $update['gross_weight'] = $grossWeight;
@@ -64,11 +72,11 @@ class FinalizeOperation
                     $update['net_weight'] = $netWeight;
                 }
 
-                $freight->update($update);
+                $lockedFreight->update($update);
             }
-        });
 
-        $this->releaseDoca->execute($freight);
+            $this->releaseDoca->execute($lockedFreight);
+        });
 
         // Dispara fora da transação para garantir que o DB já foi commitado
         YardBoardUpdated::dispatch($freight->company_id);

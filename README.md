@@ -1,140 +1,213 @@
-# Freight Management
+# CargoHub
 
-Sistema web para agendamento e operação de fretes com dois perfis:
+Yard Management System (YMS) para organizar agendamentos, entrada de veículos e
+operações de carga e descarga no pátio.
 
-- `platform_admin`: gerencia empresas, logos e instâncias WhatsApp.
-- `admin`: gerencia horários (timeslots), clientes, endereços e operação dos fretes.
-- `client`: cadastra caminhões, reserva horários e acompanha reservas.
+O CargoHub centraliza cotas de atendimento, reservas, portaria, docas, vagas,
+movimentações internas, documentos, indicadores e comunicação por WhatsApp. O
+produto está em fase de piloto controlado com uma empresa e um pátio; o escopo do
+piloto deve permanecer congelado enquanto volume, tempos, falhas e tarefas manuais
+são medidos.
+
+## Funcionalidades
+
+### Plataforma e acessos
+
+- cadastro e arquivamento de empresas, preservando o histórico operacional;
+- isolamento dos dados por empresa;
+- gestão de administradores, funcionários e clientes;
+- permissões específicas para funcionários;
+- senha temporária definida pelo administrador e troca obrigatória no primeiro acesso;
+- identidade visual por empresa e preferência de tema por usuário;
+- logs de auditoria para usuários autorizados.
+
+### Agendamento e operação
+
+- criação de cotas (`timeslots`) públicas ou restritas a clientes;
+- agenda operacional e controle de capacidade;
+- reservas de carga e descarga;
+- cadastro de caminhões e motoristas pelo cliente;
+- nota fiscal obrigatória para reservas de descarga;
+- cancelamento/rejeição, reabertura, acompanhamento e finalização das reservas;
+- anexos operacionais e exportações;
+- fechamento automático de horários expirados.
+
+### Pátio
+
+- check-in e check-out pela portaria, inclusive por consulta de QR Code;
+- painel operacional com atualização periódica e suporte a tempo real;
+- mapa do pátio, zonas e vagas;
+- gestão e ocupação de docas;
+- cavalos mecânicos de pátio;
+- ordens de movimentação interna;
+- KPIs e relatórios de horários e fretes.
+
+### WhatsApp
+
+- notificações operacionais assíncronas pela Evolution API;
+- uma instância de WhatsApp por empresa;
+- criação de cotas por mensagem para administradores e funcionários autorizados;
+- confirmação antes da gravação, expiração, idempotência e protocolo de auditoria.
+
+## Perfis de acesso
+
+| Perfil                      | Identificador      | Responsabilidade                                                               |
+| --------------------------- | ------------------ | ------------------------------------------------------------------------------ |
+| Administrador da plataforma | `platform_admin`   | Gerencia empresas, administradores principais e instâncias de WhatsApp.        |
+| Administrador da empresa    | `company_admin`    | Possui acesso administrativo e operacional completo dentro da própria empresa. |
+| Funcionário                 | `company_employee` | Opera o YMS e recebe somente as permissões administrativas delegadas.          |
+| Cliente                     | `client`           | Mantém motoristas e caminhões, reserva horários e acompanha suas operações.    |
+
+As permissões delegáveis a funcionários são: visualizar auditoria, gerenciar
+administradores, gerenciar funcionários, gerenciar WhatsApp e criar cotas pelo
+WhatsApp. Um funcionário não pode elevar as próprias permissões nem delegar uma
+permissão que não possua.
+
+## Fluxo operacional
+
+1. O administrador cria uma cota, pela interface ou pelo WhatsApp.
+2. O cliente escolhe um horário e cria a reserva com caminhão, motorista e operação.
+3. Em uma descarga, a nota fiscal é enviada junto com a reserva.
+4. A portaria faz o check-in e o veículo entra no pátio.
+5. O operador atribui vaga ou doca e, quando necessário, cria uma ordem de movimentação.
+6. A carga ou descarga é iniciada e finalizada.
+7. A portaria registra o check-out e libera os recursos associados.
+
+O fluxo principal de status é:
+
+```text
+reserved -> arrived -> loading|unloading -> completed
+```
+
+Uma reserva ainda ativa pode ser alterada para `cancelled`. No modo piloto, ou
+quando a empresa não utiliza fila, a operação pode avançar de `reserved` para
+`loading` ou `unloading` sem uma etapa manual de check-in.
 
 ## Stack
 
-- Backend: `Laravel 12` + `PHP 8.2+`
-- Frontend: `Inertia.js + React 18 + Vite`
-- Estilo: `Tailwind CSS`
-- Banco padrão local: `SQLite`
+- PHP 8.2+ e Laravel 12;
+- Inertia.js, React 18, Tailwind CSS e Vite;
+- PostgreSQL 16 em testes, CI e produção;
+- SQLite como opção leve para desenvolvimento local;
+- filas e scheduler do Laravel;
+- Laravel Echo/Reverb, com polling de segurança no painel do pátio;
+- Evolution API para WhatsApp;
+- armazenamento local ou compatível com S3.
 
 ## Pré-requisitos
 
-- `PHP 8.2` ou superior
-- `Composer`
-- `Node.js 20+`
-- `npm`
+- PHP 8.2 ou superior, com as extensões exigidas pelo Laravel;
+- Composer 2;
+- Node.js 20+ e npm;
+- SQLite para o uso local básico;
+- PostgreSQL 16 para executar a suíte PHP;
+- Docker e Docker Compose somente para os ambientes conteinerizados.
 
-## Setup rápido
+## Instalação local
 
-No diretório do projeto, rode:
-
-```bash
-composer run setup
-php artisan migrate --seed
-php artisan storage:link
-composer run dev
-```
-
-O comando `composer run dev` sobe em paralelo:
-
-- servidor Laravel
-- worker de fila (`queue:listen`)
-- Vite em modo de desenvolvimento
-
-Se quiser rodar também o visualizador de logs `Pail`, use:
-
-```bash
-composer run dev:with-logs
-```
-
-Observação:
-
-- no Windows, `Pail` costuma falhar porque depende da extensão `pcntl`
-- por isso `composer run dev` foi mantido sem `Pail`
-
-## Setup manual (se preferir)
+### Linux, macOS ou WSL
 
 ```bash
 composer install
-npm install
 cp .env.example .env
+touch database/database.sqlite
 php artisan key:generate
+```
+
+Para usar armazenamento local durante o desenvolvimento, altere no `.env`:
+
+```dotenv
+APP_URL=http://localhost:8000
+DB_CONNECTION=sqlite
+FILESYSTEM_DISK=public
+BROADCAST_CONNECTION=log
+```
+
+Finalize a instalação:
+
+```bash
 php artisan migrate --seed
 php artisan storage:link
-npm run dev
-php artisan serve
+npm ci
+npm run build
+composer run dev
 ```
 
-No PowerShell, troque `cp` por:
+### Windows PowerShell
 
 ```powershell
+composer install
 Copy-Item .env.example .env
+New-Item database/database.sqlite -ItemType File -Force
+php artisan key:generate
 ```
 
-## Acesso local
+Edite o `.env` com os mesmos valores do setup acima e execute:
 
-- URL padrão: `http://localhost:8000` (quando usando `php artisan serve`)
-- Login super admin seed:
-  - Email: `platform@example.com`
-  - Senha: `password`
-- Login admin seed:
-  - Email: `admin@example.com`
-  - Senha: `password`
+```powershell
+php artisan migrate --seed
+php artisan storage:link
+npm ci
+npm run build
+composer run dev
+```
 
-Painel global:
+O comando `composer run dev` mantém em paralelo o servidor Laravel, o worker da
+fila e o Vite. Para incluir o Laravel Pail, use `composer run dev:with-logs`; o Pail
+pode não funcionar no Windows sem a extensão `pcntl`.
 
-- URL: `/platform`
-- Funções: criar/editar empresa, definir logo, manter admin principal e a instância WhatsApp única de cada empresa
+### Acessos criados pelo seeder
 
-Observações:
+| Perfil     | E-mail                 | Senha      |
+| ---------- | ---------------------- | ---------- |
+| Plataforma | `platform@example.com` | `password` |
+| Empresa    | `admin@example.com`    | `password` |
+| Cliente 1  | `cliente1@example.com` | `password` |
+| Cliente 2  | `cliente2@example.com` | `password` |
+| Cliente 3  | `cliente3@example.com` | `password` |
 
-- O cadastro público (`/register`) está desativado.
-- Clientes seed são criados com senha `password`, mas com e-mails aleatórios de factory.
-- Para criar um cliente com credenciais conhecidas, use a tela de clientes no admin (`/admin/clients`).
+Essas credenciais são exclusivas para desenvolvimento. O cadastro público em
+`/register` está desativado. Contas criadas pelas telas administrativas recebem
+senha temporária e precisam cadastrar uma nova senha antes de acessar o sistema.
 
-## Fluxo funcional
+## Processos locais opcionais
 
-- `admin`
-  - dashboard e agenda operacional
-  - CRUD de timeslots e endereços de descarga
-  - gestão de clientes
-  - aprovação/rejeição e finalização de fretes
-  - upload de anexos da operação
-- `client`
-  - dashboard com indicadores
-  - visualização de horários disponíveis (públicos ou restritos)
-  - criação/cancelamento de reservas
-  - upload de nota fiscal (obrigatório para operação de descarga)
-  - CRUD de caminhões
-  - recebimento de notificações WhatsApp sobre ações do admin
-
-## Integração WhatsApp (Evolution API)
-
-O projeto agora suporta envio de mensagens via Evolution API para:
-
-- `admin` que criou o `timeslot/cota`, quando o cliente cria, cancela, reabre reserva ou envia nota fiscal
-- `client`, quando o admin cancela a reserva, inicia/finaliza a operação ou adiciona anexo
-
-Configuração mínima no `.env`:
+O scheduler é necessário para fechar cotas expiradas e expirar confirmações
+pendentes do bot:
 
 ```bash
+php artisan schedule:work
+```
+
+O painel já funciona por polling. Para habilitar atualizações por WebSocket,
+publique a configuração na primeira instalação, caso `config/broadcasting.php`
+ainda não exista:
+
+```bash
+php artisan reverb:install
+```
+
+Depois, configure `BROADCAST_CONNECTION=reverb`, preencha as variáveis `REVERB_*`
+e inicie o servidor:
+
+```bash
+php artisan reverb:start
+```
+
+Sem Reverb, o painel do pátio continua atualizando por polling.
+
+## Evolution API e bot do WhatsApp
+
+O pacote local da Evolution API está em [`infra/evolution-api`](infra/evolution-api/README.md).
+Com a instância criada e conectada, configure:
+
+```dotenv
 EVOLUTION_ENABLED=true
 EVOLUTION_BASE_URL=http://localhost:8088
-EVOLUTION_API_KEY=sua-api-key
+EVOLUTION_API_KEY=sua-chave
 EVOLUTION_INSTANCE=nome-da-instancia
 EVOLUTION_TIMEOUT=10
-```
 
-Requisitos operacionais:
-
-- se você usar o pack local deste repositório, ele está em `infra/evolution-api`
-- a instância informada em `EVOLUTION_INSTANCE` precisa já existir e estar conectada no Evolution API
-- o `queue worker` precisa estar rodando para os envios assíncronos
-- os usuários devem ter `WhatsApp` preenchido com DDI e apenas números, por exemplo `5511999999999`
-
-### Criação de cotas pelo WhatsApp
-
-O CargoHub também pode receber comandos de administradores e funcionários autorizados pelo evento `MESSAGES_UPSERT` da Evolution. O bot interpreta o pedido, resolve o cliente dentro da mesma empresa e solicita confirmação antes de criar o `Timeslot`.
-
-Configuração adicional:
-
-```bash
 EVOLUTION_BOT_ENABLED=true
 EVOLUTION_WEBHOOK_URL=https://seu-dominio.com/api/webhooks/evolution
 EVOLUTION_WEBHOOK_SECRET=gere-um-segredo-longo-e-aleatorio
@@ -143,123 +216,173 @@ EVOLUTION_BOT_TIMESLOT_DURATION=60
 EVOLUTION_BOT_MAX_CAPACITY=500
 ```
 
-Depois de alterar essas variáveis, acesse **Admin > WhatsApp** e clique em **Atualizar estado**. Isso registra o webhook autenticado na instância da empresa.
+Depois de alterar a configuração:
 
-Formato recomendado:
+```bash
+php artisan optimize:clear
+php artisan queue:restart
+```
+
+Na aplicação, acesse **Admin > WhatsApp** e atualize o estado da instância para
+registrar o webhook autenticado. O telefone do usuário deve conter DDI e somente
+números, por exemplo `5511999999999`.
+
+Formato recomendado para criar uma cota:
 
 ```text
 10 cotas | Cliente X | amanhã | 10:00
 ```
 
-Também são aceitas frases como:
+Também é aceita linguagem natural, por exemplo:
 
 ```text
 Criar 10 cotas às 10h no cliente X amanhã
 ```
 
-Regras de segurança e consistência:
+Regras do bot:
 
-- `company_admin` tem acesso automaticamente; `company_employee` precisa da permissão `create_timeslots_via_whatsapp`;
-- o telefone cadastrado precisa identificar um único usuário autorizado dentro da empresa;
-- mensagens de grupos, mensagens enviadas pelo próprio número e remetentes não autorizados são ignorados;
-- a cota só é gravada após `CONFIRMAR`; `CANCELAR` descarta o pedido;
+- administradores da empresa são autorizados automaticamente;
+- funcionários precisam da permissão `create_timeslots_via_whatsapp`;
+- o telefone deve identificar um único usuário autorizado dentro da empresa;
+- grupos, mensagens enviadas pelo próprio número e remetentes sem permissão são ignorados;
+- `CONFIRMAR` grava a cota e `CANCELAR` descarta a solicitação;
 - comandos pendentes expiram e reentregas do mesmo webhook são idempotentes;
-- cada solicitação recebe um protocolo `#WA-XXXXXX` e aparece na auditoria da tela de WhatsApp;
-- quando a duração não é informada, a janela usa `EVOLUTION_BOT_TIMESLOT_DURATION`.
+- cada solicitação recebe um protocolo `#WA-XXXXXX` e fica disponível na auditoria.
 
-## Produção
+As chaves das instâncias são cifradas no banco. Para proteger credenciais antigas
+depois de uma migração, execute:
 
-Existe uma stack pronta em `infra/production` com:
+```bash
+php artisan evolution:secure-keys
+```
 
-- `Nginx + PHP-FPM` para o Laravel
-- `PostgreSQL` para a aplicação
-- worker de fila separado
-- `Evolution API` isolada, com `PostgreSQL` e `Redis` próprios
-- `HTTPS` terminando no `Nginx`
+## Testes e qualidade
 
-Os segredos não ficam no repositório: use `infra/production/.env` no servidor, a partir de `infra/production/.env.example`.
+A suíte PHP usa PostgreSQL, inclusive para validar locks, concorrência e transações.
+Os valores padrão esperados por `phpunit.xml` são:
 
-### Render
+```dotenv
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=freight_test
+DB_USERNAME=freight_user
+DB_PASSWORD=secret
+```
 
-Também existe uma estrutura dedicada para Render:
+Uma instância descartável pode ser iniciada com Docker:
 
-- blueprint em `render.yaml`
-- web service Docker em `infra/render/Dockerfile.web`
-- worker Docker em `infra/render/Dockerfile.worker`
+```bash
+docker run --name cargohub-test-postgres \
+  -e POSTGRES_DB=freight_test \
+  -e POSTGRES_USER=freight_user \
+  -e POSTGRES_PASSWORD=secret \
+  -p 5432:5432 -d postgres:16
+```
 
-Fluxo esperado no Render:
+Execute as verificações antes de enviar alterações:
 
-- `1` web service com disco persistente montado em `/var/www/html/storage`
-- `1` background worker para a fila
-- `1` Render Postgres
+```bash
+php artisan test
+./vendor/bin/pint --test
+npm run lint
+npm run format:check
+npm run build
+```
 
-Observações importantes:
+## Piloto controlado
 
-- o disco persistente fica apenas no web service, porque o Render não permite compartilhar o mesmo disco entre serviços
-- o pre-deploy roda `php artisan migrate --force`
-- para o primeiro deploy, mantenha `EVOLUTION_ENABLED=false` e ligue a Evolution depois
-- o arquivo `render.yaml` já está enxugado com um `envVarGroup` para evitar duplicação entre web e worker
+O comando abaixo consolida volume, tempos médio/p50/p95, falhas e minutos de
+trabalho manual de uma empresa:
 
-Detalhes adicionais estão em `infra/render/README.md`.
+```bash
+php artisan pilot:report empresa-piloto \
+  --from=2026-08-12T00:00:00-03:00 \
+  --to=2026-08-12T23:59:59-03:00
+```
 
-Onde configurar telefone:
+O guia de operação e o modelo de observações ficam em
+[`docs/pilot`](docs/pilot/README.md). Registre somente intervenções reais no arquivo
+`storage/app/pilot/manual-observations.csv`.
 
-- `admin`: tela de perfil
-- `client`: tela de clientes no admin ou tela de perfil do próprio cliente
+## Produção e deploy
 
-### Status de frete
+O push para `main` dispara o workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml):
 
-- Operação `load` nasce como `loading`
-- Operação `unload` nasce como `unloading`
-- Admin finaliza como `completed`
-- Cancelamento muda para `cancelled` (se ainda não concluído)
+1. cria um PostgreSQL 16 temporário;
+2. instala as dependências PHP;
+3. executa migrations e toda a suíte de testes;
+4. prepara dependências e assets em um novo diretório de release na VPS;
+5. executa migrations e caches antes da troca do link ativo;
+6. recria `app`, `queue` e `scheduler`;
+7. valida o endpoint `/up` e restaura o release anterior se o health check falhar.
 
-## Regras de negócio importantes
+O [`docker-compose.yml`](docker-compose.yml) da raiz é específico da VPS atual e
+depende de imagem, redes, volume, `.env` e storage compartilhado já provisionados.
+As migrations de produção devem continuar retrocompatíveis: o rollback automático
+restaura código e containers, não desfaz alterações no banco.
 
-- Não permite reserva ativa duplicada da mesma placa no mesmo timeslot.
-- Timeslot pode ser:
-  - público (sem vínculo em `client_timeslot`)
-  - restrito (visível apenas para clientes vinculados)
-- Arquivos de nota fiscal e anexos ficam no disco `public`:
-  - `storage/app/public/notas_fiscais`
-  - `storage/app/public/attachments`
+## Estrutura principal
+
+```text
+app/Actions                 regras transacionais de negócio
+app/Enums                   estados e tipos do domínio
+app/Http/Controllers        entrada HTTP e páginas Inertia
+app/Models                  entidades e relacionamentos
+app/Services/WhatsApp       integração e bot da Evolution API
+app/Services/Pilot          consolidação das métricas do piloto
+database/migrations         evolução do schema
+database/seeders            dados locais de demonstração
+resources/js/Pages          telas React por perfil
+routes                      rotas web, API, canais e scheduler
+tests/Feature               cenários funcionais e de integração
+tests/Unit                  testes unitários
+```
 
 ## Comandos úteis
 
 ```bash
-# testes
-php artisan test
-
-# lint/format PHP
-php artisan pint
-
-# build frontend de produção
-npm run build
-
 # limpar caches
 php artisan optimize:clear
+
+# reiniciar workers após mudanças em produção
+php artisan queue:restart
+
+# listar rotas
+php artisan route:list
+
+# verificar jobs que falharam
+php artisan queue:failed
 ```
 
-## Estrutura de pastas (resumo)
+## Solução de problemas
 
-- `app/Actions`: regras de negócio de frete e timeslot
-- `app/Http/Controllers`: controladores web
-- `app/Models`: entidades principais (`User`, `Freight`, `Timeslot`, `Truck`)
-- `resources/js/Pages`: telas Inertia/React por módulo (`Admin`, `Client`, `Auth`)
-- `routes/web.php`: rotas da aplicação
-- `database/migrations` e `database/seeders`: schema e dados iniciais
+### Uploads não abrem localmente
 
-## Troubleshooting
+Confirme `FILESYSTEM_DISK=public`, execute `php artisan storage:link` e valide se
+`APP_URL` corresponde ao endereço usado no navegador.
 
-- Upload não abre no navegador:
-  - confirme `php artisan storage:link`
-- Testes podem falhar no estado atual com erro de índice SQLite:
-  - `no such index: freights_timeslot_id_truck_plate_unique`
-  - origem: migration `2026_03_06_200003_alter_unique_active_freights_on_timeslot_and_truck.php`
+### Mensagens do WhatsApp não são enviadas
 
-## Convenções de trabalho
+Confirme se a Evolution API está acessível, a instância está conectada, o telefone
+possui DDI e o worker de fila está em execução. Depois, rode `php artisan
+optimize:clear` e `php artisan queue:restart`.
 
-- Antes de abrir PR:
-  - rode `php artisan test`
-  - rode `php artisan pint`
-  - valide fluxo admin e client em ambiente local
+### A agenda não fecha horários expirados
+
+Mantenha `php artisan schedule:work` ativo no desenvolvimento. Em produção, o
+serviço `scheduler` do Compose executa esse processo.
+
+### Testes falham antes de iniciar
+
+A suíte rejeita bancos diferentes de PostgreSQL. Confirme a instância de teste,
+as credenciais de `phpunit.xml` e se a porta `5432` está disponível.
+
+## Convenções de contribuição
+
+- não inclua `.env`, chaves, tokens ou credenciais no repositório;
+- mantenha toda consulta operacional isolada por `company_id`;
+- preserve transações e locks nos fluxos de reserva, portaria, doca, vaga e movimentação;
+- adicione testes de regressão para alterações de regra de negócio;
+- não amplie o escopo funcional durante o piloto sem uma decisão explícita;
+- execute a suíte PHP, o lint e o build antes do push para `main`.

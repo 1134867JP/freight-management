@@ -4,6 +4,7 @@ namespace App\Actions\Freight;
 
 use App\Enums\FreightStatus;
 use App\Models\Freight;
+use App\Models\FreightAttachment;
 use App\Models\Timeslot;
 use App\Models\Truck;
 use App\Models\User;
@@ -30,6 +31,7 @@ class CreateReservation
         ?float $weight = null,
         ?string $invoicePath = null,
         ?string $driverPhone = null,
+        ?array $invoiceAttachment = null,
     ): Freight {
         return DB::transaction(function () use (
             $user,
@@ -41,6 +43,7 @@ class CreateReservation
             $weight,
             $invoicePath,
             $driverPhone,
+            $invoiceAttachment,
         ) {
             /**
              * A capacidade precisa ser conferida sobre a mesma linha que será
@@ -91,10 +94,15 @@ class CreateReservation
                 throw new \RuntimeException('Nota fiscal é obrigatória para descarga.');
             }
 
+            if ($invoicePath && (($invoiceAttachment['path'] ?? $invoicePath) !== $invoicePath)) {
+                throw new \RuntimeException('Os dados do anexo da nota fiscal são inválidos.');
+            }
+
             $status = FreightStatus::Reserved->value;
 
             $truck = Truck::query()
                 ->where('company_id', $timeslot->company_id)
+                ->where('user_id', $user->id)
                 ->where('plate', strtoupper($truckPlate))
                 ->first();
 
@@ -113,6 +121,19 @@ class CreateReservation
                 'weight'           => $weight,
                 'status'           => $status,
             ]);
+
+            if ($invoicePath) {
+                $metadata = $invoiceAttachment ?? [];
+
+                $freight->attachments()->create([
+                    'company_id' => $freight->company_id,
+                    'type' => FreightAttachment::TYPE_INVOICE,
+                    'path' => $invoicePath,
+                    'original_name' => $metadata['original_name'] ?? basename($invoicePath),
+                    'size_bytes' => $metadata['size_bytes'] ?? null,
+                    'mime_type' => $metadata['mime_type'] ?? null,
+                ]);
+            }
 
             $timeslot->clampReservations();
             $timeslot->save();

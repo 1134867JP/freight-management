@@ -224,6 +224,19 @@ class WhatsAppTimeslotBotTest extends TestCase
             'status' => WhatsAppCommand::STATUS_PENDING_CONFIRMATION,
         ]);
         Queue::assertPushed(SendWhatsAppMessageJob::class, 1);
+
+        $this->sendWebhook(
+            $this->payload('msg-employee-confirm', 'CONFIRMAR', $employee->whatsapp_phone),
+        )->assertOk();
+
+        $timeslot = Timeslot::query()->firstOrFail();
+        $this->assertSame($employee->id, $timeslot->created_by);
+        $this->assertTrue($timeslot->clients()->whereKey($this->client->id)->exists());
+        $this->assertDatabaseHas('whatsapp_commands', [
+            'external_message_id' => 'msg-employee-authorized',
+            'confirmation_message_id' => 'msg-employee-confirm',
+            'status' => WhatsAppCommand::STATUS_EXECUTED,
+        ]);
     }
 
     public function test_missing_date_is_rejected_without_creating_timeslot(): void

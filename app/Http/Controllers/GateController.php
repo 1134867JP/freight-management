@@ -78,10 +78,12 @@ class GateController extends Controller
     public function checkIn(Request $request, Freight $freight)
     {
         try {
-            (new GateCheckIn)->execute($freight);
+            $changed = (new GateCheckIn)->execute($freight);
             $freight->refresh();
 
-            $this->emailNotifier->notifyClientGateCheckIn($freight, $request->user());
+            if ($changed) {
+                $this->emailNotifier->notifyClientGateCheckIn($freight, $request->user());
+            }
 
             return redirect()->back()->with('success', 'Check-in realizado com sucesso!');
         } catch (\Throwable $e) {

@@ -20,6 +20,23 @@ class CreateTimeslot
             throw new AuthorizationException('Apenas administradores da empresa podem criar cotas.');
         }
 
+        return $this->persist($creator, $attributes, $clientIds);
+    }
+
+    public function executeViaWhatsApp(User $creator, array $attributes, array $clientIds = []): Timeslot
+    {
+        $authorized = $creator->isCompanyAdmin()
+            || $creator->hasPermission(User::PERMISSION_CREATE_TIMESLOTS_VIA_WHATSAPP);
+
+        if (! $authorized || ! filled($creator->company_id)) {
+            throw new AuthorizationException('Usuário sem permissão para criar cotas pelo WhatsApp.');
+        }
+
+        return $this->persist($creator, $attributes, $clientIds);
+    }
+
+    private function persist(User $creator, array $attributes, array $clientIds): Timeslot
+    {
         return DB::transaction(function () use ($creator, $attributes, $clientIds): Timeslot {
             $attributes = Arr::only($attributes, [
                 'start_time',

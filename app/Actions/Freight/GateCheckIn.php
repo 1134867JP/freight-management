@@ -5,33 +5,46 @@ namespace App\Actions\Freight;
 use App\Enums\FreightStatus;
 use App\Events\YardBoardUpdated;
 use App\Models\Freight;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class GateCheckIn
 {
-    public function execute(Freight $freight): void
+    public function execute(Freight $freight): bool
     {
-        if ($freight->status === FreightStatus::Cancelled) {
-            throw new RuntimeException('Não é possível fazer check-in de uma reserva cancelada.');
+        $changed = DB::transaction(function () use ($freight): bool {
+            $lockedFreight = Freight::query()
+                ->lockForUpdate()
+                ->findOrFail($freight->id);
+
+            if ($lockedFreight->status === FreightStatus::Cancelled) {
+                throw new RuntimeException('Não é possível fazer check-in de uma reserva cancelada.');
+            }
+
+            if ($lockedFreight->status === FreightStatus::Completed) {
+                throw new RuntimeException('Não é possível fazer check-in de uma operação já finalizada.');
+            }
+
+            if ($lockedFreight->status === FreightStatus::Arrived) {
+                return false;
+            }
+
+            if ($lockedFreight->status !== FreightStatus::Reserved) {
+                throw new RuntimeException('Check-in só pode ser feito em reservas com status "Reservado".');
+            }
+
+            $lockedFreight->update([
+                'status'     => FreightStatus::Arrived,
+                'arrived_at' => now(),
+            ]);
+
+            return true;
+        });
+
+        if ($changed) {
+            YardBoardUpdated::dispatch($freight->company_id);
         }
 
-        if ($freight->status === FreightStatus::Completed) {
-            throw new RuntimeException('Não é possível fazer check-in de uma operação já finalizada.');
-        }
-
-        if ($freight->status === FreightStatus::Arrived) {
-            return;
-        }
-
-        if (! in_array($freight->status, [FreightStatus::Reserved])) {
-            throw new RuntimeException('Check-in só pode ser feito em reservas com status "Reservado".');
-        }
-
-        $freight->update([
-            'status'     => FreightStatus::Arrived,
-            'arrived_at' => now(),
-        ]);
-
-        YardBoardUpdated::dispatch($freight->company_id);
+        return $changed;
     }
 }
