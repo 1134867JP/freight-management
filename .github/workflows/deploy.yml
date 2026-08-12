@@ -84,6 +84,7 @@ jobs:
             SHARED_DIR=$BASE_DIR/freight-management-shared
             RELEASES_DIR=$BASE_DIR/freight-management-releases
             REPOSITORY_DIR=$BASE_DIR/freight-management-repository.git
+            PROXY_DIR=/opt/caddy
             RELEASE_ID=${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
             RELEASE_DIR=$RELEASES_DIR/$RELEASE_ID
             NEXT_LINK=$BASE_DIR/freight-management.next
@@ -165,6 +166,18 @@ jobs:
               mv "$APP_LINK" "$PREVIOUS_TARGET"
             fi
 
+            refresh_proxy() {
+              if [ ! -d "$PROXY_DIR" ]; then
+                echo "Diretório do proxy não encontrado: $PROXY_DIR"
+                return 1
+              fi
+
+              (
+                cd "$PROXY_DIR"
+                docker compose up -d --force-recreate
+              )
+            }
+
             rollback_release() {
               trap - ERR
               echo "==> Falha no novo release; restaurando release anterior..."
@@ -173,6 +186,10 @@ jobs:
                 ln -s "$PREVIOUS_TARGET" "$NEXT_LINK"
                 mv -Tf "$NEXT_LINK" "$APP_LINK"
                 docker compose --env-file "$SHARED_DIR/.env" -f "$PREVIOUS_TARGET/docker-compose.yml" -p freight-management up -d --remove-orphans --force-recreate
+
+                if ! refresh_proxy; then
+                  echo "O proxy não pôde ser recriado durante o rollback."
+                fi
               fi
 
               exit 1
@@ -186,6 +203,11 @@ jobs:
             trap 'if [ "$RELEASE_ACTIVE" = true ]; then rollback_release; fi' ERR
 
             if ! docker compose --env-file "$SHARED_DIR/.env" -f "$RELEASE_DIR/docker-compose.yml" -p freight-management up -d --remove-orphans --force-recreate; then
+              rollback_release
+            fi
+
+            echo "==> Recriando proxy para montar o release ativo..."
+            if ! refresh_proxy; then
               rollback_release
             fi
 
@@ -220,6 +242,56 @@ jobs:
               docker exec freight-app php artisan about || true
               rollback_release
             fi
+
+            echo "==> Verificando assets do frontend pelo proxy web..."
+            if ! ASSET_PATHS=$(docker exec freight-app php -r '
+            $manifestPath = "/var/www/html/public/build/manifest.json";
+            if (! is_file($manifestPath)) {
+                fwrite(STDERR, "Manifest do Vite não encontrado." . PHP_EOL);
+                exit(1);
+            }
+            $manifest = json_decode(file_get_contents($manifestPath), true, 512, JSON_THROW_ON_ERROR);
+            $assets = [];
+            foreach ($manifest as $entry) {
+                if (isset($entry["file"]) && preg_match("/\\.(?:css|js)$/", $entry["file"])) {
+                    $assets[$entry["file"]] = true;
+                }
+                foreach ($entry["css"] ?? [] as $css) {
+                    $assets[$css] = true;
+                }
+            }
+            echo implode(PHP_EOL, array_keys($assets));
+            '); then
+              echo "Não foi possível ler os assets gerados pelo Vite."
+              rollback_release
+            fi
+
+            ASSET_JS=$(printf '%s\n' "$ASSET_PATHS" | sed -n '/\.js$/p' | head -n 1)
+            ASSET_CSS=$(printf '%s\n' "$ASSET_PATHS" | sed -n '/\.css$/p' | head -n 1)
+
+            if [ -z "$ASSET_JS" ] || [ -z "$ASSET_CSS" ]; then
+              echo "O manifest do Vite não contém JavaScript e CSS para validação."
+              rollback_release
+            fi
+
+            for ASSET_PATH in "$ASSET_JS" "$ASSET_CSS"; do
+              ASSET_URL="${HEALTH_BASE_URL%/}/build/${ASSET_PATH#/}"
+              ASSET_HEALTHY=false
+
+              for ATTEMPT in 1 2 3 4 5 6; do
+                if curl --fail --silent --show-error --location --max-time 10 "$ASSET_URL" >/dev/null; then
+                  ASSET_HEALTHY=true
+                  break
+                fi
+
+                sleep 3
+              done
+
+              if [ "$ASSET_HEALTHY" != true ]; then
+                echo "Asset indisponível pelo proxy: $ASSET_URL"
+                rollback_release
+              fi
+            done
 
             docker exec freight-queue php artisan queue:restart
             docker exec freight-app php artisan evolution:secure-keys
