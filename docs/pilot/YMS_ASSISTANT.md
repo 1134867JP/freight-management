@@ -11,10 +11,11 @@ empresa reduz tempo e tarefas manuais durante o piloto de uma empresa e um páti
 1. A Evolution API entrega a mensagem ao webhook autenticado.
 2. O CargoHub identifica uma única instância, empresa, usuário e permissão.
 3. Comandos de criação de cota continuam no parser atual e exigem `CONFIRMAR`.
-4. Perguntas de consulta são enviadas ao classificador, sem dados do banco.
-5. A IA devolve somente `intent`, `date` e `client_name` em JSON Schema estrito.
-6. O Laravel valida os campos, aplica `company_id` e executa uma consulta permitida.
-7. O Laravel monta a resposta e registra pergunta, intenção, fonte, latência, uso e
+4. Perguntas de consulta são enviadas primeiro à Groq, sem dados do banco.
+5. Se a Groq falhar, o mesmo classificador tenta o Gemini automaticamente.
+6. A IA devolve somente `intent`, `date` e `client_name` em JSON Schema estrito.
+7. O Laravel valida os campos, aplica `company_id` e executa uma consulta permitida.
+8. O Laravel monta a resposta e registra pergunta, intenção, fonte, latência, uso e
    resultado resumido em `whatsapp_commands`.
 
 A IA não recebe SQL, credenciais, resultados de consultas ou acesso a modelos
@@ -37,23 +38,27 @@ Eloquent. Ela não pode criar, alterar, confirmar, cancelar ou excluir registros
 As listas são limitadas aos cinco primeiros registros na mensagem. A consulta de
 data fica limitada a 31 dias antes ou depois da data atual durante o piloto.
 
-## Provedor gratuito
+## Provedores gratuitos
 
-O driver inicial é Groq com `openai/gpt-oss-20b`. A integração usa o endpoint
-compatível com OpenAI e saída estruturada estrita. Em 11/08/2026, o plano gratuito
-publicava 1.000 requisições e 200 mil tokens por dia para esse modelo; o CargoHub
-limita o uso a 300 interpretações por dia, 25 por minuto no total e 10 por usuário
-por minuto, com esforço de raciocínio baixo. Os limites reais da organização devem
-ser verificados no console antes do piloto.
+O driver principal é Groq com `openai/gpt-oss-20b` e o fallback é Gemini com
+`gemini-2.5-flash`. As duas integrações usam saída estruturada por JSON Schema. Em
+11/08/2026, o plano gratuito da Groq publicava 1.000 requisições e 200 mil tokens por
+dia para esse modelo; o CargoHub limita o uso a 300 interpretações por dia, 25 por
+minuto no total e 10 por usuário por minuto, com esforço de raciocínio baixo. Os
+limites reais da organização devem ser verificados no console antes do piloto.
 
 Configuração:
 
 ```dotenv
 YMS_ASSISTANT_ENABLED=true
 YMS_ASSISTANT_PROVIDER=groq
+YMS_ASSISTANT_FALLBACK_PROVIDERS=gemini
 GROQ_BASE_URL=https://api.groq.com/openai/v1
 GROQ_API_KEY=
 GROQ_MODEL=openai/gpt-oss-20b
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.5-flash
 YMS_ASSISTANT_TIMEOUT=5
 YMS_ASSISTANT_MAX_COMPLETION_TOKENS=256
 YMS_ASSISTANT_REASONING_EFFORT=low
@@ -74,10 +79,11 @@ registra a chave nem o corpo de uma resposta de erro do provedor.
 
 ## Contingência
 
-Se a chave estiver ausente, a API responder com erro, o timeout ocorrer ou o limite
-interno for atingido, o interpretador por regras reconhece as perguntas principais.
-Perguntas não reconhecidas recebem exemplos válidos. A indisponibilidade da IA não
-afeta notificações nem a criação confirmada de cotas.
+Se a Groq estiver sem chave, responder com erro, exceder o timeout ou devolver uma
+resposta inválida, o classificador tenta o Gemini. Se o Gemini também estiver
+indisponível, o interpretador por regras reconhece as perguntas principais. Perguntas
+não reconhecidas recebem exemplos válidos. A indisponibilidade das duas IAs não afeta
+notificações nem a criação confirmada de cotas.
 
 ## Permissões e isolamento
 
@@ -109,4 +115,6 @@ entrar quando o histórico do piloto demonstrar demanda real.
 - [Groq — limites gratuitos](https://console.groq.com/docs/rate-limits)
 - [Groq — Structured Outputs](https://console.groq.com/docs/structured-outputs)
 - [Groq — tratamento de dados e ZDR](https://console.groq.com/docs/your-data)
+- [Gemini — Structured Outputs](https://ai.google.dev/gemini-api/docs/structured-output)
+- [Gemini — modelos disponíveis](https://ai.google.dev/gemini-api/docs/models)
 - [OpenAI — Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)

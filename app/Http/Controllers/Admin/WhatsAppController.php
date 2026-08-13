@@ -74,11 +74,27 @@ class WhatsAppController extends Controller
                 'timeslot_duration_minutes' => (int) config('services.evolution.bot.timeslot_duration_minutes', 60),
                 'assistant' => [
                     'enabled' => (bool) config('services.yms_assistant.enabled'),
-                    'configured' => filled(config('services.yms_assistant.base_url'))
+                    'configured' => (
+                        filled(config('services.yms_assistant.base_url'))
                         && filled(config('services.yms_assistant.api_key'))
-                        && filled(config('services.yms_assistant.model')),
+                        && filled(config('services.yms_assistant.model'))
+                    ) || (
+                        filled(config('services.yms_assistant.gemini.base_url'))
+                        && filled(config('services.yms_assistant.gemini.api_key'))
+                        && filled(config('services.yms_assistant.gemini.model'))
+                    ),
                     'provider' => (string) config('services.yms_assistant.provider', 'groq'),
                     'model' => (string) config('services.yms_assistant.model', ''),
+                    'fallbacks' => collect(config('services.yms_assistant.fallback_providers', []))
+                        ->map(fn (string $provider): array => [
+                            'provider' => $provider,
+                            'model' => (string) config("services.yms_assistant.{$provider}.model", ''),
+                            'configured' => filled(config("services.yms_assistant.{$provider}.base_url"))
+                                && filled(config("services.yms_assistant.{$provider}.api_key"))
+                                && filled(config("services.yms_assistant.{$provider}.model")),
+                        ])
+                        ->values()
+                        ->all(),
                     'daily_limit' => (int) config('services.yms_assistant.daily_limit', 300),
                 ],
             ],

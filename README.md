@@ -219,9 +219,13 @@ EVOLUTION_BOT_MAX_CAPACITY=500
 
 YMS_ASSISTANT_ENABLED=true
 YMS_ASSISTANT_PROVIDER=groq
+YMS_ASSISTANT_FALLBACK_PROVIDERS=gemini
 GROQ_BASE_URL=https://api.groq.com/openai/v1
 GROQ_API_KEY=sua-chave-gratuita
 GROQ_MODEL=openai/gpt-oss-20b
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+GEMINI_API_KEY=sua-chave-gratuita-do-google-ai-studio
+GEMINI_MODEL=gemini-2.5-flash
 YMS_ASSISTANT_TIMEOUT=5
 YMS_ASSISTANT_MAX_COMPLETION_TOKENS=256
 YMS_ASSISTANT_REASONING_EFFORT=low
@@ -229,6 +233,10 @@ YMS_ASSISTANT_PER_USER_PER_MINUTE=10
 YMS_ASSISTANT_GLOBAL_PER_MINUTE=25
 YMS_ASSISTANT_DAILY_LIMIT=300
 ```
+
+O classificador tenta a Groq primeiro. Se a chamada falhar, exceder o tempo ou
+retornar uma resposta inválida, tenta o Gemini; se ambos falharem, usa as regras
+locais já existentes para as perguntas conhecidas.
 
 Depois de alterar a configuração:
 

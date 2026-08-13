@@ -40,6 +40,7 @@ class WhatsAppYmsAssistantTest extends TestCase
         config()->set('services.evolution.bot.webhook_secret', 'test-webhook-secret');
         config()->set('services.yms_assistant.enabled', true);
         config()->set('services.yms_assistant.provider', 'groq');
+        config()->set('services.yms_assistant.fallback_providers', ['gemini']);
         config()->set('services.yms_assistant.base_url', 'https://api.groq.test/openai/v1');
         config()->set('services.yms_assistant.api_key', 'test-groq-key');
         config()->set('services.yms_assistant.model', 'openai/gpt-oss-20b');
@@ -187,6 +188,53 @@ class WhatsAppYmsAssistantTest extends TestCase
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job): bool {
             return str_contains($job->text, 'restam 4 de 4 cotas');
         });
+    }
+
+    public function test_groq_failure_uses_gemini_before_deterministic_fallback(): void
+    {
+        config()->set('services.yms_assistant.gemini.base_url', 'https://gemini.test/v1beta');
+        config()->set('services.yms_assistant.gemini.api_key', 'test-gemini-key');
+        config()->set('services.yms_assistant.gemini.model', 'gemini-2.5-flash');
+        $this->createTimeslot($this->company, $this->admin, 4);
+
+        Http::fake([
+            'https://api.groq.test/*' => Http::response([
+                'error' => ['message' => 'rate limit'],
+            ], 429),
+            'https://gemini.test/*' => Http::response([
+                'candidates' => [[
+                    'content' => [
+                        'parts' => [[
+                            'text' => json_encode([
+                                'intent' => YmsAssistantIntent::TIMESLOT_CAPACITY,
+                                'date' => '2026-08-11',
+                                'client_name' => '',
+                            ], JSON_THROW_ON_ERROR),
+                        ]],
+                    ],
+                ]],
+                'usageMetadata' => [
+                    'promptTokenCount' => 70,
+                    'candidatesTokenCount' => 10,
+                ],
+            ]),
+        ]);
+
+        $this->sendWebhook($this->payload(
+            'assistant-gemini-fallback',
+            'Quantas cotas ainda temos hoje?',
+        ))->assertOk();
+
+        $command = WhatsAppCommand::query()->sole();
+
+        $this->assertSame(WhatsAppCommand::STATUS_EXECUTED, $command->status);
+        $this->assertSame('ai', $command->parsed_payload['interpreter']['source']);
+        $this->assertSame('gemini', $command->parsed_payload['interpreter']['provider']);
+        $this->assertSame(1, $command->parsed_payload['interpreter']['fallback_index']);
+        $this->assertSame('groq', $command->parsed_payload['interpreter']['fallback_from']);
+        $this->assertSame(4, $command->parsed_payload['result']['available']);
+        Http::assertSentCount(2);
+        Queue::assertPushed(SendWhatsAppMessageJob::class, 1);
     }
 
     public function test_internal_free_tier_limit_uses_fallback_without_another_ai_call(): void

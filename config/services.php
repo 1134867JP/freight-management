@@ -54,6 +54,10 @@ return [
     'yms_assistant' => [
         'enabled' => env('YMS_ASSISTANT_ENABLED', false),
         'provider' => env('YMS_ASSISTANT_PROVIDER', 'groq'),
+        'fallback_providers' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('YMS_ASSISTANT_FALLBACK_PROVIDERS', 'gemini')),
+        ))),
         'base_url' => env('GROQ_BASE_URL', 'https://api.groq.com/openai/v1'),
         'api_key' => env('GROQ_API_KEY'),
         'model' => env('GROQ_MODEL', 'openai/gpt-oss-20b'),
@@ -63,6 +67,11 @@ return [
         'per_user_per_minute' => (int) env('YMS_ASSISTANT_PER_USER_PER_MINUTE', 10),
         'global_per_minute' => (int) env('YMS_ASSISTANT_GLOBAL_PER_MINUTE', 25),
         'daily_limit' => (int) env('YMS_ASSISTANT_DAILY_LIMIT', 300),
+        'gemini' => [
+            'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+            'api_key' => env('GEMINI_API_KEY'),
+            'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+        ],
     ],
 
 ];
