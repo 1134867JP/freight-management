@@ -140,11 +140,26 @@ jobs:
               fi
             }
 
+            set_env_value() {
+              local env_key="$1"
+              local env_value="$2"
+
+              if grep -q "^${env_key}=" "$SHARED_DIR/.env"; then
+                sed -i "s/^${env_key}=.*/${env_key}=${env_value}/" "$SHARED_DIR/.env"
+              else
+                printf '\n%s=%s\n' "$env_key" "$env_value" >> "$SHARED_DIR/.env"
+              fi
+            }
+
             ensure_env_default YMS_ASSISTANT_FALLBACK_PROVIDERS gemini
             ensure_env_default GEMINI_BASE_URL https://generativelanguage.googleapis.com/v1beta
             ensure_env_default GEMINI_API_KEY ''
             ensure_env_default GEMINI_MODEL gemini-2.5-flash
             ensure_env_default DB_QUEUE_RETRY_AFTER 180
+
+            set_env_value APP_ENV production
+            set_env_value APP_DEBUG false
+            set_env_value SESSION_SECURE_COOKIE true
 
             CURRENT_QUEUE_RETRY_AFTER=$(sed -n 's/^DB_QUEUE_RETRY_AFTER=//p' "$SHARED_DIR/.env" | tail -n 1)
             if [ "$CURRENT_QUEUE_RETRY_AFTER" -le 120 ] 2>/dev/null; then
