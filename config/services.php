@@ -2,6 +2,8 @@
 
 return [
 
+    'audit_retention_days' => (int) env('AUDIT_RETENTION_DAYS', 365),
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
@@ -41,6 +43,7 @@ return [
         'api_key' => env('EVOLUTION_API_KEY'),
         'instance' => env('EVOLUTION_INSTANCE'),
         'timeout' => (int) env('EVOLUTION_TIMEOUT', 10),
+        'retention_days' => (int) env('WHATSAPP_RETENTION_DAYS', 90),
         'bot' => [
             'enabled' => env('EVOLUTION_BOT_ENABLED', false),
             'webhook_url' => env('EVOLUTION_WEBHOOK_URL'),

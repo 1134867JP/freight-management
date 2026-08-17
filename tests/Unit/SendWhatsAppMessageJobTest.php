@@ -3,102 +3,115 @@
 namespace Tests\Unit;
 
 use App\Jobs\SendWhatsAppMessageJob;
+use App\Models\Company;
+use App\Models\WhatsAppInstance;
+use App\Models\WhatsAppOutboxMessage;
 use App\Services\WhatsApp\EvolutionApiClient;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\TestCase;
 
 class SendWhatsAppMessageJobTest extends TestCase
 {
+    use RefreshDatabase;
+
+    private Company $company;
+
+    private WhatsAppInstance $instance;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->company = Company::factory()->create();
+        $this->instance = WhatsAppInstance::create([
+            'company_id' => $this->company->id,
+            'name' => 'Piloto',
+            'instance_name' => 'piloto-'.$this->company->id,
+            'base_url' => 'https://evolution.test',
+            'api_key' => 'secret',
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+    }
+
     public function test_job_has_correct_retry_configuration(): void
     {
-        $job = new SendWhatsAppMessageJob(
-            phone: '5511999990000',
-            text: 'Teste',
-        );
+        $job = new SendWhatsAppMessageJob(123);
 
         $this->assertSame(3, $job->tries);
         $this->assertSame(30, $job->timeout);
         $this->assertSame([10, 60, 180], $job->backoff());
     }
 
-    public function test_handle_skips_send_when_api_not_ready(): void
+    public function test_handle_fails_instead_of_losing_message_when_api_is_not_ready(): void
     {
+        $outbox = $this->createOutbox();
         $client = $this->createMock(EvolutionApiClient::class);
-        $client->expects($this->once())
-            ->method('isReadyForSending')
-            ->willReturn(false);
+        $client->expects($this->once())->method('isReadyForSending')->willReturn(false);
+        $client->expects($this->once())->method('readinessIssues')->willReturn(['missing_api_key']);
+        $client->expects($this->never())->method('sendText');
 
-        $client->expects($this->once())
-            ->method('readinessIssues')
-            ->willReturn(['global_evolution_disabled']);
+        $this->expectException(RuntimeException::class);
 
-        $client->expects($this->never())
-            ->method('sendText');
-
-        Log::shouldReceive('warning')->twice();
-
-        $job = new SendWhatsAppMessageJob(
-            phone: '5511999990000',
-            text: 'Mensagem de teste',
-            context: ['freight_id' => 1],
-        );
-
-        $job->handle($client);
+        (new SendWhatsAppMessageJob($outbox->id))->handle($client);
     }
 
-    public function test_handle_sends_message_when_api_ready(): void
+    public function test_handle_sends_and_records_provider_delivery(): void
     {
+        $outbox = $this->createOutbox();
         $client = $this->createMock(EvolutionApiClient::class);
-        $client->expects($this->once())
-            ->method('isReadyForSending')
-            ->willReturn(true);
-
+        $client->expects($this->once())->method('isReadyForSending')->willReturn(true);
         $client->expects($this->once())
             ->method('sendText')
-            ->with('5511999990000', 'Mensagem de teste', null);
+            ->with('5511999990000', 'Mensagem de teste', $this->isInstanceOf(WhatsAppInstance::class))
+            ->willReturn(['key' => ['id' => 'provider-123']]);
 
-        $job = new SendWhatsAppMessageJob(
-            phone: '5511999990000',
-            text: 'Mensagem de teste',
-        );
+        (new SendWhatsAppMessageJob($outbox->id))->handle($client);
 
-        $job->handle($client);
+        $outbox->refresh();
+        $this->assertSame(WhatsAppOutboxMessage::STATUS_SENT, $outbox->status);
+        $this->assertSame(1, $outbox->attempts);
+        $this->assertSame('provider-123', $outbox->provider_message_id);
+        $this->assertNotNull($outbox->sent_at);
     }
 
-    public function test_failed_logs_error_with_context(): void
+    public function test_already_sent_message_is_not_sent_again(): void
     {
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function (string $message, array $context) {
-                return str_contains($message, 'WhatsApp')
-                    && $context['phone'] === '5511999990000'
-                    && $context['freight_id'] === 42
-                    && str_contains($context['error'], 'connection refused');
-            });
+        $outbox = $this->createOutbox([
+            'status' => WhatsAppOutboxMessage::STATUS_SENT,
+            'sent_at' => now(),
+        ]);
+        $client = $this->createMock(EvolutionApiClient::class);
+        $client->expects($this->never())->method('sendText');
 
-        $job = new SendWhatsAppMessageJob(
-            phone: '5511999990000',
-            text: 'Teste',
-            context: ['freight_id' => 42],
-        );
-
-        $job->failed(new RuntimeException('connection refused'));
+        (new SendWhatsAppMessageJob($outbox->id))->handle($client);
     }
 
-    public function test_failed_includes_phone_in_log_context(): void
+    public function test_failed_marks_outbox(): void
     {
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function (string $message, array $context) {
-                return isset($context['phone']) && $context['phone'] === '5521988880000';
-            });
+        $outbox = $this->createOutbox();
 
-        $job = new SendWhatsAppMessageJob(
-            phone: '5521988880000',
-            text: 'Outro teste',
-        );
+        (new SendWhatsAppMessageJob($outbox->id))->failed(new RuntimeException('connection refused'));
 
-        $job->failed(new RuntimeException('timeout'));
+        $outbox->refresh();
+        $this->assertSame(WhatsAppOutboxMessage::STATUS_FAILED, $outbox->status);
+        $this->assertSame('connection refused', $outbox->last_error);
+        $this->assertNotNull($outbox->failed_at);
+    }
+
+    private function createOutbox(array $attributes = []): WhatsAppOutboxMessage
+    {
+        return WhatsAppOutboxMessage::create([
+            'company_id' => $this->company->id,
+            'whatsapp_instance_id' => $this->instance->id,
+            'idempotency_key' => 'test:'.fake()->uuid(),
+            'phone' => '5511999990000',
+            'message' => 'Mensagem de teste',
+            'context' => ['freight_id' => 42],
+            'status' => WhatsAppOutboxMessage::STATUS_PENDING,
+            'available_at' => now(),
+            ...$attributes,
+        ]);
     }
 }

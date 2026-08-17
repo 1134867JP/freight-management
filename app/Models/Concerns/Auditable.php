@@ -33,6 +33,14 @@ trait Auditable
     {
         $hidden = $this->getHidden();
 
-        return array_diff_key($attributes, array_flip($hidden));
+        $sensitive = array_filter(
+            array_keys($attributes),
+            fn (string $key): bool => preg_match(
+                '/(?:password|remember_token|api_key|secret|qr_token)/i',
+                $key,
+            ) === 1,
+        );
+
+        return array_diff_key($attributes, array_flip([...$hidden, ...$sensitive]));
     }
 }

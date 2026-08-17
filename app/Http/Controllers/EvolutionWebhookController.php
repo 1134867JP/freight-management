@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendWhatsAppMessageJob;
+use App\Jobs\ProcessEvolutionWebhookJob;
 use App\Models\WhatsAppInstance;
 use App\Services\WhatsApp\EvolutionWebhookMessageExtractor;
-use App\Services\WhatsApp\TimeslotWhatsAppBot;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EvolutionWebhookController extends Controller
 {
     public function __invoke(
         Request $request,
         EvolutionWebhookMessageExtractor $extractor,
-        TimeslotWhatsAppBot $bot,
     ): JsonResponse {
         $message = $extractor->extract($request->all());
 
@@ -31,20 +30,17 @@ class EvolutionWebhookController extends Controller
         // O nome recebido precisa identificar uma única empresa. Em caso de
         // configuração legada duplicada, ignoramos em vez de adivinhar o tenant.
         if ($instances->count() !== 1) {
+            Log::warning('Webhook do WhatsApp sem correspondência única de instância.', [
+                'instance_name' => $message['instance_name'],
+                'matches' => $instances->count(),
+                'external_message_id' => $message['external_message_id'],
+            ]);
+
             return response()->json(['received' => true]);
         }
 
         $instance = $instances->first();
-        $reply = $bot->handle($instance, $message);
-
-        if ($reply) {
-            SendWhatsAppMessageJob::dispatch(
-                $reply['phone'],
-                $reply['text'],
-                $reply['context'],
-                $reply['company_id'],
-            );
-        }
+        ProcessEvolutionWebhookJob::dispatch($instance->id, $instance->company_id, $message);
 
         return response()->json(['received' => true]);
     }

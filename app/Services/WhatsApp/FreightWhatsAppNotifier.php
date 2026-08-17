@@ -2,12 +2,13 @@
 
 namespace App\Services\WhatsApp;
 
-use App\Jobs\SendWhatsAppMessageJob;
 use App\Models\Freight;
 use App\Models\User;
 
 class FreightWhatsAppNotifier
 {
+    public function __construct(private readonly WhatsAppOutbox $outbox) {}
+
     public function notifyDriverFreightConfirmed(Freight $freight): void
     {
         if (blank($freight->driver_phone)) {
@@ -37,17 +38,20 @@ class FreightWhatsAppNotifier
             $lines[] = 'Apresente este código ao porteiro para check-in rápido.';
         }
 
-        SendWhatsAppMessageJob::dispatch(
-            $freight->driver_phone,
-            implode("\n", $lines),
-            [
-                'company_id' => $freight->company_id,
-                'event' => 'driver_freight_confirmed',
-                'recipient_role' => 'driver',
-                'freight_id' => $freight->id,
-            ],
-            $freight->company_id,
-        )->afterCommit();
+        $context = [
+            'company_id' => $freight->company_id,
+            'event' => 'driver_freight_confirmed',
+            'recipient_role' => 'driver',
+            'freight_id' => $freight->id,
+        ];
+
+        $this->outbox->enqueue(
+            companyId: $freight->company_id,
+            phone: $freight->driver_phone,
+            message: implode("\n", $lines),
+            idempotencyKey: $this->idempotencyKey($freight, $context),
+            context: $context,
+        );
     }
 
     public function notifyAdminReservationCreated(Freight $freight): void
@@ -104,7 +108,7 @@ class FreightWhatsAppNotifier
         );
     }
 
-    public function notifyAdminNotaFiscalUploaded(Freight $freight, User $actor): void
+    public function notifyAdminNotaFiscalUploaded(Freight $freight, User $actor, ?int $attachmentId = null): void
     {
         $freight->loadMissing(['user', 'timeslot.creator', 'timeslot.dropoffAddress']);
 
@@ -119,7 +123,12 @@ class FreightWhatsAppNotifier
             $arrLines[] = 'Peso bruto informado: '.$this->formatWeight($freight->gross_weight).' kg';
         }
 
-        $this->dispatchToAdmin($freight, implode("\n", $arrLines), 'client_invoice_uploaded');
+        $this->dispatchToAdmin(
+            $freight,
+            implode("\n", $arrLines),
+            'client_invoice_uploaded',
+            $attachmentId,
+        );
     }
 
     public function notifyClientReservationRejected(Freight $freight, User $actor): void
@@ -185,7 +194,7 @@ class FreightWhatsAppNotifier
         $this->dispatchToClient($freight, implode("\n", $arrLines), 'admin_operation_finished');
     }
 
-    public function notifyClientAttachmentAdded(Freight $freight, User $actor): void
+    public function notifyClientAttachmentAdded(Freight $freight, User $actor, ?int $attachmentId = null): void
     {
         $freight->loadMissing(['user', 'timeslot.creator', 'timeslot.dropoffAddress']);
 
@@ -201,11 +210,20 @@ class FreightWhatsAppNotifier
             $arrLines[] = 'Observações: '.$freight->admin_notes;
         }
 
-        $this->dispatchToClient($freight, implode("\n", $arrLines), 'admin_attachment_added');
+        $this->dispatchToClient(
+            $freight,
+            implode("\n", $arrLines),
+            'admin_attachment_added',
+            $attachmentId,
+        );
     }
 
-    private function dispatchToAdmin(Freight $freight, string $text, string $event): void
-    {
+    private function dispatchToAdmin(
+        Freight $freight,
+        string $text,
+        string $event,
+        ?int $attachmentId = null,
+    ): void {
         $objAdmin = $freight->timeslot?->creator;
         $strPhone = $objAdmin?->routeWhatsAppPhone();
 
@@ -213,23 +231,31 @@ class FreightWhatsAppNotifier
             return;
         }
 
-        SendWhatsAppMessageJob::dispatch(
-            $strPhone,
-            $text,
-            [
-                'company_id' => $freight->company_id,
-                'event' => $event,
-                'recipient_role' => 'admin',
-                'recipient_id' => $objAdmin->id,
-                'freight_id' => $freight->id,
-                'timeslot_id' => $freight->timeslot_id,
-            ],
-            $freight->company_id,
-        )->afterCommit();
+        $context = [
+            'company_id' => $freight->company_id,
+            'event' => $event,
+            'recipient_role' => 'admin',
+            'recipient_id' => $objAdmin->id,
+            'freight_id' => $freight->id,
+            'timeslot_id' => $freight->timeslot_id,
+            'attachment_id' => $attachmentId,
+        ];
+
+        $this->outbox->enqueue(
+            companyId: $freight->company_id,
+            phone: $strPhone,
+            message: $text,
+            idempotencyKey: $this->idempotencyKey($freight, $context),
+            context: $context,
+        );
     }
 
-    private function dispatchToClient(Freight $freight, string $text, string $event): void
-    {
+    private function dispatchToClient(
+        Freight $freight,
+        string $text,
+        string $event,
+        ?int $attachmentId = null,
+    ): void {
         $objClient = $freight->user;
         $strPhone = $objClient?->routeWhatsAppPhone();
 
@@ -237,19 +263,37 @@ class FreightWhatsAppNotifier
             return;
         }
 
-        SendWhatsAppMessageJob::dispatch(
-            $strPhone,
-            $text,
-            [
-                'company_id' => $freight->company_id,
-                'event' => $event,
-                'recipient_role' => 'client',
-                'recipient_id' => $objClient->id,
-                'freight_id' => $freight->id,
-                'timeslot_id' => $freight->timeslot_id,
-            ],
+        $context = [
+            'company_id' => $freight->company_id,
+            'event' => $event,
+            'recipient_role' => 'client',
+            'recipient_id' => $objClient->id,
+            'freight_id' => $freight->id,
+            'timeslot_id' => $freight->timeslot_id,
+            'attachment_id' => $attachmentId,
+        ];
+
+        $this->outbox->enqueue(
+            companyId: $freight->company_id,
+            phone: $strPhone,
+            message: $text,
+            idempotencyKey: $this->idempotencyKey($freight, $context),
+            context: $context,
+        );
+    }
+
+    private function idempotencyKey(Freight $freight, array $context): string
+    {
+        return 'freight-notification:'.hash('sha256', implode('|', [
             $freight->company_id,
-        )->afterCommit();
+            $freight->id,
+            $context['event'],
+            $context['recipient_role'],
+            $context['recipient_id'] ?? $freight->driver_phone,
+            $context['attachment_id']
+                ?? $freight->updated_at?->format('Y-m-d H:i:s.u')
+                ?? 'unsaved',
+        ]));
     }
 
     private function operationLabel(?string $operationType): string

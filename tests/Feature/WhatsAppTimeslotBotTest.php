@@ -9,6 +9,7 @@ use App\Models\Timeslot;
 use App\Models\User;
 use App\Models\WhatsAppCommand;
 use App\Models\WhatsAppInstance;
+use App\Models\WhatsAppOutboxMessage;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -50,7 +51,7 @@ class WhatsAppTimeslotBotTest extends TestCase
         Carbon::setTestNow($now);
         CarbonImmutable::setTestNow($now);
 
-        Queue::fake();
+        Queue::fake([SendWhatsAppMessageJob::class]);
 
         $this->company = Company::factory()->create([
             'name' => 'CargoHub Teste',
@@ -111,9 +112,11 @@ class WhatsAppTimeslotBotTest extends TestCase
         $this->assertDatabaseCount('timeslots', 0);
 
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job): bool {
-            return $job->phone === $this->admin->whatsapp_phone
-                && str_contains($job->text, 'Responda CONFIRMAR')
-                && $job->companyId === $this->company->id;
+            $outbox = WhatsAppOutboxMessage::query()->find($job->outboxMessageId);
+
+            return $outbox?->phone === $this->admin->whatsapp_phone
+                && str_contains($outbox->message, 'Responda CONFIRMAR')
+                && $outbox->company_id === $this->company->id;
         });
 
         $this->sendWebhook($this->payload('msg-confirm', 'CONFIRMAR'))->assertOk();
@@ -252,7 +255,10 @@ class WhatsAppTimeslotBotTest extends TestCase
         $this->assertDatabaseCount('timeslots', 0);
 
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job): bool {
-            return str_contains($job->text, 'data');
+            return str_contains(
+                WhatsAppOutboxMessage::query()->findOrFail($job->outboxMessageId)->message,
+                'data',
+            );
         });
     }
 

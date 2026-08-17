@@ -10,6 +10,7 @@ use App\Models\Timeslot;
 use App\Models\User;
 use App\Models\WhatsAppCommand;
 use App\Models\WhatsAppInstance;
+use App\Models\WhatsAppOutboxMessage;
 use App\Support\YmsAssistantIntent;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,7 +52,7 @@ class WhatsAppYmsAssistantTest extends TestCase
         $now = CarbonImmutable::create(2026, 8, 11, 9, 0, 0, 'America/Sao_Paulo');
         Carbon::setTestNow($now);
         CarbonImmutable::setTestNow($now);
-        Queue::fake();
+        Queue::fake([SendWhatsAppMessageJob::class]);
 
         $this->company = Company::factory()->create([
             'name' => 'CargoHub Piloto',
@@ -117,9 +118,11 @@ class WhatsAppYmsAssistantTest extends TestCase
         $this->assertSame($freightCount, Freight::query()->count());
 
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job): bool {
-            return $job->companyId === $this->company->id
-                && str_contains($job->text, 'restam 3 de 5 cotas')
-                && str_contains($job->text, 'Atualizado às 09:00');
+            $outbox = WhatsAppOutboxMessage::query()->findOrFail($job->outboxMessageId);
+
+            return $outbox->company_id === $this->company->id
+                && str_contains($outbox->message, 'restam 3 de 5 cotas')
+                && str_contains($outbox->message, 'Atualizado às 09:00');
         });
         Queue::assertPushed(SendWhatsAppMessageJob::class, 1);
         Http::assertSentCount(1);
@@ -186,7 +189,10 @@ class WhatsAppYmsAssistantTest extends TestCase
         $this->assertSame('rules', $command->parsed_payload['interpreter']['source']);
         $this->assertSame(4, $command->parsed_payload['result']['available']);
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job): bool {
-            return str_contains($job->text, 'restam 4 de 4 cotas');
+            return str_contains(
+                WhatsAppOutboxMessage::query()->findOrFail($job->outboxMessageId)->message,
+                'restam 4 de 4 cotas',
+            );
         });
     }
 
@@ -279,7 +285,10 @@ class WhatsAppYmsAssistantTest extends TestCase
         $this->assertDatabaseCount('timeslots', 0);
         Http::assertNothingSent();
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job): bool {
-            return str_contains($job->text, 'Responda CONFIRMAR');
+            return str_contains(
+                WhatsAppOutboxMessage::query()->findOrFail($job->outboxMessageId)->message,
+                'Responda CONFIRMAR',
+            );
         });
     }
 

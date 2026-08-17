@@ -2,13 +2,35 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKUP_DIR="$SCRIPT_DIR/../backups"
+APP_DIR="${FREIGHT_APP_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+SHARED_DIR="${FREIGHT_SHARED_DIR:-/opt/apps/outro-site/freight-management-shared}"
+BACKUP_DIR="${FREIGHT_BACKUP_DIR:-$SHARED_DIR/backups}"
+RETENTION_DAYS="${FREIGHT_BACKUP_RETENTION_DAYS:-14}"
+ENV_FILE="${FREIGHT_ENV_FILE:-$SHARED_DIR/.env}"
+
 mkdir -p "$BACKUP_DIR"
+chmod 700 "$BACKUP_DIR"
 
-FILENAME="backup_$(date +%Y%m%d_%H%M%S).sql.gz"
-docker compose -f "$SCRIPT_DIR/../docker-compose.yml" exec -T db \
-  pg_dump -U freight_user freight_db | gzip > "$BACKUP_DIR/$FILENAME"
+FILENAME="backup_$(date -u +%Y%m%d_%H%M%S).dump"
+TEMP_FILE="$BACKUP_DIR/.${FILENAME}.tmp"
+FINAL_FILE="$BACKUP_DIR/$FILENAME"
 
-find "$BACKUP_DIR" -name "*.sql.gz" -mtime +7 -delete
+cleanup() {
+  rm -f "$TEMP_FILE"
+}
+trap cleanup EXIT
 
-echo "Backup concluído: $BACKUP_DIR/$FILENAME"
+docker compose \
+  --env-file "$ENV_FILE" \
+  -f "$APP_DIR/docker-compose.yml" \
+  -p freight-management \
+  exec -T db sh -lc 'exec pg_dump --format=custom --username="$POSTGRES_USER" --dbname="$POSTGRES_DB"' \
+  > "$TEMP_FILE"
+
+test -s "$TEMP_FILE"
+chmod 600 "$TEMP_FILE"
+mv "$TEMP_FILE" "$FINAL_FILE"
+
+find "$BACKUP_DIR" -type f -name 'backup_*.dump' -mtime "+$RETENTION_DAYS" -delete
+
+echo "Backup concluído: $FINAL_FILE"

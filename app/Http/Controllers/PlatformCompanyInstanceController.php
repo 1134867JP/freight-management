@@ -8,6 +8,7 @@ use App\Services\WhatsApp\EvolutionInstanceManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,7 +37,13 @@ class PlatformCompanyInstanceController extends Controller
     {
         $validated = $request->validate([
             'instance_label'    => ['required', 'string', 'max:255'],
-            'instance_name'     => ['required', 'string', 'max:255'],
+            'instance_name'     => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('whatsapp_instances', 'instance_name')
+                    ->ignore($company->whatsappInstance?->id),
+            ],
             'instance_base_url' => ['required', 'url', 'max:500'],
             'instance_api_key'  => ['required', 'string', 'max:500'],
             'instance_is_active' => ['boolean'],
@@ -70,7 +77,7 @@ class PlatformCompanyInstanceController extends Controller
         } catch (\Throwable $exception) {
             return redirect()
                 ->route('platform.companies.instance.edit', $company)
-                ->with('error', $exception->getMessage());
+                ->with('error', \App\Support\UserFacingError::message($exception));
         }
 
         $this->persistInstanceState($instance, $state);
@@ -92,8 +99,10 @@ class PlatformCompanyInstanceController extends Controller
         if ($instance) {
             try {
                 $manager->delete($instance);
-            } catch (\Throwable) {
-                // Ignore API failure; still delete local record
+            } catch (\Throwable $exception) {
+                return redirect()
+                    ->route('platform.companies.instance.edit', $company)
+                    ->with('error', \App\Support\UserFacingError::message($exception));
             }
 
             $instance->delete();

@@ -364,12 +364,15 @@ O push para `main` dispara o workflow [`.github/workflows/deploy.yml`](.github/w
 4. prepara dependências e assets em um novo diretório de release na VPS;
 5. executa migrations e caches antes da troca do link ativo;
 6. recria `app`, `queue` e `scheduler`;
-7. valida o endpoint `/up` e restaura o release anterior se o health check falhar.
+7. valida `/api/ready`, o worker e o scheduler, restaurando código, link e imagem anteriores se a ativação falhar.
 
 O [`docker-compose.yml`](docker-compose.yml) da raiz é específico da VPS atual e
 depende de imagem, redes, volume, `.env` e storage compartilhado já provisionados.
 As migrations de produção devem continuar retrocompatíveis: o rollback automático
 restaura código e containers, não desfaz alterações no banco.
+O Compose mantém backups locais diários e o deploy cria um backup adicional antes
+de cada migration. Para recuperação de desastre, copie esses arquivos para um
+destino externo criptografado e ensaie periodicamente a restauração.
 
 ## Estrutura principal
 

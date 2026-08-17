@@ -84,7 +84,6 @@ class EvolutionApiClient
             ->baseUrl($this->baseUrl($instance))
             ->acceptJson()
             ->asJson()
-            ->retry(3, 500)
             ->timeout($this->timeout())
             ->withHeaders([
                 'apikey' => $this->apiKey($instance),

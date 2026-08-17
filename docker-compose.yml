@@ -8,9 +8,9 @@ services:
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE:?DB_DATABASE is required}
+      DB_USERNAME: ${DB_USERNAME:?DB_USERNAME is required}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       FILESYSTEM_DISK: ${FILESYSTEM_DISK}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -23,7 +23,6 @@ services:
       - /opt/apps/outro-site/freight-management:/var/www/html
       - /opt/apps/outro-site/freight-management-shared/.env:/var/www/html/.env:ro
       - /opt/apps/outro-site/freight-management-shared/storage:/var/www/html/storage
-      - /opt/apps/outro-site/freight-management/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     networks:
       - freight-management_internal
       - web
@@ -31,6 +30,8 @@ services:
     image: freight-management-app
     container_name: freight-queue
     restart: unless-stopped
+    user: "www-data:www-data"
+    stop_grace_period: 150s
     command: ["php", "artisan", "queue:work", "--queue=default", "--sleep=3", "--tries=3", "--timeout=120", "--max-time=3600"]
     environment:
       APP_URL: ${APP_URL}
@@ -62,6 +63,8 @@ services:
     image: freight-management-app
     container_name: freight-scheduler
     restart: unless-stopped
+    user: "www-data:www-data"
+    stop_grace_period: 30s
     command: ["php", "artisan", "schedule:work"]
     environment:
       APP_URL: ${APP_URL}
@@ -89,10 +92,46 @@ services:
     depends_on:
       - db
 
+  backup:
+    image: postgres:16
+    container_name: freight-backup
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:?DB_DATABASE is required}
+      POSTGRES_USER: ${DB_USERNAME:?DB_USERNAME is required}
+      PGPASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    command:
+      - sh
+      - -lc
+      - |
+        set -eu
+        umask 077
+        while true; do
+          backup_file="/backups/backup_$$(date -u +%Y%m%d_%H%M%S).dump"
+          pg_dump --host=db --username="$$POSTGRES_USER" --dbname="$$POSTGRES_DB" --format=custom > "$$backup_file"
+          test -s "$$backup_file"
+          find /backups -type f -name 'backup_*.dump' -mtime "+$$BACKUP_RETENTION_DAYS" -delete
+          sleep 86400
+        done
+    volumes:
+      - /opt/apps/outro-site/freight-management-shared/backups:/backups
+    networks:
+      - freight-management_internal
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:16
     container_name: freight-db
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}

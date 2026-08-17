@@ -122,7 +122,7 @@ class WhatsAppController extends Controller
             $state = $manager->sync($instance);
         } catch (\Throwable $exception) {
             return redirect()->route('admin.whatsapp')
-                ->with('error', $exception->getMessage())
+                ->with('error', \App\Support\UserFacingError::message($exception))
                 ->with('error_action', $this->is403Error($exception) ? 'delete_instance' : 'retry');
         }
 
@@ -146,7 +146,7 @@ class WhatsAppController extends Controller
             $state = $manager->connectionState($instance);
         } catch (\Throwable $exception) {
             return redirect()->route('admin.whatsapp')
-                ->with('error', $exception->getMessage())
+                ->with('error', \App\Support\UserFacingError::message($exception))
                 ->with('error_action', $this->is403Error($exception) ? 'delete_instance' : 'retry');
         }
 
@@ -172,7 +172,7 @@ class WhatsAppController extends Controller
         } catch (\Throwable $exception) {
             return redirect()
                 ->route('admin.whatsapp')
-                ->with('error', 'Falha ao excluir a instância: '.$exception->getMessage());
+                ->with('error', \App\Support\UserFacingError::message($exception));
         }
 
         $instance->delete();

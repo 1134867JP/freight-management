@@ -67,10 +67,10 @@ class FreightController extends Controller
             : collect();
 
         return Inertia::render('Admin/Freights/Index', [
-            'freights'         => $query->paginate(15)->withQueryString(),
+            'freights' => $query->paginate(15)->withQueryString(),
             'docasDisponiveis' => $docasDisponiveis,
-            'filters'          => $request->only(['search', 'operation_type', 'status', 'date']),
-            'statusCounts'     => $statusCounts,
+            'filters' => $request->only(['search', 'operation_type', 'status', 'date']),
+            'statusCounts' => $statusCounts,
         ]);
     }
 
@@ -90,7 +90,7 @@ class FreightController extends Controller
 
             return redirect()->back()->with('success', 'Reserva rejeitada.');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
     }
 
@@ -109,14 +109,12 @@ class FreightController extends Controller
         }
 
         if ($request->filled('date_from')) {
-            $query->whereHas('timeslot', fn ($q) =>
-                $q->whereDate('start_time', '>=', $request->input('date_from'))
+            $query->whereHas('timeslot', fn ($q) => $q->whereDate('start_time', '>=', $request->input('date_from'))
             );
         }
 
         if ($request->filled('date_to')) {
-            $query->whereHas('timeslot', fn ($q) =>
-                $q->whereDate('start_time', '<=', $request->input('date_to'))
+            $query->whereHas('timeslot', fn ($q) => $q->whereDate('start_time', '<=', $request->input('date_to'))
             );
         }
 
@@ -124,7 +122,7 @@ class FreightController extends Controller
 
         return Inertia::render('Client/MyReservations', [
             'freights' => $freights,
-            'filters'  => $request->only(['status', 'operation_type', 'date_from', 'date_to']),
+            'filters' => $request->only(['status', 'operation_type', 'date_from', 'date_to']),
         ]);
     }
 
@@ -169,7 +167,7 @@ class FreightController extends Controller
                 Storage::disk(config('filesystems.default'))->delete($invoicePath);
             }
 
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
 
         try {
@@ -202,7 +200,7 @@ class FreightController extends Controller
 
             return redirect()->back()->with('success', 'Reserva cancelada com sucesso.');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
     }
 
@@ -219,7 +217,7 @@ class FreightController extends Controller
 
             return redirect()->back()->with('success', 'Reserva reaberta com sucesso.');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
     }
 
@@ -234,14 +232,19 @@ class FreightController extends Controller
 
         $validated = $request->validated();
 
-        $this->storeAttachment($freight, $request->file('nota_fiscal'), FreightAttachment::TYPE_INVOICE, 'invoices');
+        $attachment = $this->storeAttachment(
+            $freight,
+            $request->file('nota_fiscal'),
+            FreightAttachment::TYPE_INVOICE,
+            'invoices',
+        );
 
-        if (!empty($validated['gross_weight'])) {
+        if (! empty($validated['gross_weight'])) {
             $freight->update(['gross_weight' => $validated['gross_weight']]);
         }
 
         $freight->refresh();
-        $this->whatsAppNotifier->notifyAdminNotaFiscalUploaded($freight, $request->user());
+        $this->whatsAppNotifier->notifyAdminNotaFiscalUploaded($freight, $request->user(), $attachment->id);
         $this->emailNotifier->notifyAdminNotaFiscalUploaded($freight, $request->user());
 
         return redirect()->back()->with('success', 'Nota fiscal enviada com sucesso!');
@@ -261,7 +264,7 @@ class FreightController extends Controller
                 netWeight: (float) $validated['net_weight']
             );
 
-            if (!empty($validated['admin_notes'])) {
+            if (! empty($validated['admin_notes'])) {
                 $freight->update(['admin_notes' => $validated['admin_notes']]);
             }
 
@@ -271,7 +274,7 @@ class FreightController extends Controller
 
             return redirect()->back()->with('success', 'Operação finalizada com sucesso!');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
     }
 
@@ -280,10 +283,15 @@ class FreightController extends Controller
     {
         $this->authorize('addAttachment', $freight);
 
-        $this->storeAttachment($freight, $request->file('attachment'), FreightAttachment::TYPE_ATTACHMENT, 'attachments');
+        $attachment = $this->storeAttachment(
+            $freight,
+            $request->file('attachment'),
+            FreightAttachment::TYPE_ATTACHMENT,
+            'attachments',
+        );
 
         $freight->refresh();
-        $this->whatsAppNotifier->notifyClientAttachmentAdded($freight, $request->user());
+        $this->whatsAppNotifier->notifyClientAttachmentAdded($freight, $request->user(), $attachment->id);
         $this->emailNotifier->notifyClientAttachmentAdded($freight, $request->user());
 
         return redirect()->back()->with('success', 'Anexo adicionado com sucesso!');
@@ -305,7 +313,7 @@ class FreightController extends Controller
 
             return redirect()->back()->with('success', 'Carregamento iniciado!');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
     }
 
@@ -325,7 +333,7 @@ class FreightController extends Controller
 
             return redirect()->back()->with('success', 'Descarga iniciada!');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
     }
 
@@ -382,8 +390,12 @@ class FreightController extends Controller
         abort(404, 'Arquivo não encontrado.');
     }
 
-    private function storeAttachment(Freight $freight, UploadedFile $file, string $type, string $directory): void
-    {
+    private function storeAttachment(
+        Freight $freight,
+        UploadedFile $file,
+        string $type,
+        string $directory,
+    ): FreightAttachment {
         // Salva o novo arquivo ANTES da transação para evitar I/O dentro da tx.
         // Se a tx falhar, deletamos o arquivo recém-salvo no catch.
         $newPath = $file->store($directory);
@@ -393,24 +405,24 @@ class FreightController extends Controller
         }
 
         try {
-            $oldPath = DB::transaction(function () use ($freight, $file, $type, $newPath) {
+            [$oldPath, $attachment] = DB::transaction(function () use ($freight, $file, $type, $newPath) {
                 $existing = $type === FreightAttachment::TYPE_INVOICE
                     ? $freight->attachments()->where('type', $type)->first()
                     : null;
-                $oldPath  = $existing?->path;
+                $oldPath = $existing?->path;
 
                 $existing?->delete();
 
-                $freight->attachments()->create([
-                    'company_id'    => $freight->company_id,
-                    'type'          => $type,
-                    'path'          => $newPath,
+                $attachment = $freight->attachments()->create([
+                    'company_id' => $freight->company_id,
+                    'type' => $type,
+                    'path' => $newPath,
                     'original_name' => $file->getClientOriginalName(),
-                    'size_bytes'    => $file->getSize(),
-                    'mime_type'     => $file->getMimeType(),
+                    'size_bytes' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
                 ]);
 
-                return $oldPath;
+                return [$oldPath, $attachment];
             });
 
             // Transação confirmada: remove o arquivo antigo do disco
@@ -421,6 +433,8 @@ class FreightController extends Controller
                     Storage::delete($oldPath);
                 }
             }
+
+            return $attachment;
         } catch (\Throwable $e) {
             // Transação falhou: remove o arquivo recém-salvo para não deixar órfão
             Storage::delete($newPath);

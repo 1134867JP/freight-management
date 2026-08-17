@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Freight;
 use App\Models\Timeslot;
 use App\Models\User;
+use App\Models\WhatsAppOutboxMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -54,9 +55,11 @@ class WhatsAppNotificationDispatchTest extends TestCase
         $response->assertRedirect(route('client.reservations'));
 
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job) use ($admin) {
-            return $job->phone === $admin->routeWhatsAppPhone()
-                && $job->context['event'] === 'client_reservation_created'
-                && str_contains($job->text, 'Nova reserva recebida na sua cota.');
+            $outbox = WhatsAppOutboxMessage::query()->findOrFail($job->outboxMessageId);
+
+            return $outbox->phone === $admin->routeWhatsAppPhone()
+                && $outbox->context['event'] === 'client_reservation_created'
+                && str_contains($outbox->message, 'Nova reserva recebida na sua cota.');
         });
     }
 
@@ -108,10 +111,12 @@ class WhatsAppNotificationDispatchTest extends TestCase
         $response->assertRedirect();
 
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job) use ($client) {
-            return $job->phone === $client->routeWhatsAppPhone()
-                && $job->context['event'] === 'admin_operation_finished'
-                && str_contains($job->text, 'Sua operação foi finalizada pelo admin.')
-                && str_contains($job->text, 'Operação concluída sem ressalvas.');
+            $outbox = WhatsAppOutboxMessage::query()->findOrFail($job->outboxMessageId);
+
+            return $outbox->phone === $client->routeWhatsAppPhone()
+                && $outbox->context['event'] === 'admin_operation_finished'
+                && str_contains($outbox->message, 'Sua operação foi finalizada pelo admin.')
+                && str_contains($outbox->message, 'Operação concluída sem ressalvas.');
         });
     }
 }

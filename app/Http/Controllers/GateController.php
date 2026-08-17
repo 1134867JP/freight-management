@@ -87,7 +87,7 @@ class GateController extends Controller
 
             return redirect()->back()->with('success', 'Check-in realizado com sucesso!');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
     }
 
@@ -98,7 +98,7 @@ class GateController extends Controller
 
             return redirect()->back()->with('success', 'Check-out registrado com sucesso!');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\UserFacingError::message($e));
         }
     }
 

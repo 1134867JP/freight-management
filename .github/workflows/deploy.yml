@@ -1,9 +1,19 @@
 name: Deploy Freight Management
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: freight-management-production
+  cancel-in-progress: false
 
 jobs:
   test:
@@ -39,6 +49,21 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
       - name: Copy .env and generate key
         run: |
           cp .env.example .env
@@ -65,6 +90,8 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment: production
+    if: github.event_name == 'push'
 
     steps:
       - name: Deploy via SSH
@@ -73,6 +100,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          fingerprint: ${{ secrets.VPS_HOST_FINGERPRINT }}
           port: ${{ secrets.VPS_PORT }}
           timeout: 60s
           command_timeout: 20m
@@ -89,6 +117,7 @@ jobs:
             RELEASE_DIR=$RELEASES_DIR/$RELEASE_ID
             NEXT_LINK=$BASE_DIR/freight-management.next
             PREVIOUS_TARGET=
+            PREVIOUS_IMAGE_ID=
 
             mkdir -p "$SHARED_DIR" "$RELEASES_DIR"
 
@@ -115,6 +144,31 @@ jobs:
             ensure_env_default GEMINI_BASE_URL https://generativelanguage.googleapis.com/v1beta
             ensure_env_default GEMINI_API_KEY ''
             ensure_env_default GEMINI_MODEL gemini-2.5-flash
+            ensure_env_default DB_QUEUE_RETRY_AFTER 180
+
+            CURRENT_QUEUE_RETRY_AFTER=$(sed -n 's/^DB_QUEUE_RETRY_AFTER=//p' "$SHARED_DIR/.env" | tail -n 1)
+            if [ "$CURRENT_QUEUE_RETRY_AFTER" -le 120 ] 2>/dev/null; then
+              sed -i 's/^DB_QUEUE_RETRY_AFTER=.*/DB_QUEUE_RETRY_AFTER=180/' "$SHARED_DIR/.env"
+            fi
+
+            read_env_value() {
+              sed -n "s/^${1}=//p" "$SHARED_DIR/.env" | tail -n 1 | tr -d '\r"'
+            }
+
+            if [ "$(read_env_value APP_ENV)" != production ]; then
+              echo "APP_ENV precisa ser production."
+              exit 1
+            fi
+
+            if [ "$(read_env_value APP_DEBUG)" != false ]; then
+              echo "APP_DEBUG precisa ser false."
+              exit 1
+            fi
+
+            if [ "$(read_env_value SESSION_SECURE_COOKIE)" != true ]; then
+              echo "SESSION_SECURE_COOKIE precisa ser true."
+              exit 1
+            fi
             chmod 600 "$SHARED_DIR/.env"
 
             if [ ! -d "$SHARED_DIR/storage" ]; then
@@ -150,12 +204,43 @@ jobs:
               -w /app \
               node:20-alpine sh -c "npm ci && npm run build"
 
+            rm -rf "$RELEASE_DIR/node_modules"
+
             docker run --rm \
               -v "$RELEASE_DIR:/app" \
               -v /tmp/composer-cache:/tmp/cache \
               composer:2 install --no-interaction --prefer-dist --optimize-autoloader --no-dev --working-dir=/app
 
+            echo "==> Construindo a imagem PHP versionada pelo release..."
+            PREVIOUS_IMAGE_ID=$(docker image inspect freight-management-app --format '{{.Id}}' 2>/dev/null || true)
+            docker build --pull \
+              -t "freight-management-app:${{ github.sha }}" \
+              -t freight-management-app \
+              -f "$RELEASE_DIR/docker/php/Dockerfile" \
+              "$RELEASE_DIR/docker/php"
+
             docker compose --env-file "$SHARED_DIR/.env" -f "$RELEASE_DIR/docker-compose.yml" -p freight-management config >/dev/null
+
+            echo "==> Criando backup anterior à migration..."
+            BACKUP_DIR="$SHARED_DIR/backups"
+            mkdir -p "$BACKUP_DIR"
+            chmod 700 "$BACKUP_DIR"
+
+            if docker inspect freight-db >/dev/null 2>&1; then
+              BACKUP_FILE="$BACKUP_DIR/predeploy_${RELEASE_ID}.dump"
+              BACKUP_TEMP="$BACKUP_FILE.tmp"
+              umask 077
+              trap 'rm -f "$BACKUP_TEMP"' EXIT
+              docker exec freight-db sh -lc 'exec pg_dump --format=custom --username="$POSTGRES_USER" --dbname="$POSTGRES_DB"' > "$BACKUP_TEMP"
+              test -s "$BACKUP_TEMP"
+              chmod 600 "$BACKUP_TEMP"
+              mv "$BACKUP_TEMP" "$BACKUP_FILE"
+              trap - EXIT
+              find "$BACKUP_DIR" -type f -name '*.dump' -mtime +14 -delete
+            else
+              echo "Banco pré-provisionado freight-db não está em execução."
+              exit 1
+            fi
 
             echo "==> Validando banco e preparando caches..."
             docker run --rm \
@@ -164,7 +249,7 @@ jobs:
               -v "$SHARED_DIR/.env:/var/www/html/.env:ro" \
               -v "$SHARED_DIR/storage:/var/www/html/storage" \
               -w /var/www/html \
-              freight-management-app php artisan migrate --force
+              freight-management-app php artisan migrate --isolated --force
 
             docker run --rm \
               --network freight-management_internal \
@@ -196,6 +281,10 @@ jobs:
             rollback_release() {
               trap - ERR
               echo "==> Falha no novo release; restaurando release anterior..."
+
+              if [ -n "$PREVIOUS_IMAGE_ID" ]; then
+                docker tag "$PREVIOUS_IMAGE_ID" freight-management-app
+              fi
 
               if [ -n "$PREVIOUS_TARGET" ] && [ -d "$PREVIOUS_TARGET" ]; then
                 ln -s "$PREVIOUS_TARGET" "$NEXT_LINK"
@@ -236,7 +325,7 @@ jobs:
               rollback_release
             fi
 
-            HEALTH_URL=${HEALTH_BASE_URL%/}/up
+            HEALTH_URL=${HEALTH_BASE_URL%/}/api/ready
 
             echo "==> Verificando saúde do novo release pelo proxy web..."
             HEALTHY=false
@@ -257,6 +346,13 @@ jobs:
               docker exec freight-app php artisan about || true
               rollback_release
             fi
+
+            for CONTAINER in freight-queue freight-scheduler freight-backup; do
+              if [ "$(docker inspect "$CONTAINER" --format '{{.State.Running}}' 2>/dev/null || true)" != true ]; then
+                echo "Container obrigatório indisponível: $CONTAINER"
+                rollback_release
+              fi
+            done
 
             echo "==> Verificando assets do frontend pelo proxy web..."
             if ! ASSET_PATHS=$(docker exec freight-app php -r '

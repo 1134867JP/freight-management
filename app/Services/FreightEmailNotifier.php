@@ -232,7 +232,10 @@ class FreightEmailNotifier
 
     private function buildBody(array $lines): string
     {
-        $items = implode('', array_map(fn ($l) => "<li style='margin-bottom:6px;'>{$l}</li>", $lines));
+        $items = implode('', array_map(
+            fn ($line) => "<li style='margin-bottom:6px;'>".e((string) $line).'</li>',
+            $lines,
+        ));
 
         return <<<HTML
         <!DOCTYPE html>
