@@ -2,10 +2,11 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\Company;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -16,7 +17,7 @@ use Illuminate\Queue\SerializesModels;
  * Canal: private-yard-board.{company_id}
  * Autorização: apenas admins da empresa (ver routes/channels.php)
  */
-class YardBoardUpdated implements ShouldBroadcastNow
+class YardBoardUpdated implements ShouldBroadcast, ShouldRescue
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -30,6 +31,17 @@ class YardBoardUpdated implements ShouldBroadcastNow
     public function broadcastAs(): string
     {
         return 'YardBoardUpdated';
+    }
+
+    /**
+     * O painel em tempo real não faz parte do modo piloto e também não deve
+     * tornar o fluxo principal dependente de um servidor Reverb nesse modo.
+     */
+    public function broadcastWhen(): bool
+    {
+        $company = Company::query()->find($this->companyId);
+
+        return $company?->usesQueues() === true && ! $company->isPilotMode();
     }
 
     /**

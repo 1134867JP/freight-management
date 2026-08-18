@@ -16,6 +16,7 @@ use App\Enums\DocaStatus;
 use App\Enums\MoveOrderStatus;
 use App\Enums\YardSpotStatus;
 use App\Enums\YardTruckStatus;
+use App\Events\YardBoardUpdated;
 use App\Models\Company;
 use App\Models\Doca;
 use App\Models\Freight;
@@ -24,7 +25,12 @@ use App\Models\User;
 use App\Models\YardSpot;
 use App\Models\YardTruck;
 use App\Models\YardZone;
+use Illuminate\Broadcasting\BroadcastEvent;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Tests\TestCase;
@@ -128,6 +134,55 @@ class YmsIntegrityTest extends TestCase
 
         $this->assertSame('unloading', $freight->fresh()->status->value);
         $this->assertNotNull($freight->fresh()->arrived_at);
+    }
+
+    public function test_yard_update_is_not_broadcast_in_pilot_mode(): void
+    {
+        Queue::fake();
+        $this->company->update(['pilot_mode' => true]);
+
+        config([
+            'broadcasting.default' => 'pusher',
+            'broadcasting.connections.pusher' => [
+                'driver' => 'pusher',
+                'key' => 'test-key',
+                'secret' => 'test-secret',
+                'app_id' => 'test-app',
+                'options' => [
+                    'host' => 'localhost',
+                    'port' => 1,
+                    'scheme' => 'http',
+                    'useTLS' => false,
+                ],
+            ],
+        ]);
+
+        $event = new YardBoardUpdated($this->company->id);
+
+        $this->assertFalse($event->broadcastWhen());
+
+        YardBoardUpdated::dispatch($this->company->id);
+
+        Queue::assertNothingPushed();
+    }
+
+    public function test_yard_update_is_queued_safely_only_when_queue_module_is_enabled(): void
+    {
+        Queue::fake();
+        $event = new YardBoardUpdated($this->company->id);
+
+        $this->assertInstanceOf(ShouldBroadcast::class, $event);
+        $this->assertInstanceOf(ShouldRescue::class, $event);
+        $this->assertNotInstanceOf(ShouldBroadcastNow::class, $event);
+        $this->assertTrue($event->broadcastWhen());
+
+        YardBoardUpdated::dispatch($this->company->id);
+
+        Queue::assertPushed(BroadcastEvent::class, 1);
+
+        $this->company->update(['uses_queues' => false]);
+
+        $this->assertFalse($event->broadcastWhen());
     }
 
     public function test_completed_vehicle_remains_in_yard_until_checkout_and_releases_spot(): void
