@@ -23,9 +23,9 @@ export default function Login({ status, canResetPassword }) {
       <Head title="Entrar" />
 
       <div className="mb-7">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Acesso ao sistema</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-[-0.025em] text-slate-950">Entrar no CargoHub</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">Informe suas credenciais para continuar.</p>
+        <p className="text-[15px] font-semibold text-pinho-700 dark:text-pinho-300">Acesso ao sistema</p>
+        <h1 className="mt-2 text-[28px] font-bold leading-tight text-areia-900">Entrar no CargoHub</h1>
+        <p className="mt-2 text-base leading-relaxed text-areia-600">Informe suas credenciais para continuar.</p>
       </div>
 
       {status && (
@@ -65,15 +65,15 @@ export default function Login({ status, canResetPassword }) {
               name="remember"
               checked={data.remember}
               onChange={(e) => setData('remember', e.target.checked)}
-              className="rounded border-slate-300 text-brand-600 shadow-sm focus:ring-brand-500"
+              className="h-5 w-5 rounded border-areia-400 text-pinho-700 focus:ring-ocre-400"
             />
-            <span className="text-sm text-slate-600">Manter conectado</span>
+            <span className="text-[15px] text-areia-700">Manter conectado</span>
           </label>
 
           {canResetPassword && (
             <Link
               href={route('password.request')}
-              className="text-sm font-semibold text-brand-600 hover:text-brand-700 hover:underline"
+              className="text-[15px] font-semibold text-pinho-700 underline-offset-4 hover:text-pinho-800 hover:underline"
             >
               Esqueceu a senha?
             </Link>

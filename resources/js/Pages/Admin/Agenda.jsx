@@ -301,7 +301,7 @@ export default function Agenda({ timeslots }) {
                         </div>
 
                         <div className="mt-3 border-t border-gray-100 dark:border-gray-700 pt-3">
-                          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          <p className="mb-2 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                             Reservas
                           </p>
 

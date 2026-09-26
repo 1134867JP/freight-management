@@ -54,7 +54,7 @@ export default function FreightActionsAdmin({
         )}
 
         {canCancel && (
-          <Button onClick={() => onCancel(freight.id)} variant="danger" size="sm">
+          <Button onClick={() => onCancel(freight.id)} variant="danger-subtle" size="sm">
             Cancelar
           </Button>
         )}

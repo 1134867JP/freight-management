@@ -70,7 +70,7 @@ export default function MoveOrders({ orders, activeFreights, availableSpots, doc
           <FlashMessages />
 
           {/* Active orders */}
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+          <h2 className="mb-3 text-sm font-boldst text-gray-500 dark:text-gray-400">
             Ativas ({activeOrders.length})
           </h2>
           {activeOrders.length === 0 ? (
@@ -109,7 +109,7 @@ export default function MoveOrders({ orders, activeFreights, availableSpots, doc
                           Concluir
                         </Button>
                       )}
-                      <Button size="sm" variant="danger" onClick={() => doAction(route('admin.move-orders.cancel', order.id), 'Cancelar esta ordem?')}>
+                      <Button size="sm" variant="danger-subtle" onClick={() => doAction(route('admin.move-orders.cancel', order.id), 'Cancelar esta ordem?')}>
                         Cancelar
                       </Button>
                     </div>
@@ -123,7 +123,7 @@ export default function MoveOrders({ orders, activeFreights, availableSpots, doc
           {/* Done orders */}
           {doneOrders.length > 0 && (
             <>
-              <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+              <h2 className="mb-3 text-sm font-boldst text-gray-500 dark:text-gray-400">
                 Concluídas / Canceladas
               </h2>
               <TableShell>
@@ -131,7 +131,7 @@ export default function MoveOrders({ orders, activeFreights, availableSpots, doc
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
                       {['Veículo', 'Origem', 'Destino', 'Status', 'Cavalo', 'Concluída em'].map(h => (
-                        <th key={h} className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">{h}</th>
+                        <th key={h} className="px-4 py-2.5 text-[13px] font-semibold text-gray-600 dark:text-gray-400">{h}</th>
                       ))}
                     </tr>
                   </thead>

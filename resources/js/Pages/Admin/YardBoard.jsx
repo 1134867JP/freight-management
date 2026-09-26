@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import StatusBadge from '@/Components/UI/StatusBadge';
 import { getStatusPresentation } from '@/utils/statusPresentation';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -32,79 +33,65 @@ function formatDate(date) {
   return date.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
 }
 
-// ─── status config ───────────────────────────────────────────────────────────
-
-const STATUS = {
-  arrived: {
-    border: 'border-l-amber-500 dark:border-l-amber-500',
-    badge: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900',
-    dot: 'bg-amber-400',
-  },
-  loading: {
-    border: 'border-l-sky-500 dark:border-l-sky-500',
-    badge: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200 dark:bg-sky-950/30 dark:text-sky-300 dark:ring-sky-900',
-    dot: 'bg-sky-400',
-  },
-  unloading: {
-    border: 'border-l-violet-500 dark:border-l-violet-500',
-    badge: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:ring-violet-900',
-    dot: 'bg-violet-400',
-  },
-};
-
 // ─── sub-components ──────────────────────────────────────────────────────────
 
-function LiveDot({ color = 'bg-emerald-400' }) {
+/* Tempo grande e legível de longe (painel pensado para TV). */
+function Duration({ label, value, tone = 'neutral' }) {
+  const colors = {
+    neutral: 'text-areia-900 dark:text-white',
+    warning: 'text-ocre-700 dark:text-ocre-300',
+    danger: 'text-tijolo-700 dark:text-tijolo-300',
+  };
   return (
-    <span className={`inline-flex h-2 w-2 rounded-full ${color}`} />
+    <div>
+      <p className="text-sm text-areia-600 dark:text-areia-400">{label}</p>
+      <p className={`whitespace-nowrap font-display text-2xl font-bold leading-tight tabular-nums ${colors[tone]}`}>{value}</p>
+    </div>
+  );
+}
+
+function minutesSince(isoString, now) {
+  if (!isoString) return null;
+  return Math.floor((now - new Date(isoString)) / 60000);
+}
+
+function waitTone(minutes) {
+  if (minutes === null) return 'neutral';
+  if (minutes > 60) return 'danger';
+  if (minutes > 30) return 'warning';
+  return 'neutral';
+}
+
+function OpLabel({ type }) {
+  return (
+    <span className="text-[15px] text-areia-600 dark:text-areia-400">
+      <span aria-hidden="true">{type === 'load' ? '↑ ' : '↓ '}</span>
+      {type === 'load' ? 'Carga' : 'Descarga'}
+    </span>
   );
 }
 
 function FreightSlot({ freight, now }) {
-  const cfg = STATUS[freight.status] ?? STATUS.arrived;
   const statusPresentation = getStatusPresentation('freight', freight.status);
   const since = elapsed(freight.arrived_at, now);
   const sinceOp = freight.status !== 'arrived' ? elapsed(freight.updated_at, now) : null;
 
   return (
-    <div className={`rounded-lg border border-slate-200 border-l-[3px] ${cfg.border} bg-white p-4 dark:border-slate-700 dark:bg-slate-900`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="font-mono text-xl font-bold tracking-widest text-slate-900 dark:text-white">{freight.truck_plate}</p>
-          <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">{freight.driver_name}</p>
-        </div>
-        <span className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${cfg.badge}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-          {statusPresentation.label}
-        </span>
+    <div className="rounded-lg border border-areia-200 bg-white p-4 dark:border-areia-700 dark:bg-areia-900">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <p className="plate text-lg">{freight.truck_plate}</p>
+        <StatusBadge label={statusPresentation.label} tone={statusPresentation.tone} />
       </div>
-
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
-            <path d="M3 7h10v7H3V7Zm10 2h3l3 3v2h-6V9ZM7 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-          </svg>
-          {freight.operation_type === 'load' ? 'Carga' : 'Descarga'}
-        </span>
-        {freight.client_name && (
-          <span className="truncate text-xs text-gray-500 dark:text-gray-500">{freight.client_name}</span>
-        )}
-      </div>
+      <p className="mt-2.5 truncate text-base font-semibold text-areia-900 dark:text-white">{freight.driver_name}</p>
+      <p className="flex flex-wrap gap-x-2">
+        <OpLabel type={freight.operation_type} />
+        {freight.client_name && <span className="truncate text-[15px] text-areia-600 dark:text-areia-400">· {freight.client_name}</span>}
+      </p>
 
       {(since || sinceOp) && (
-        <div className="mt-3 flex gap-3 border-t border-gray-200/50 dark:border-white/5 pt-3">
-          {since && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-600">No pátio</p>
-              <p className="font-mono text-sm font-bold text-amber-600 dark:text-amber-400">{since}</p>
-            </div>
-          )}
-          {sinceOp && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-600">Operando</p>
-              <p className={`font-mono text-sm font-bold ${freight.status === 'loading' ? 'text-sky-600 dark:text-sky-400' : 'text-violet-600 dark:text-violet-400'}`}>{sinceOp}</p>
-            </div>
-          )}
+        <div className="mt-3 flex gap-6 border-t border-areia-200 pt-3 dark:border-areia-800">
+          {since && <Duration label="No pátio" value={since} tone={waitTone(minutesSince(freight.arrived_at, now))} />}
+          {sinceOp && <Duration label="Operando" value={sinceOp} />}
         </div>
       )}
     </div>
@@ -115,47 +102,27 @@ function DocaCard({ doca, now }) {
   const isEmpty = doca.freights.length === 0;
 
   return (
-    <div className={`flex flex-col rounded-xl border ${
-      isEmpty
-        ? 'border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-900/50'
-        : 'border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'
-    }`}>
-      {/* dock header */}
-      <div className={`flex items-center justify-between rounded-t-xl border-b border-slate-200 px-4 py-3 dark:border-slate-800 ${
+    <section
+      className={`flex flex-col rounded-xl border ${
         isEmpty
-          ? 'bg-gray-100/40 dark:bg-gray-800/40'
-          : 'bg-gray-100/70 dark:bg-gray-800/70'
-      }`}>
-        <div className="flex items-center gap-2.5">
-          <div className={`flex h-7 w-7 items-center justify-center rounded-md ${
-            isEmpty
-              ? 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-              : 'bg-brand-700 text-white'
-          }`}>
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-              <path d="M2 20V9l10-6 10 6v11H2ZM9 20v-6h6v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{doca.nome}</span>
-        </div>
-        <span className={`rounded-md px-2.5 py-0.5 text-xs font-semibold ${
-          isEmpty
-            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
-            : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-        }`}>
-          {isEmpty ? 'Livre' : `${doca.freights.length} ativo`}
-        </span>
-      </div>
-
-      {/* dock body */}
-      <div className="flex-1 p-3">
+          ? 'border-dashed border-areia-300 bg-transparent dark:border-areia-700'
+          : 'border-areia-200 bg-areia-50 shadow-sm dark:border-areia-800 dark:bg-areia-900/60'
+      }`}
+    >
+      <header className="flex items-center justify-between gap-2 px-4 py-3">
+        <h3 className="text-lg font-semibold text-areia-900 dark:text-white">{doca.nome}</h3>
         {isEmpty ? (
-          <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-            <svg className="h-8 w-8 text-gray-300 dark:text-gray-700" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-            </svg>
-            <p className="text-xs text-gray-400 dark:text-gray-700">Disponível</p>
-          </div>
+          <StatusBadge label="Livre" tone="success" />
+        ) : (
+          <StatusBadge label={doca.freights.length === 1 ? 'Ocupada' : `${doca.freights.length} veículos`} tone="info" />
+        )}
+      </header>
+
+      <div className="flex-1 px-3 pb-3">
+        {isEmpty ? (
+          <p className="flex h-24 items-center justify-center text-[15px] text-areia-500 dark:text-areia-400">
+            Disponível para receber
+          </p>
         ) : (
           <div className="space-y-2.5">
             {doca.freights.map((f) => (
@@ -164,41 +131,51 @@ function DocaCard({ doca, now }) {
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }
 
 function QueueCard({ freight, now }) {
   const since = elapsed(freight.arrived_at, now);
+  const tone = waitTone(minutesSince(freight.arrived_at, now));
 
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-amber-200 bg-white px-4 py-3 dark:border-amber-900/60 dark:bg-slate-900">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
-        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M10 6v4.5l2.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-        </svg>
+    <div
+      className={`rounded-xl border bg-white p-4 shadow-sm dark:bg-areia-900 ${
+        tone === 'danger'
+          ? 'border-tijolo-300 border-l-4 border-l-tijolo-600 dark:border-tijolo-800'
+          : 'border-areia-200 dark:border-areia-800'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="plate text-base">{freight.truck_plate}</p>
+        <OpLabel type={freight.operation_type} />
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-mono text-base font-bold tracking-wider text-gray-900 dark:text-white">{freight.truck_plate}</p>
-        <p className="truncate text-xs text-gray-500 dark:text-gray-500">{freight.driver_name} · {freight.client_name}</p>
-      </div>
-      <div className="text-right">
-        <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-600">Aguardando</p>
-        {since && <p className="font-mono text-sm font-bold text-amber-600 dark:text-amber-400">{since}</p>}
-      </div>
-      <div className={`rounded-lg px-2 py-1 text-xs font-medium ${freight.operation_type === 'load' ? 'bg-sky-100/50 text-sky-700 dark:bg-sky-900/50 dark:text-sky-400' : 'bg-violet-100/50 text-violet-700 dark:bg-violet-900/50 dark:text-violet-400'}`}>
-        {freight.operation_type === 'load' ? '↑ Carga' : '↓ Desc.'}
-      </div>
+      <p className="mt-2.5 truncate text-base font-semibold text-areia-900 dark:text-white">{freight.driver_name}</p>
+      {freight.client_name && <p className="truncate text-[15px] text-areia-600 dark:text-areia-400">{freight.client_name}</p>}
+      {since && (
+        <div className="mt-3 border-t border-areia-200 pt-3 dark:border-areia-800">
+          <Duration label="Esperando" value={since} tone={tone} />
+        </div>
+      )}
     </div>
   );
 }
 
-function StatPill({ label, value, color = 'text-gray-600 dark:text-gray-300' }) {
+function Counter({ label, value, tone }) {
+  const dots = {
+    neutral: 'bg-areia-500',
+    info: 'bg-aco-500',
+    warning: 'bg-ocre-400',
+    success: 'bg-pinho-500',
+  };
   return (
-    <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">
-      <span className={`font-mono text-lg font-bold tabular-nums ${color}`}>{value}</span>
-      <span className="text-xs text-gray-500 dark:text-gray-500">{label}</span>
+    <div className="min-w-[120px] rounded-lg border border-areia-200 bg-white px-4 py-2.5 dark:border-areia-800 dark:bg-areia-900">
+      <p className="flex items-center gap-2 text-sm font-medium text-areia-600 dark:text-areia-400">
+        <span className={`h-2 w-2 rounded-full ${dots[tone]}`} aria-hidden="true" />
+        {label}
+      </p>
+      <p className="font-display text-3xl font-bold leading-tight tabular-nums text-areia-900 dark:text-white">{value}</p>
     </div>
   );
 }
@@ -289,92 +266,83 @@ export default function YardBoard({ initialData }) {
   const waitingCount = (data?.waitingQueue ?? []).length;
   const freeDocas = (data?.docas ?? []).filter(d => d.freights.length === 0).length;
 
+  const statusText = connError
+    ? 'Erro ao atualizar'
+    : refreshing
+      ? 'Atualizando…'
+      : `${connected ? 'Ao vivo' : 'Atualizado'} às ${lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+
   const board = (
-    <div ref={rootRef} className="min-h-screen bg-[#f5f7fa] text-gray-900 dark:bg-gray-950 dark:text-white">
-
-      {/* ── top bar ── */}
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-950">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-700">
-            <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
-              <path d="M3 7h10v7H3V7Zm10 2h3l3 3v2h-6V9ZM7 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-            </svg>
-          </div>
+    <div ref={rootRef} className="min-h-screen bg-areia-100 text-areia-900 dark:bg-[#1d1f1c] dark:text-white">
+      <header className="sticky top-0 z-10 border-b border-areia-200 bg-areia-50 px-6 py-4 dark:border-areia-800 dark:bg-areia-950">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <span className="text-sm font-extrabold tracking-tight text-gray-900 dark:text-white">CargoHub</span>
-            <span className="mx-2 text-gray-300 dark:text-gray-700">·</span>
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Painel do Pátio</span>
+            <h1 className="text-2xl font-bold text-areia-900 dark:text-white">Painel do pátio</h1>
+            <p className="mt-0.5 flex items-center gap-2 text-[15px] text-areia-600 dark:text-areia-400">
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${connError ? 'bg-tijolo-500' : refreshing ? 'bg-ocre-400' : 'bg-pinho-500'}`}
+                aria-hidden="true"
+              />
+              {statusText}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="font-display text-3xl font-bold leading-none tabular-nums">{formatClock(now)}</p>
+              <p className="mt-1 text-sm capitalize text-areia-600 dark:text-areia-400">{formatDate(now)}</p>
+            </div>
+            <button
+              type="button"
+              onClick={fetchData}
+              disabled={refreshing}
+              aria-label="Atualizar agora"
+              title="Atualizar agora"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-areia-300 bg-white text-areia-700 transition hover:border-areia-400 hover:text-areia-900 disabled:opacity-40 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-300"
+            >
+              <svg className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 4v6h6M20 20v-6h-6M4.93 15A9 9 0 1 0 6 6.93" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-label={fullscreen ? 'Sair da tela cheia' : 'Tela cheia'}
+              title={fullscreen ? 'Sair da tela cheia' : 'Tela cheia'}
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-areia-300 bg-white text-areia-700 transition hover:border-areia-400 hover:text-areia-900 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-300"
+            >
+              {fullscreen ? (
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <StatPill label="ativos" value={allActive} color="text-brand-700 dark:text-brand-300" />
-          <StatPill label="carregando" value={loadingCount} color="text-sky-600 dark:text-sky-400" />
-          <StatPill label="descarregando" value={unloadingCount} color="text-violet-600 dark:text-violet-400" />
-          <StatPill label="aguardando" value={waitingCount} color="text-amber-600 dark:text-amber-400" />
-          <StatPill label="docas livres" value={freeDocas} color="text-emerald-600 dark:text-emerald-400" />
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
-            <LiveDot color={connError ? 'bg-red-400' : refreshing ? 'bg-amber-400' : connected ? 'bg-emerald-400' : 'bg-sky-400'} />
-            <span>
-              {connError
-                ? 'Erro ao atualizar'
-                : refreshing
-                  ? 'Atualizando...'
-                  : connected
-                    ? `Tempo real · ${lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
-                    : `Polling · ${lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
-            </span>
-          </div>
-          <div className="hidden flex-col items-end sm:flex">
-            <span className="font-mono text-lg font-black tabular-nums text-gray-900 dark:text-white">{formatClock(now)}</span>
-            <span className="text-[11px] capitalize text-gray-400 dark:text-gray-600">{formatDate(now)}</span>
-          </div>
-          <button
-            onClick={fetchData}
-            disabled={refreshing}
-            title="Atualizar agora"
-            className="rounded-lg border border-gray-300 dark:border-gray-700 p-2 text-gray-500 dark:text-gray-400 transition hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-40"
-          >
-            <svg className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none">
-              <path d="M4 4v6h6M20 20v-6h-6M4.93 15A9 9 0 1 0 6 6.93" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-            </svg>
-          </button>
-          <button
-            onClick={toggleFullscreen}
-            title={fullscreen ? 'Sair do fullscreen' : 'Fullscreen'}
-            className="rounded-lg border border-gray-300 dark:border-gray-700 p-2 text-gray-500 dark:text-gray-400 transition hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-200"
-          >
-            {fullscreen ? (
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-              </svg>
-            )}
-          </button>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Counter label="Aguardando" value={waitingCount} tone="warning" />
+          <Counter label="Carregando" value={loadingCount} tone="info" />
+          <Counter label="Descarregando" value={unloadingCount} tone="info" />
+          <Counter label="Docas livres" value={freeDocas} tone="success" />
+          <Counter label="Total no pátio" value={allActive} tone="neutral" />
         </div>
       </header>
 
-      <div className="space-y-7 p-6">
-
-        {/* ── waiting queue ── */}
+      <div className="space-y-8 p-6">
         {(data?.waitingQueue?.length ?? 0) > 0 && (
           <section>
-            <div className="mb-3 flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">Fila de espera</h2>
-              </div>
-              <span className="rounded-md bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900">
-                {data.waitingQueue.length} veículo{data.waitingQueue.length !== 1 ? 's' : ''}
+            <div className="mb-3 flex items-baseline gap-3">
+              <h2 className="text-xl font-semibold text-areia-900 dark:text-white">Fila de espera</h2>
+              <span className="text-[15px] text-areia-600 dark:text-areia-400">
+                {data.waitingQueue.length} veículo{data.waitingQueue.length !== 1 ? 's' : ''}, do que chegou primeiro ao último
               </span>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {data.waitingQueue.map((f) => (
                 <QueueCard key={f.id} freight={f} now={now} />
               ))}
@@ -382,30 +350,24 @@ export default function YardBoard({ initialData }) {
           </section>
         )}
 
-        {/* ── docas grid ── */}
         <section>
-          <div className="mb-3 flex items-center gap-3">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">Docas</h2>
-            <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
-            <span className="text-xs text-gray-400 dark:text-gray-600">{data?.docas?.length ?? 0} docas ativas</span>
+          <div className="mb-3 flex items-baseline gap-3">
+            <h2 className="text-xl font-semibold text-areia-900 dark:text-white">Docas</h2>
+            <span className="text-[15px] text-areia-600 dark:text-areia-400">{data?.docas?.length ?? 0} ativas</span>
           </div>
 
           {(data?.docas?.length ?? 0) === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-300 py-20 text-center dark:border-gray-700">
-              <svg className="h-12 w-12 text-gray-200 dark:text-gray-800" viewBox="0 0 24 24" fill="none">
-                <path d="M2 20V9l10-6 10 6v11H2ZM9 20v-6h6v6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-              </svg>
-              <p className="text-sm text-gray-400 dark:text-gray-600">Nenhuma doca ativa cadastrada.</p>
+            <div className="rounded-xl border border-dashed border-areia-300 py-20 text-center dark:border-areia-700">
+              <p className="text-base text-areia-600 dark:text-areia-400">Nenhuma doca ativa cadastrada.</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {(data.docas).map((doca) => (
+              {data.docas.map((doca) => (
                 <DocaCard key={doca.id} doca={doca} now={now} />
               ))}
             </div>
           )}
         </section>
-
       </div>
     </div>
   );

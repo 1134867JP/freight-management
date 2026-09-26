@@ -7,7 +7,7 @@ export default function TimeslotFilters({ filters, onChange, onReset }) {
     <div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <label className="mb-1 block text-[13px] font-semibold text-gray-500 dark:text-gray-400">
             Operação
           </label>
           <FormField.Select
@@ -23,7 +23,7 @@ export default function TimeslotFilters({ filters, onChange, onReset }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <label className="mb-1 block text-[13px] font-semibold text-gray-500 dark:text-gray-400">
             Período
           </label>
           <FormField.Select
@@ -39,7 +39,7 @@ export default function TimeslotFilters({ filters, onChange, onReset }) {
         </div>
 
         <div className="md:col-span-2">
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <label className="mb-1 block text-[13px] font-semibold text-gray-500 dark:text-gray-400">
             Endereço
           </label>
           <FormField.Input

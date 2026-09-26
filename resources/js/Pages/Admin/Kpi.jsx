@@ -7,7 +7,7 @@ import { Head, router } from '@inertiajs/react';
 function StatCard({ label, value, unit, sub, color = 'text-gray-900 dark:text-gray-100', border = 'border-gray-200 dark:border-gray-700' }) {
   return (
     <div className={`rounded-xl border ${border} bg-white px-5 py-4 shadow-sm dark:bg-gray-800`}>
-      <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-[13px] font-semiboldst text-gray-500 dark:text-gray-400">{label}</p>
       <div className="mt-2 flex items-end gap-1">
         <span className={`text-3xl font-black ${color}`}>{value ?? '—'}</span>
         {unit && <span className="mb-1 text-sm text-gray-400">{unit}</span>}

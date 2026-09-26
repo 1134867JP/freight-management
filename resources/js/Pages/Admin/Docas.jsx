@@ -150,7 +150,7 @@ export default function Docas({ docas }) {
           {/* Cards de status ao vivo */}
           {arrDocas.length > 0 && (
             <div className="mb-8">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+              <h2 className="mb-3 text-sm font-semiboldst text-gray-500 dark:text-gray-400">
                 Status ao vivo
               </h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -163,7 +163,7 @@ export default function Docas({ docas }) {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">{objDoca.codigo}</p>
+                          <p className="text-[13px] font-bold text-gray-500 dark:text-gray-400">{objDoca.codigo}</p>
                           <p className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-gray-100">{objDoca.nome}</p>
                         </div>
                         <StatusBadge label={presentation.label} tone={presentation.tone} />
@@ -182,19 +182,19 @@ export default function Docas({ docas }) {
             </div>
           ) : (
             <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+              <h2 className="mb-3 text-sm font-semiboldst text-gray-500 dark:text-gray-400">
                 Gerenciamento
               </h2>
               <TableShell>
                 <table className="min-w-full text-left text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Código</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Nome</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Status</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Notas</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Ativa</th>
-                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Ações</th>
+                      <th className="px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">Código</th>
+                      <th className="px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">Nome</th>
+                      <th className="px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">Status</th>
+                      <th className="px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">Notas</th>
+                      <th className="px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">Ativa</th>
+                      <th className="px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -231,7 +231,7 @@ export default function Docas({ docas }) {
                               <Button
                                 onClick={() => handleDeactivate(objDoca)}
                                 size="sm"
-                                variant="danger"
+                                variant="danger-subtle"
                               >
                                 <IconOff />
                                 Desativar

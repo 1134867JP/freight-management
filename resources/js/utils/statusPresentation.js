@@ -9,9 +9,10 @@ const UNKNOWN_STATUS_PRESENTATION = {
  */
 export const STATUS_PRESENTATIONS = {
   freight: {
-    reserved: { label: 'Reservado', tone: 'info' },
-    arrived: { label: 'No pátio', tone: 'violet' },
-    loading: { label: 'Carregando', tone: 'warning' },
+    // Progressão fixa: agendado (neutro) → aguardando (atenção) → operando (aço) → finalizado (verde).
+    reserved: { label: 'Reservado', tone: 'neutral' },
+    arrived: { label: 'No pátio', tone: 'warning' },
+    loading: { label: 'Carregando', tone: 'info' },
     unloading: { label: 'Descarregando', tone: 'info' },
     completed: { label: 'Finalizado', tone: 'success' },
     cancelled: { label: 'Cancelado', tone: 'danger' },
@@ -23,7 +24,7 @@ export const STATUS_PRESENTATIONS = {
   },
   dock: {
     available: { label: 'Disponível', tone: 'success' },
-    occupied: { label: 'Ocupada', tone: 'warning' },
+    occupied: { label: 'Ocupada', tone: 'info' },
     maintenance: { label: 'Manutenção', tone: 'neutral' },
   },
   moveOrder: {
@@ -39,7 +40,7 @@ export const STATUS_PRESENTATIONS = {
   },
   yardTruck: {
     available: { label: 'Disponível', tone: 'success' },
-    busy: { label: 'Em operação', tone: 'warning' },
+    busy: { label: 'Em operação', tone: 'info' },
   },
 };
 

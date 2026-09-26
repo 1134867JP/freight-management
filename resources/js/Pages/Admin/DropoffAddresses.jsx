@@ -164,19 +164,19 @@ export default function DropoffAddresses({ addresses }) {
                 <table className="min-w-full text-left">
                   <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/60">
                     <tr>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Nome / Identificador
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Endereço
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Cidade / UF
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Status
                       </th>
-                      <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-right text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Ações
                       </th>
                     </tr>
@@ -215,7 +215,7 @@ export default function DropoffAddresses({ addresses }) {
                               onClick={() => deleteAddress(address.id)}
                               icon={<IconTrash />}
                               label={`Excluir ${address.name}`}
-                              variant="danger"
+                              variant="danger-subtle"
                             />
                           </div>
                         </td>
@@ -306,7 +306,7 @@ export default function DropoffAddresses({ addresses }) {
             <FormField label="UF" error={allErrors.state} required>
               <FormField.Input
                 type="text"
-                className="uppercase"
+                className=""
                 maxLength={2}
                 error={allErrors.state}
                 value={data.state}

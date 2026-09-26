@@ -219,13 +219,13 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
               <table className="min-w-full table-fixed text-left">
                 <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/60">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Horário</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Caminhão / Placa</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Pesos</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Anexos</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Observações</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">Ações</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-gray-600 dark:text-gray-400">Horário</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-gray-600 dark:text-gray-400">Caminhão / Placa</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-gray-600 dark:text-gray-400">Pesos</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-gray-600 dark:text-gray-400">Anexos</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-gray-600 dark:text-gray-400">Status</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-gray-600 dark:text-gray-400">Observações</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-semibold text-gray-600 dark:text-gray-400">Ações</th>
                   </tr>
                 </thead>
 
@@ -258,7 +258,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                         <StatusBadge
                           label={translateOperationType(freight.operation_type)}
                           tone="neutral"
-                          className="mt-1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
+                          className="mt-1 px-2 py-0.5 text-[13px] font-semibold"
                         />
                       </td>
 
@@ -273,7 +273,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                         <StatusBadge
                           label={translateFreightStatus(freight.status)}
                           tone={getFreightStatusTone(freight.status)}
-                          className="px-2 py-1 text-xs font-bold uppercase tracking-wide"
+                          className="px-2 py-1 text-[13px] font-bold"
                         />
                       </td>
 

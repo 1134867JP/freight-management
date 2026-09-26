@@ -157,10 +157,10 @@ export default function Produtos({ produtos }) {
                 <table className="min-w-full text-left">
                   <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/60">
                     <tr>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Nome</th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Descrição</th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Status</th>
-                      <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Ações</th>
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">Nome</th>
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">Descrição</th>
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">Status</th>
+                      <th className="px-6 py-3.5 text-right text-[13px] font-semibold text-gray-500 dark:text-gray-400">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -193,7 +193,7 @@ export default function Produtos({ produtos }) {
                               onClick={() => handleDelete(objProduto)}
                               icon={<IconTrash />}
                               label={`Excluir ${objProduto.nome}`}
-                              variant="danger"
+                              variant="danger-subtle"
                             />
                           </div>
                         </td>

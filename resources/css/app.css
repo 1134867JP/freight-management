@@ -1,48 +1,83 @@
+@import '@fontsource/source-sans-3/latin-400.css';
+@import '@fontsource/source-sans-3/latin-500.css';
+@import '@fontsource/source-sans-3/latin-600.css';
+@import '@fontsource/source-sans-3/latin-700.css';
+@import '@fontsource/libre-franklin/latin-600.css';
+@import '@fontsource/libre-franklin/latin-700.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+@import '@fontsource/ibm-plex-mono/latin-600.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * 16px de base: a fonte humanista (Source Sans 3) tem olho menor e precisa
+ * desse tamanho para ser lida com conforto no tablet da portaria.
+ */
 html {
-  font-size: 15px;
-  background: #f5f7fa;
+  font-size: 16px;
+  background: #f5f1e8;
   color-scheme: light;
 }
 
 html.dark {
-  background: #020617;
+  background: #1d1f1c;
   color-scheme: dark;
 }
 
 body {
   min-width: 320px;
-  background: #f5f7fa;
-  color: #0f172a;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background: #f5f1e8;
+  color: #252320;
   -webkit-font-smoothing: antialiased;
 }
 
 .dark body {
-  background: #020617;
-  color: #e2e8f0;
+  background: #1d1f1c;
+  color: #ede8dd;
 }
 
 ::selection {
-  background: #bfdbfe;
-  color: #172554;
+  background: #f2d68e;
+  color: #252320;
 }
 
-.dark ::selection {
-  background: #1d4ed8;
-  color: white;
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: theme('fontFamily.display');
+    letter-spacing: -0.01em;
+  }
+
+  /* Foco sempre visível e com a mesma cor em todo o app. */
+  a:focus-visible,
+  button:focus-visible,
+  [role='button']:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid #c98a1b;
+    outline-offset: 2px;
+  }
 }
 
 @layer components {
+  /* Placa de veículo no padrão Mercosul. */
+  .plate {
+    @apply relative inline-flex items-center justify-center rounded-[4px] border-[1.5px] border-areia-900 bg-white px-2 pb-0.5 pt-[9px] font-mono font-semibold uppercase leading-none tracking-[0.12em] text-areia-900;
+  }
+
+  .plate::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-[5px] rounded-t-[2px] bg-[#1f4e9c];
+  }
+
   .table-shell table {
-    @apply w-full text-left text-sm;
+    @apply w-full text-left text-[15px];
   }
 
   .table-shell thead {
-    @apply border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400;
+    @apply border-b border-areia-200 bg-areia-50 text-sm font-semibold text-areia-600 dark:border-areia-800 dark:bg-areia-900 dark:text-areia-300;
   }
 
   .table-shell th {
@@ -50,15 +85,15 @@ body {
   }
 
   .table-shell tbody {
-    @apply divide-y divide-slate-100 dark:divide-slate-800;
+    @apply divide-y divide-areia-200/80 dark:divide-areia-800;
   }
 
   .table-shell td {
-    @apply px-5 py-3.5 text-slate-600 dark:text-slate-300;
+    @apply px-5 py-3.5 text-areia-700 dark:text-areia-300;
   }
 
   .table-shell tbody tr {
-    @apply transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/45;
+    @apply transition-colors hover:bg-areia-50 dark:hover:bg-areia-800/50;
   }
 }
 
@@ -90,8 +125,8 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -99,21 +134,21 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d6cebd;
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #8f8775;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #4a4539;
   background-clip: padding-box;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+  background: #625b4d;
 }

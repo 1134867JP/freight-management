@@ -23,13 +23,13 @@ export default function ChangeTemporaryPassword() {
       <Head title="Definir nova senha" />
 
       <div className="mb-7">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">
+        <p className="text-[15px] font-semibold text-pinho-700 dark:text-pinho-300">
           Primeiro acesso
         </p>
-        <h1 className="mt-2 text-2xl font-bold tracking-[-0.025em] text-slate-950">
+        <h1 className="mt-2 text-[28px] font-bold leading-tight text-areia-900">
           Crie sua nova senha
         </h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
+        <p className="mt-2 text-base leading-relaxed text-areia-600">
           A senha informada pelo administrador é temporária. Defina uma nova senha para liberar seu
           acesso ao CargoHub.
         </p>

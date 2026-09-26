@@ -126,7 +126,7 @@ export default function ReservationForm({
       <div className="mb-5 rounded-xl border border-brand-100 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-950/20">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-brand-600 dark:text-brand-400">
+            <p className="text-[13px] font-bold text-brand-600 dark:text-brand-400">
               Horário selecionado
             </p>
             <p className="mt-0.5 text-base font-bold text-gray-900 dark:text-gray-100">{slotTime}</p>

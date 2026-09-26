@@ -10,17 +10,19 @@ const CloseIcon = () => (
 function Alert({ type, message }) {
   const [visible, setVisible] = useState(true);
 
+  // Erros ficam na tela até a pessoa fechar: sumir sozinho faz perder a mensagem.
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(false), 5000);
+    if (type === 'error') return undefined;
+    const timer = setTimeout(() => setVisible(false), 6000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [type]);
 
   if (!visible) return null;
 
   const styles = {
-    error: 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300',
-    success: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300',
-    info: 'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300',
+    error: 'border-tijolo-200 border-l-tijolo-600 bg-tijolo-50 text-tijolo-800 dark:border-tijolo-900 dark:border-l-tijolo-400 dark:bg-tijolo-950/40 dark:text-tijolo-200',
+    success: 'border-pinho-200 border-l-pinho-600 bg-pinho-50 text-pinho-800 dark:border-pinho-900 dark:border-l-pinho-400 dark:bg-pinho-950/40 dark:text-pinho-200',
+    info: 'border-aco-200 border-l-aco-600 bg-aco-50 text-aco-800 dark:border-aco-900 dark:border-l-aco-400 dark:bg-aco-950/40 dark:text-aco-200',
   };
 
   const icons = {
@@ -30,7 +32,7 @@ function Alert({ type, message }) {
   };
 
   return (
-    <div role={type === 'error' ? 'alert' : 'status'} className={`mb-3 flex items-start justify-between gap-3 rounded-xl border p-3.5 text-sm font-medium shadow-sm ${styles[type]}`}>
+    <div role={type === 'error' ? 'alert' : 'status'} className={`mb-3 flex items-start justify-between gap-3 rounded-lg border border-l-4 p-3.5 text-[15px] font-medium ${styles[type]}`}>
       <span className="flex items-start gap-2.5">
         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-current/10">
           <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d={icons[type]} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -40,7 +42,7 @@ function Alert({ type, message }) {
       <button
         type="button"
         onClick={() => setVisible(false)}
-        className="mt-0.5 shrink-0 rounded-md p-1 opacity-60 transition hover:bg-current/10 hover:opacity-100"
+        className="-m-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md opacity-70 transition hover:bg-black/5 hover:opacity-100"
         aria-label="Fechar mensagem"
       >
         <CloseIcon />

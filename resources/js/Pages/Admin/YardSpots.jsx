@@ -34,7 +34,7 @@ function SpotRow({ spot, onEdit, onDeactivate }) {
             Editar
           </Button>
           {spot.is_active && spot.status !== 'occupied' && (
-            <Button size="sm" variant="danger" onClick={() => onDeactivate(spot)}>
+            <Button size="sm" variant="danger-subtle" onClick={() => onDeactivate(spot)}>
               Desativar
             </Button>
           )}
@@ -131,7 +131,7 @@ export default function YardSpots({ zones }) {
           ) : (
             zones.map(zone => (
               <div key={zone.id} className="mb-6">
-                <h3 className="mb-2 text-sm font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                <h3 className="mb-2 text-sm font-boldst text-gray-500 dark:text-gray-400">
                   {zone.nome} <span className="font-mono text-xs">({zone.codigo})</span>
                 </h3>
                 {(zone.spots || []).length === 0 ? (
@@ -147,7 +147,7 @@ export default function YardSpots({ zones }) {
                       <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
                           {['Vaga', 'Status', 'Suporta', 'Ações'].map(h => (
-                            <th key={h} className="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">{h}</th>
+                            <th key={h} className="px-4 py-2.5 text-[13px] font-semibold text-gray-600 dark:text-gray-400">{h}</th>
                           ))}
                         </tr>
                       </thead>
