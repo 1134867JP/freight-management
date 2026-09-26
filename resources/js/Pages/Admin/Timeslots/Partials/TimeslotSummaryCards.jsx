@@ -38,7 +38,7 @@ export default function TimeslotSummaryCards({ summary }) {
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
       {arrCardsConfig.map((objCard) => (
         <div key={objCard.key} className={`rounded-lg border p-3 ${objCard.tone}`}>
-          <p className="text-xs uppercase tracking-wide">{objCard.label}</p>
+          <p className="text-[13px]">{objCard.label}</p>
           <p className="mt-1 text-2xl font-semibold">{summary[objCard.key] ?? 0}</p>
         </div>
       ))}

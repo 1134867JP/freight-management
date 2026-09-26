@@ -181,22 +181,22 @@ export default function Trucks({ trucks }) {
                 <table className="min-w-full text-left">
                   <thead className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700/60">
                     <tr>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Placa
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Tipo
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Modelo
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Observações
                       </th>
-                      <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Status
                       </th>
-                      <th className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <th className="px-6 py-3.5 text-right text-[13px] font-semibold text-gray-500 dark:text-gray-400">
                         Ações
                       </th>
                     </tr>
@@ -250,7 +250,7 @@ export default function Trucks({ trucks }) {
                               onClick={() => deleteTruck(truck.id)}
                               icon={<IconTrash />}
                               label="Excluir caminhão"
-                              variant="danger"
+                              variant="danger-subtle"
                             />
                           </div>
                         </td>

@@ -1,11 +1,9 @@
-@import '@fontsource/barlow/latin-400.css';
-@import '@fontsource/barlow/latin-500.css';
-@import '@fontsource/barlow/latin-600.css';
-@import '@fontsource/barlow/latin-700.css';
-@import '@fontsource/barlow-condensed/latin-500.css';
-@import '@fontsource/barlow-condensed/latin-600.css';
-@import '@fontsource/barlow-condensed/latin-700.css';
-@import '@fontsource/barlow-condensed/latin-800.css';
+@import '@fontsource/source-sans-3/latin-400.css';
+@import '@fontsource/source-sans-3/latin-500.css';
+@import '@fontsource/source-sans-3/latin-600.css';
+@import '@fontsource/source-sans-3/latin-700.css';
+@import '@fontsource/libre-franklin/latin-600.css';
+@import '@fontsource/libre-franklin/latin-700.css';
 @import '@fontsource/ibm-plex-mono/latin-500.css';
 @import '@fontsource/ibm-plex-mono/latin-600.css';
 
@@ -13,78 +11,73 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * 16px de base: a fonte humanista (Source Sans 3) tem olho menor e precisa
+ * desse tamanho para ser lida com conforto no tablet da portaria.
+ */
 html {
-  font-size: 15px;
-  background: #edebe6;
+  font-size: 16px;
+  background: #f5f1e8;
   color-scheme: light;
 }
 
 html.dark {
-  background: #121211;
+  background: #1d1f1c;
   color-scheme: dark;
 }
 
 body {
   min-width: 320px;
-  background: #edebe6;
-  color: #141413;
-  font-feature-settings: "tnum" 0;
+  background: #f5f1e8;
+  color: #252320;
   -webkit-font-smoothing: antialiased;
 }
 
 .dark body {
-  background: #121211;
-  color: #edebe6;
+  background: #1d1f1c;
+  color: #ede8dd;
 }
 
 ::selection {
-  background: #f5c400;
-  color: #141413;
+  background: #f2d68e;
+  color: #252320;
 }
 
 @layer base {
   h1,
-  h2 {
+  h2,
+  h3 {
     font-family: theme('fontFamily.display');
-    letter-spacing: 0.01em;
+    letter-spacing: -0.01em;
   }
 
-  h1 {
-    text-transform: uppercase;
+  /* Foco sempre visível e com a mesma cor em todo o app. */
+  a:focus-visible,
+  button:focus-visible,
+  [role='button']:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid #c98a1b;
+    outline-offset: 2px;
   }
 }
 
 @layer components {
-  /* Rótulo de sinalização: condensado, caixa alta, espaçado. */
-  .stencil {
-    @apply font-display font-semibold uppercase tracking-[0.12em];
-  }
-
-  /* Faixa zebrada amarelo/preto usada como marcador de atenção. */
-  .hazard {
-    background-image: repeating-linear-gradient(
-      -45deg,
-      #f5c400 0 8px,
-      #141413 8px 16px
-    );
-  }
-
   /* Placa de veículo no padrão Mercosul. */
   .plate {
-    @apply relative inline-flex items-center justify-center border-2 border-ink bg-white px-2 pb-0.5 pt-2 font-mono font-semibold uppercase tracking-[0.14em] text-ink;
+    @apply relative inline-flex items-center justify-center rounded-[4px] border-[1.5px] border-areia-900 bg-white px-2 pb-0.5 pt-[9px] font-mono font-semibold uppercase leading-none tracking-[0.12em] text-areia-900;
   }
 
   .plate::before {
     content: '';
-    @apply absolute inset-x-0 top-0 h-1.5 bg-[#1f4e9c];
+    @apply absolute inset-x-0 top-0 h-[5px] rounded-t-[2px] bg-[#1f4e9c];
   }
 
   .table-shell table {
-    @apply w-full text-left text-sm;
+    @apply w-full text-left text-[15px];
   }
 
   .table-shell thead {
-    @apply border-b-2 border-ink bg-concrete-100 font-display text-xs font-semibold uppercase tracking-[0.1em] text-ink dark:border-signal-400 dark:bg-concrete-950 dark:text-concrete-200;
+    @apply border-b border-areia-200 bg-areia-50 text-sm font-semibold text-areia-600 dark:border-areia-800 dark:bg-areia-900 dark:text-areia-300;
   }
 
   .table-shell th {
@@ -92,15 +85,15 @@ body {
   }
 
   .table-shell tbody {
-    @apply divide-y divide-concrete-200 dark:divide-concrete-800;
+    @apply divide-y divide-areia-200/80 dark:divide-areia-800;
   }
 
   .table-shell td {
-    @apply px-5 py-3.5 text-concrete-700 dark:text-concrete-300;
+    @apply px-5 py-3.5 text-areia-700 dark:text-areia-300;
   }
 
   .table-shell tbody tr {
-    @apply transition-colors hover:bg-signal-50 dark:hover:bg-concrete-800/60;
+    @apply transition-colors hover:bg-areia-50 dark:hover:bg-areia-800/50;
   }
 }
 
@@ -132,8 +125,8 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -141,20 +134,21 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c5c1b8;
+  background: #d6cebd;
   border: 2px solid transparent;
   background-clip: padding-box;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9b968c;
+  background: #8f8775;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #3e3c38;
+  background: #4a4539;
   background-clip: padding-box;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #57544e;
+  background: #625b4d;
 }

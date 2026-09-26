@@ -159,7 +159,7 @@ export default function YardMap({ initialData }) {
           {/* Docas */}
           {docas.length > 0 && (
             <div className="mb-6">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">Docas</h3>
+              <h3 className="mb-3 text-sm font-semiboldst text-gray-500 dark:text-gray-400">Docas</h3>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
                 {docas.map(doca => <DocaCard key={doca.id} doca={doca} />)}
               </div>

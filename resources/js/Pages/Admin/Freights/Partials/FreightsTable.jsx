@@ -26,12 +26,12 @@ export default function FreightsTable({
   const getStatusLabel = (status) => {
     const strStatus = getNormalizedStatus(status);
     const arrLabels = {
-      reserved: 'RESERVADO',
-      arrived: 'NO PÁTIO',
-      loading: 'CARREGANDO',
-      unloading: 'DESCARREGANDO',
-      completed: 'FINALIZADO',
-      cancelled: 'CANCELADO',
+      reserved: 'Reservado',
+      arrived: 'No pátio',
+      loading: 'Carregando',
+      unloading: 'Descarregando',
+      completed: 'Finalizado',
+      cancelled: 'Cancelado',
     };
 
     return arrLabels[strStatus];
@@ -41,8 +41,8 @@ export default function FreightsTable({
     const strStatus = getNormalizedStatus(status);
     const arrTones = {
       reserved: 'neutral',
-      arrived: 'violet',
-      loading: 'warning',
+      arrived: 'warning',
+      loading: 'info',
       unloading: 'info',
       completed: 'success',
       cancelled: 'danger',
@@ -73,25 +73,25 @@ export default function FreightsTable({
       <table className="min-w-full table-fixed text-left">
         <thead className="bg-gray-50 dark:bg-gray-700">
           <tr>
-            <th className="w-[16%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[16%] px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">
               Cliente
             </th>
-            <th className="w-[13%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[13%] px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">
               Veículo
             </th>
-            <th className="w-[11%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[11%] px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">
               Agendamento
             </th>
-            <th className="w-[12%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[12%] px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">
               Pesos
             </th>
-            <th className="w-[14%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[14%] px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">
               Documentos
             </th>
-            <th className="w-[10%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[10%] px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">
               Status
             </th>
-            <th className="w-[24%] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            <th className="w-[24%] px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">
               Ações
             </th>
           </tr>
@@ -117,7 +117,7 @@ export default function FreightsTable({
                 <StatusBadge
                   label={translateOperationType(freight.operation_type)}
                   tone="neutral"
-                  className="mt-1 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
+                  className="mt-1 px-2 py-0.5 text-[13px] font-semibold"
                 />
               </td>
 
@@ -146,7 +146,6 @@ export default function FreightsTable({
                 <StatusBadge
                   label={getStatusLabel(freight.status)}
                   tone={getStatusTone(freight.status)}
-                  className="px-2 py-1 text-xs font-bold uppercase tracking-wide"
                 />
               </td>
 

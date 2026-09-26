@@ -65,7 +65,7 @@ export default function Index({ configured, instance, bot, commands = [] }) {
               <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-gray-400">
+                    <p className="text-[13px] font-semiboldst text-slate-500 dark:text-gray-400">
                       Estado da conexão
                     </p>
                     <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-gray-100">
@@ -97,7 +97,7 @@ export default function Index({ configured, instance, bot, commands = [] }) {
 
               {instance?.qr_code && (
                 <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                  <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-gray-400">
+                  <p className="mb-4 text-[13px] font-semiboldst text-slate-500 dark:text-gray-400">
                     QR Code
                   </p>
                   <div className="flex justify-center">
@@ -141,7 +141,7 @@ function BotAccessCard({ bot, instance }) {
     <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-gray-400">
+          <p className="text-[13px] font-semiboldst text-slate-500 dark:text-gray-400">
             Criação de cotas pelo WhatsApp
           </p>
           <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-gray-100">
@@ -158,7 +158,7 @@ function BotAccessCard({ bot, instance }) {
       </p>
 
       <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-gray-600 dark:bg-gray-900/40">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400">
+        <p className="text-[13px] font-semibold text-slate-500 dark:text-gray-400">
           Exemplo recomendado
         </p>
         <code className="mt-2 block break-words text-sm font-semibold text-slate-800 dark:text-gray-100">
@@ -206,7 +206,7 @@ function AssistantCard({ assistant }) {
     <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-gray-400">
+          <p className="text-[13px] font-semiboldst text-slate-500 dark:text-gray-400">
             Gerente conversacional
           </p>
           <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-gray-100">
@@ -259,7 +259,7 @@ function CommandHistory({ commands }) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div className="border-b border-slate-200 px-6 py-5 dark:border-gray-700">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-gray-400">
+        <p className="text-[13px] font-semiboldst text-slate-500 dark:text-gray-400">
           Auditoria do bot
         </p>
         <h2 className="mt-1 text-lg font-semibold text-slate-900 dark:text-gray-100">
@@ -280,7 +280,7 @@ function CommandHistory({ commands }) {
                   (label) => (
                     <th
                       key={label}
-                      className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-gray-400"
+                      className="px-5 py-3 text-left text-[13px] font-semibold text-slate-500 dark:text-gray-400"
                     >
                       {label}
                     </th>

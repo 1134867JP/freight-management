@@ -109,7 +109,7 @@ export default function AddressModal({ show, onClose }) {
             <input
               type="text"
               maxLength={2}
-              className="mt-1 block w-full rounded-md border-gray-300 uppercase"
+              className="mt-1 block w-full rounded-md border-gray-300"
               value={form.data.state}
               onChange={(event) => form.setData('state', event.target.value.toUpperCase())}
               required

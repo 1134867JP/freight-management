@@ -269,7 +269,7 @@ export default function TimeslotForm({ form, clients, addresses, produtos, docas
 
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/40">
             <div className="mb-3 flex flex-wrap gap-2">
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ring-1 ring-inset ${
+              <span className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-bold ring-1 ring-inset ${
                 form.data.client_ids.length === 0
                   ? 'bg-green-50 text-green-700 ring-green-200 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-800'
                   : 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-900/20 dark:text-sky-400 dark:ring-sky-800'

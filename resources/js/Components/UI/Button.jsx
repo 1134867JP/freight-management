@@ -24,23 +24,25 @@ function Spinner() {
 
 const VARIANT_CLASSES = {
   primary:
-    'border-ink bg-ink text-white hover:bg-black focus:ring-signal-400 dark:border-signal-400 dark:bg-signal-400 dark:text-ink dark:hover:bg-signal-300',
-  signal:
-    'border-ink bg-signal-400 text-ink hover:bg-signal-300 focus:ring-ink dark:border-signal-400',
+    'border-pinho-700 bg-pinho-700 text-white shadow-sm hover:border-pinho-800 hover:bg-pinho-800 focus-visible:ring-ocre-400 dark:border-pinho-400 dark:bg-pinho-400 dark:text-areia-950 dark:hover:bg-pinho-300',
   secondary:
-    'border-ink bg-white text-ink hover:bg-concrete-100 focus:ring-signal-400 dark:border-concrete-500 dark:bg-transparent dark:text-concrete-100 dark:hover:bg-concrete-800',
+    'border-areia-300 bg-white text-areia-800 shadow-sm hover:border-areia-400 hover:bg-areia-50 focus-visible:ring-ocre-400 dark:border-areia-700 dark:bg-areia-800 dark:text-areia-100 dark:hover:bg-areia-700',
   danger:
-    'border-rose-700 bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500',
+    'border-tijolo-600 bg-tijolo-600 text-white shadow-sm hover:border-tijolo-700 hover:bg-tijolo-700 focus-visible:ring-tijolo-300',
+  // Para ações destrutivas repetidas em listas: visível, mas sem competir com a ação principal.
+  'danger-subtle':
+    'border-tijolo-200 bg-white text-tijolo-700 hover:border-tijolo-300 hover:bg-tijolo-50 focus-visible:ring-tijolo-300 dark:border-tijolo-900 dark:bg-transparent dark:text-tijolo-300 dark:hover:bg-tijolo-950/40',
   ghost:
-    'border-transparent bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-brand-400 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+    'border-transparent bg-transparent text-areia-700 hover:bg-areia-200/60 hover:text-areia-900 focus-visible:ring-ocre-400 dark:text-areia-300 dark:hover:bg-areia-800 dark:hover:text-white',
   soft:
-    'border-signal-400 bg-signal-50 text-ink hover:bg-signal-100 focus:ring-signal-400 dark:border-signal-700 dark:bg-signal-950/60 dark:text-signal-300 dark:hover:bg-signal-900/60',
+    'border-pinho-100 bg-pinho-50 text-pinho-800 hover:bg-pinho-100 focus-visible:ring-ocre-400 dark:border-pinho-900 dark:bg-pinho-950/60 dark:text-pinho-200 dark:hover:bg-pinho-900',
 };
 
+/* Alturas mínimas de 36/44/52px: alvos confortáveis para toque na portaria. */
 const SIZE_CLASSES = {
-  sm: 'min-h-8 px-3 py-1.5 text-sm gap-1.5',
-  md: 'min-h-10 px-4 py-2 text-base gap-2',
-  lg: 'min-h-12 px-5 py-2.5 text-lg gap-2',
+  sm: 'min-h-9 px-3 py-1.5 text-sm gap-1.5',
+  md: 'min-h-11 px-4 py-2 text-[15px] gap-2',
+  lg: 'min-h-[52px] px-6 py-3 text-base gap-2',
 };
 
 export default function Button({
@@ -62,9 +64,9 @@ export default function Button({
       disabled={isDisabled}
       aria-busy={loading}
       className={[
-        'inline-flex items-center justify-center rounded-sm border-2 font-display font-semibold uppercase tracking-[0.06em]',
+        'inline-flex items-center justify-center rounded-lg border font-semibold',
         'transition-colors duration-150',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
         'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none',
         VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.primary,
         SIZE_CLASSES[size] ?? SIZE_CLASSES.md,

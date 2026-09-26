@@ -8,8 +8,8 @@ export default function TableShell({ children, className = '' }) {
   return (
     <div
       className={[
-        'table-shell overflow-x-auto rounded-sm border border-concrete-300 bg-white',
-        'dark:border-concrete-800 dark:bg-concrete-900',
+        'table-shell overflow-x-auto rounded-xl border border-areia-200 bg-white shadow-sm',
+        'dark:border-areia-800 dark:bg-areia-900',
         className,
       ].filter(Boolean).join(' ')}
     >

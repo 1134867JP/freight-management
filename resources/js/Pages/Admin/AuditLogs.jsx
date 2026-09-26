@@ -171,7 +171,7 @@ export default function AuditLogs({ logs, filters }) {
             ) : (
               <table className="min-w-full table-fixed text-left text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <tr className="text-[13px] text-gray-500 dark:text-gray-400">
                     <th className="w-[14%] px-4 py-3 font-semibold">Data/Hora</th>
                     <th className="w-[14%] px-4 py-3 font-semibold">Usuário</th>
                     <th className="w-[10%] px-4 py-3 font-semibold">Ação</th>

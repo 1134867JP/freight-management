@@ -1,23 +1,28 @@
 import React from 'react';
 
+/*
+ * Cada tom tem um significado fixo em todo o app:
+ * neutral = agendado/inativo, info = em operação, success = livre/concluído,
+ * warning = aguardando/atenção, danger = atrasado/cancelado.
+ */
 const arrToneClasses = {
-  neutral: 'bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-700/60 dark:text-gray-300 dark:ring-gray-600',
-  info: 'bg-sky-50 text-sky-800 ring-sky-300 dark:bg-sky-900/30 dark:text-sky-300 dark:ring-sky-800',
-  success: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:ring-emerald-800',
-  warning: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:ring-amber-800',
-  danger: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-800',
-  violet: 'bg-violet-50 text-violet-700 ring-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:ring-violet-800',
-  brand: 'bg-signal-400 text-ink ring-ink dark:bg-signal-400 dark:text-ink dark:ring-signal-500',
+  neutral: 'bg-areia-100 text-areia-700 ring-areia-200 dark:bg-areia-800 dark:text-areia-200 dark:ring-areia-700',
+  info: 'bg-aco-100 text-aco-800 ring-aco-200 dark:bg-aco-900/60 dark:text-aco-200 dark:ring-aco-800',
+  success: 'bg-pinho-100 text-pinho-800 ring-pinho-200 dark:bg-pinho-900/60 dark:text-pinho-200 dark:ring-pinho-800',
+  warning: 'bg-ocre-100 text-ocre-800 ring-ocre-200 dark:bg-ocre-900/50 dark:text-ocre-200 dark:ring-ocre-800',
+  danger: 'bg-tijolo-100 text-tijolo-800 ring-tijolo-200 dark:bg-tijolo-900/50 dark:text-tijolo-200 dark:ring-tijolo-800',
+  violet: 'bg-couro-100 text-couro-800 ring-couro-200 dark:bg-couro-900/50 dark:text-couro-200 dark:ring-couro-800',
+  brand: 'bg-pinho-700 text-white ring-pinho-700 dark:bg-pinho-400 dark:text-areia-950 dark:ring-pinho-400',
 };
 
 const arrDotClasses = {
-  neutral: 'bg-gray-400 dark:bg-gray-500',
-  info: 'bg-sky-600 dark:bg-sky-400',
-  success: 'bg-emerald-500 dark:bg-emerald-400',
-  warning: 'bg-amber-500 dark:bg-amber-400',
-  danger: 'bg-red-500 dark:bg-red-400',
-  violet: 'bg-violet-500 dark:bg-violet-400',
-  brand: 'bg-ink',
+  neutral: 'bg-areia-500',
+  info: 'bg-aco-600 dark:bg-aco-300',
+  success: 'bg-pinho-600 dark:bg-pinho-300',
+  warning: 'bg-ocre-500 dark:bg-ocre-300',
+  danger: 'bg-tijolo-600 dark:bg-tijolo-300',
+  violet: 'bg-couro-600 dark:bg-couro-300',
+  brand: 'bg-ocre-300',
 };
 
 export default function StatusBadge({ label, tone = 'neutral', className = '' }) {
@@ -26,9 +31,9 @@ export default function StatusBadge({ label, tone = 'neutral', className = '' })
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] ring-1 ring-inset ${vlClassTone} ${className}`.trim()}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-[13px] font-semibold ring-1 ring-inset ${vlClassTone} ${className}`.trim()}
     >
-      <span className={`h-2 w-2 shrink-0 ${vlDotClass}`} />
+      <span className={`h-2 w-2 shrink-0 rounded-full ${vlDotClass}`} aria-hidden="true" />
       {label}
     </span>
   );

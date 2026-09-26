@@ -25,9 +25,9 @@ export default function Register() {
       <Head title="Criar conta" />
 
       <div className="mb-7">
-        <p className="stencil text-xs text-slate-500">Novo acesso</p>
-        <h1 className="mt-2 text-4xl font-bold leading-none text-slate-950">Criar conta</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">Cadastre seus dados de acesso ao CargoHub.</p>
+        <p className="text-[15px] font-semibold text-pinho-700 dark:text-pinho-300">Novo acesso</p>
+        <h1 className="mt-2 text-[28px] font-bold leading-tight text-areia-900">Criar conta</h1>
+        <p className="mt-2 text-base leading-relaxed text-areia-600">Cadastre seus dados de acesso ao CargoHub.</p>
       </div>
 
       <form onSubmit={submit} className="space-y-4">

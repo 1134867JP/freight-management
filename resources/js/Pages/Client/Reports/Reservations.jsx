@@ -115,7 +115,7 @@ export default function ClientReservationsReport({ freights, filters }) {
             ) : (
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <tr className="text-[13px] text-gray-500 dark:text-gray-400">
                     <th className="px-4 py-3 font-semibold">Horário</th>
                     <th className="px-4 py-3 font-semibold">Motorista</th>
                     <th className="px-4 py-3 font-semibold">Placa</th>
@@ -135,7 +135,7 @@ export default function ClientReservationsReport({ freights, filters }) {
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                         {fr.driver_name || '—'}
                       </td>
-                      <td className="px-4 py-3 text-sm font-mono text-gray-700 dark:text-gray-300 uppercase">
+                      <td className="px-4 py-3 text-sm font-mono text-gray-700 dark:text-gray-300">
                         {fr.truck_plate || '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">

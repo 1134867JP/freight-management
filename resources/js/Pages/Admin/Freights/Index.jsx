@@ -184,7 +184,7 @@ export default function Index({ freights, docasDisponiveis, filters = {}, status
 
             <div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/30">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                <p className="text-[13px] font-semiboldst text-gray-600 dark:text-gray-400">
                   Filtros
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -244,7 +244,7 @@ export default function Index({ freights, docasDisponiveis, filters = {}, status
                   />
                 </FormField>
 
-                <div className="flex items-end gap-2">
+                <div className="flex flex-wrap items-end gap-2">
                   <Button onClick={applyFilters} className="flex-1">
                     Aplicar
                   </Button>
@@ -253,7 +253,7 @@ export default function Index({ freights, docasDisponiveis, filters = {}, status
                   </Button>
                   <a
                     href={exportCsvUrl()}
-                    className="flex items-center gap-1.5 rounded-md border border-green-500 bg-green-50 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-100 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40"
+                    className="flex min-h-11 items-center gap-1.5 rounded-lg border border-areia-300 bg-white px-3 py-2 text-[15px] font-semibold text-areia-800 hover:bg-areia-50 dark:border-areia-700 dark:bg-areia-800 dark:text-areia-100"
                   >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
                       <path

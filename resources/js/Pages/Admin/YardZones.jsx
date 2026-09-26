@@ -91,7 +91,7 @@ export default function YardZones({ zones, tipos }) {
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     {['Código', 'Nome', 'Tipo', 'Vagas', 'Ordem', 'Ativa', 'Ações'].map(h => (
-                      <th key={h} className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">{h}</th>
+                      <th key={h} className="px-4 py-3 text-[13px] font-semibold text-gray-600 dark:text-gray-400">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -116,7 +116,7 @@ export default function YardZones({ zones, tipos }) {
                             Editar
                           </Button>
                           {z.is_active && (
-                            <Button size="sm" variant="danger" onClick={() => handleDeactivate(z)}>
+                            <Button size="sm" variant="danger-subtle" onClick={() => handleDeactivate(z)}>
                               Desativar
                             </Button>
                           )}

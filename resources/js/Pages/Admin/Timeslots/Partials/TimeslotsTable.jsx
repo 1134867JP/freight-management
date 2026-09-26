@@ -34,7 +34,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
     <TableShell>
       <table className="min-w-[980px] w-full table-fixed text-left">
         <thead className="bg-gray-50 dark:bg-gray-700">
-          <tr className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">
+          <tr className="text-[13px] text-gray-600 dark:text-gray-400">
             <th className="w-[18%] px-4 py-3 font-semibold">Horário</th>
             <th className="w-[10%] px-4 py-3 font-semibold">Operação</th>
             <th className="w-[19%] px-4 py-3 font-semibold">Endereço</th>
@@ -75,7 +75,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
                   <StatusBadge
                     label={translateTimeslotOperationType(objSlot.operation_type)}
                     tone="neutral"
-                    className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+                    className="px-3 py-1.5 text-[13px] font-bold"
                   />
                 </td>
 
@@ -112,7 +112,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
                   <StatusBadge
                     label={translateTimeslotStatus(objSlot.status)}
                     tone={getTimeslotStatusTone(objSlot.status)}
-                    className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+                    className="px-3 py-1.5 text-[13px] font-bold"
                   />
                 </td>
 
@@ -146,7 +146,7 @@ export default function TimeslotsTable({ timeslots, onEdit, onDelete }) {
                         event.stopPropagation();
                         onDelete(event, objSlot.id);
                       }}
-                      variant="danger"
+                      variant="danger-subtle"
                       size="sm"
                     >
                       Excluir

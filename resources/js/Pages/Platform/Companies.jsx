@@ -246,7 +246,7 @@ export default function Companies({ companies, summary }) {
                       <Button
                         onClick={() => archiveCompany(company)}
                         disabled={!company.can_archive}
-                        variant="danger"
+                        variant="danger-subtle"
                         size="sm"
                         className={company.can_archive ? '' : 'cursor-not-allowed'}
                       >
@@ -537,7 +537,7 @@ function SectionTitle({ children }) {
 function MiniStat({ label, value }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-700">
-      <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-gray-400">{label}</p>
+      <p className="text-[13px] text-slate-500 dark:text-gray-400">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-gray-100">{value}</p>
     </div>
   );

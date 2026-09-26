@@ -255,18 +255,18 @@ export default function AuthenticatedLayout({ header, children }) {
     <Link
       href={href}
       onClick={onNavigate}
-      className={`group relative flex min-h-10 items-center py-2 font-display text-[15px] uppercase tracking-[0.06em] transition-colors duration-150 ${compact ? 'justify-center px-2' : 'gap-3 px-3'} ${
+      className={`group relative flex min-h-11 items-center rounded-lg py-2 text-[15px] transition-colors duration-150 ${compact ? 'justify-center px-2' : 'gap-3 px-3'} ${
         active
-          ? 'bg-signal-400 font-bold text-ink'
-          : 'font-medium text-concrete-300 hover:bg-white/[0.07] hover:text-white'
+          ? 'bg-white font-semibold text-pinho-800 shadow-sm ring-1 ring-areia-200 dark:bg-areia-800 dark:text-white dark:ring-areia-700'
+          : 'font-medium text-areia-700 hover:bg-white/70 hover:text-areia-900 dark:text-areia-300 dark:hover:bg-areia-800/60 dark:hover:text-white'
       }`}
       aria-current={active ? 'page' : undefined}
       aria-label={compact ? label : undefined}
       title={compact ? label : undefined}
     >
       {icon && (
-        <span className={`flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${active ? 'text-ink' : 'text-concrete-500 group-hover:text-signal-400'}`}>
-          <MenuIcon name={icon} className="h-4 w-4" />
+        <span className={`flex h-6 w-6 shrink-0 items-center justify-center transition-colors ${active ? 'text-pinho-700 dark:text-pinho-300' : 'text-areia-500 group-hover:text-areia-800 dark:text-areia-400 dark:group-hover:text-areia-200'}`}>
+          <MenuIcon name={icon} className="h-5 w-5" />
         </span>
       )}
       {!compact && <span className="truncate">{label}</span>}
@@ -291,10 +291,10 @@ export default function AuthenticatedLayout({ header, children }) {
             }
             toggleGroup(item.group);
           }}
-          className={`flex min-h-10 w-full items-center py-2 font-display text-[15px] font-medium uppercase tracking-[0.06em] transition-colors ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
+          className={`flex min-h-11 w-full items-center rounded-lg py-2 text-[15px] font-medium transition-colors ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
             item.active
-              ? 'bg-white/[0.06] text-signal-300'
-              : 'text-concrete-300 hover:bg-white/[0.07] hover:text-white'
+              ? 'text-pinho-800 dark:text-white'
+              : 'text-areia-700 hover:bg-white/70 hover:text-areia-900 dark:text-areia-300 dark:hover:bg-areia-800/60 dark:hover:text-white'
           }`}
           aria-expanded={isOpen}
           aria-label={compact ? item.label : undefined}
@@ -302,30 +302,31 @@ export default function AuthenticatedLayout({ header, children }) {
         >
           <span className="flex items-center gap-3">
             {item.icon && (
-              <span className={`flex h-7 w-7 items-center justify-center ${item.active ? 'text-signal-400' : 'text-concrete-500'}`}>
-                <MenuIcon name={item.icon} className="h-4 w-4 shrink-0" />
+              <span className={`flex h-6 w-6 items-center justify-center ${item.active ? 'text-pinho-700 dark:text-pinho-300' : 'text-areia-500 dark:text-areia-400'}`}>
+                <MenuIcon name={item.icon} className="h-5 w-5 shrink-0" />
               </span>
             )}
             {!compact && item.label}
           </span>
           {!compact && (
-            <svg className={`h-4 w-4 text-slate-600 transition ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <svg className={`h-4 w-4 text-areia-500 transition ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
         </button>
         {isOpen && !compact && (
-          <div className="ml-6 mt-1 space-y-0.5 border-l-2 border-concrete-700 pl-3">
+          <div className="ml-[23px] mt-1 space-y-0.5 border-l border-areia-300 pl-3 dark:border-areia-700">
             {item.children.map((child) => (
               <Link
                 key={child.label}
                 href={child.href}
                 onClick={onNavigate}
-                className={`-ml-[14px] block border-l-2 px-3 py-2 text-sm transition ${
+                className={`flex min-h-10 items-center rounded-lg px-3 py-2 text-[15px] transition ${
                   child.active
-                    ? 'border-signal-400 font-semibold text-signal-300'
-                    : 'border-transparent text-concrete-400 hover:bg-white/[0.05] hover:text-white'
+                    ? 'bg-white font-semibold text-pinho-800 shadow-sm ring-1 ring-areia-200 dark:bg-areia-800 dark:text-white dark:ring-areia-700'
+                    : 'text-areia-600 hover:bg-white/70 hover:text-areia-900 dark:text-areia-400 dark:hover:bg-areia-800/60 dark:hover:text-white'
                 }`}
+                aria-current={child.active ? 'page' : undefined}
               >
                 {child.label}
               </Link>
@@ -339,9 +340,9 @@ export default function AuthenticatedLayout({ header, children }) {
   const NavigationContent = ({ onNavigate = undefined, compact = false }) => (
     <nav aria-label="Navegação principal" className={`flex-1 overflow-y-auto py-5 ${compact ? 'space-y-2 px-3' : 'space-y-6 px-4'}`}>
       {menuSections.map((objSection, index) => (
-        <div key={objSection.section ?? '_main'} className={compact && index > 0 ? 'border-t border-white/[0.06] pt-2' : ''}>
+        <div key={objSection.section ?? '_main'} className={compact && index > 0 ? 'border-t border-areia-300/70 pt-2 dark:border-areia-800' : ''}>
           {objSection.section && !compact && (
-            <p className="stencil mb-2 px-3 text-[11px] text-concrete-500">
+            <p className="mb-1.5 px-3 text-[13px] font-semibold text-areia-500 dark:text-areia-400">
               {objSection.section}
             </p>
           )}
@@ -392,28 +393,27 @@ export default function AuthenticatedLayout({ header, children }) {
   }, [sidebarCollapsed]);
 
   return (
-    <div className="min-h-screen bg-concrete-100 dark:bg-concrete-950 lg:flex lg:h-screen lg:overflow-hidden">
-      <aside className={`relative hidden shrink-0 overflow-hidden border-r border-black bg-ink transition-[width] duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? 'w-[88px]' : 'w-[280px]'}`}>
-        <div className="hazard h-2 shrink-0" aria-hidden="true" />
-        <div className={`relative border-b border-white/[0.08] py-5 ${sidebarCollapsed ? 'px-6' : 'px-5'}`}>
+    <div className="min-h-screen bg-areia-100 dark:bg-[#1d1f1c] lg:flex lg:h-screen lg:overflow-hidden">
+      <aside className={`relative hidden shrink-0 overflow-hidden border-r border-areia-200 bg-[#EDE7DB] transition-[width] dark:border-areia-800 dark:bg-areia-950 duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? 'w-[88px]' : 'w-[280px]'}`}>
+        <div className={`relative border-b border-areia-300/70 py-5 dark:border-areia-800 ${sidebarCollapsed ? 'px-6' : 'px-5'}`}>
           <Link href={route('dashboard')} aria-label="Ir para o painel">
-            <BrandLogo inverse compact={sidebarCollapsed} />
+            <BrandLogo compact={sidebarCollapsed} />
           </Link>
 
           {company?.name && !isPlatformAdmin && (
-            <div className={`mt-5 flex items-center border border-white/[0.1] bg-white/[0.04] ${sidebarCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`} title={sidebarCollapsed ? company.name : undefined}>
+            <div className={`mt-5 flex items-center rounded-lg border border-areia-300/70 bg-white/60 dark:border-areia-800 dark:bg-areia-900 ${sidebarCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`} title={sidebarCollapsed ? company.name : undefined}>
               {company?.logo_url ? (
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-white p-1.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white p-1.5 ring-1 ring-areia-200">
                   <img src={logoUrl} className="max-h-full max-w-full object-contain" alt="" />
                 </span>
               ) : (
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-white/10 font-display text-base font-bold text-signal-400">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-pinho-100 font-display text-base font-bold text-pinho-800">
                   {company.name.charAt(0).toUpperCase()}
                 </span>
               )}
               {!sidebarCollapsed && <span className="min-w-0">
-                <span className="stencil block text-[10px] text-concrete-500">Pátio</span>
-                <span className="block truncate text-sm font-semibold text-slate-200">{company.name}</span>
+                <span className="block text-[13px] text-areia-500 dark:text-areia-400">Empresa</span>
+                <span className="block truncate text-[15px] font-semibold text-areia-900 dark:text-areia-100">{company.name}</span>
               </span>}
             </div>
           )}
@@ -421,29 +421,29 @@ export default function AuthenticatedLayout({ header, children }) {
 
         <NavigationContent compact={sidebarCollapsed} />
 
-        <div className="relative border-t border-white/[0.06] p-4" ref={accountMenuRef}>
+        <div className="relative border-t border-areia-300/70 p-3 dark:border-areia-800" ref={accountMenuRef}>
           <button
             type="button"
             onClick={() => setShowAccountMenu((v) => !v)}
-            className={`flex w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-white/[0.06] ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
+            className={`flex min-h-12 w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-white/70 dark:hover:bg-areia-800/60 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
             aria-expanded={showAccountMenu}
             aria-label={sidebarCollapsed ? `Abrir menu de ${user.name}` : undefined}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-signal-400 font-display text-lg font-bold text-ink">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pinho-700 font-display text-base font-bold text-white">
               {user.name.charAt(0).toUpperCase()}
             </span>
             {!sidebarCollapsed && <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold text-white">{user.name}</span>
-              <span className="block text-xs text-slate-500">{roleLabel}</span>
+              <span className="block truncate text-[15px] font-semibold text-areia-900 dark:text-white">{user.name}</span>
+              <span className="block text-[13px] text-areia-600 dark:text-areia-400">{roleLabel}</span>
             </span>}
-            {!sidebarCollapsed && <GearIcon className="h-4 w-4 text-slate-600" />}
+            {!sidebarCollapsed && <GearIcon className="h-5 w-5 text-areia-500" />}
           </button>
 
           {showAccountMenu && (
-            <div className={`overflow-hidden rounded-lg border border-slate-700 bg-slate-900 p-1.5 shadow-xl shadow-black/30 ${sidebarCollapsed ? 'fixed bottom-4 left-[96px] z-50 w-56' : 'absolute bottom-[72px] left-4 right-4'}`}>
+            <div className={`overflow-hidden rounded-xl border border-areia-200 bg-white p-1.5 shadow-xl dark:border-areia-700 dark:bg-areia-900 ${sidebarCollapsed ? 'fixed bottom-4 left-[96px] z-50 w-56' : 'absolute bottom-[72px] left-4 right-4'}`}>
               <Link
                 href={route('profile.edit')}
-                className="block rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
+                className="block rounded-lg px-3 py-2.5 text-[15px] text-areia-800 transition hover:bg-areia-100 dark:text-areia-200 dark:hover:bg-areia-800"
                 onClick={() => setShowAccountMenu(false)}
               >
                 Perfil
@@ -453,7 +453,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 href={route('logout')}
                 method="post"
                 as="button"
-                className="block w-full rounded-lg px-3 py-2.5 text-left text-sm text-rose-400 transition hover:bg-rose-500/10"
+                className="block w-full rounded-lg px-3 py-2.5 text-left text-[15px] text-tijolo-700 transition hover:bg-tijolo-50 dark:text-tijolo-300 dark:hover:bg-tijolo-950/40"
                 onClick={() => setShowAccountMenu(false)}
               >
                 Sair
@@ -464,7 +464,7 @@ export default function AuthenticatedLayout({ header, children }) {
       </aside>
 
       <div className="min-w-0 flex-1 lg:overflow-y-auto">
-        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b-2 border-ink bg-white px-4 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
+        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-areia-200 bg-areia-50/95 px-4 sm:px-6 lg:px-8 dark:border-areia-800 dark:bg-areia-950">
           <Link href={route('dashboard')} className="lg:hidden" aria-label="Ir para o painel">
             <BrandLogo compact />
           </Link>
@@ -482,17 +482,17 @@ export default function AuthenticatedLayout({ header, children }) {
               </svg>
             </button>
             <div className="min-w-0">
-              <p className="stencil truncate text-[11px] text-concrete-500 dark:text-concrete-400">
+              <p className="truncate text-[13px] text-areia-500 dark:text-areia-400">
                 {currentNavigation.section || 'Central de operações'}
               </p>
-              <p className="truncate font-display text-lg font-semibold uppercase leading-tight tracking-[0.04em] text-ink dark:text-concrete-100">
+              <p className="truncate text-base font-semibold leading-tight text-areia-900 dark:text-areia-100">
                 {currentNavigation.parent ? `${currentNavigation.parent} · ${currentNavigation.label}` : currentNavigation.label}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="hidden max-w-64 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 sm:inline-flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            <span className="hidden max-w-64 items-center gap-2 rounded-lg border border-areia-200 bg-white px-3 py-1.5 text-sm font-medium text-areia-700 sm:inline-flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
               <MenuIcon name="buildings" className="h-3.5 w-3.5 shrink-0 text-slate-400" />
               <span className="truncate">{company?.name || 'CargoHub YMS'}</span>
             </span>
@@ -518,24 +518,23 @@ export default function AuthenticatedLayout({ header, children }) {
 
         {showMobileMenu && (
           <div className="fixed inset-0 z-50 lg:hidden">
-            <button type="button" className="absolute inset-0 bg-slate-950/60" onClick={() => setShowMobileMenu(false)} aria-label="Fechar menu" />
-            <aside className="relative flex h-full w-[min(88vw,340px)] flex-col bg-ink shadow-2xl">
-              <div className="hazard h-2 shrink-0" aria-hidden="true" />
-              <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-5">
-                <BrandLogo inverse />
-                <button type="button" onClick={() => setShowMobileMenu(false)} className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-white/10 hover:text-white" aria-label="Fechar menu">
+            <button type="button" className="absolute inset-0 bg-areia-950/50" onClick={() => setShowMobileMenu(false)} aria-label="Fechar menu" />
+            <aside className="relative flex h-full w-[min(88vw,340px)] flex-col bg-[#EDE7DB] shadow-2xl dark:bg-areia-950">
+              <div className="flex items-center justify-between border-b border-areia-300/70 px-5 py-5 dark:border-areia-800">
+                <BrandLogo />
+                <button type="button" onClick={() => setShowMobileMenu(false)} className="flex h-11 w-11 items-center justify-center rounded-lg text-areia-600 hover:bg-white/70 hover:text-areia-900 dark:text-areia-300 dark:hover:bg-areia-800" aria-label="Fechar menu">
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
                 </button>
               </div>
               <NavigationContent onNavigate={() => setShowMobileMenu(false)} />
-              <div className="border-t border-white/[0.06] p-4">
+              <div className="border-t border-areia-300/70 p-4 dark:border-areia-800">
                 <div className="mb-3 flex items-center gap-3 px-2">
-                  <span className="flex h-9 w-9 items-center justify-center bg-signal-400 font-display text-lg font-bold text-ink">{user.name.charAt(0).toUpperCase()}</span>
-                  <span className="min-w-0"><span className="block truncate text-sm font-semibold text-white">{user.name}</span><span className="block text-xs text-slate-500">{roleLabel}</span></span>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pinho-700 font-display text-base font-bold text-white">{user.name.charAt(0).toUpperCase()}</span>
+                  <span className="min-w-0"><span className="block truncate text-[15px] font-semibold text-areia-900 dark:text-white">{user.name}</span><span className="block text-[13px] text-areia-600 dark:text-areia-400">{roleLabel}</span></span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <Link href={route('profile.edit')} onClick={() => setShowMobileMenu(false)} className="rounded-lg bg-white/[0.06] px-3 py-2 text-center text-sm font-medium text-slate-300">Perfil</Link>
-                  <Link href={route('logout')} method="post" as="button" onClick={() => setShowMobileMenu(false)} className="rounded-lg bg-rose-500/10 px-3 py-2 text-sm font-medium text-rose-300">Sair</Link>
+                  <Link href={route('profile.edit')} onClick={() => setShowMobileMenu(false)} className="flex min-h-11 items-center justify-center rounded-lg border border-areia-300 bg-white px-3 py-2 text-[15px] font-medium text-areia-800 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-200">Perfil</Link>
+                  <Link href={route('logout')} method="post" as="button" onClick={() => setShowMobileMenu(false)} className="flex min-h-11 items-center justify-center rounded-lg border border-tijolo-200 bg-tijolo-50 px-3 py-2 text-[15px] font-medium text-tijolo-700 dark:border-tijolo-900 dark:bg-tijolo-950/40 dark:text-tijolo-300">Sair</Link>
                 </div>
               </div>
             </aside>
@@ -543,7 +542,7 @@ export default function AuthenticatedLayout({ header, children }) {
         )}
 
         {header && (
-          <header className="border-b border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <header className="border-b border-areia-200 bg-white dark:border-areia-800 dark:bg-areia-900">
             <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">{header}</div>
           </header>
         )}
