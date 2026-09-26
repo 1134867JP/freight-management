@@ -44,8 +44,8 @@ export default function Dashboard({ stats }) {
         <div className="mx-auto max-w-[1600px] space-y-6 px-4 sm:px-6 lg:px-8">
           <section className="flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Visão geral</p>
-              <h1 className="mt-1 text-2xl font-bold tracking-[-0.025em] text-slate-950 dark:text-white">Meus agendamentos</h1>
+              <p className="stencil text-xs text-slate-500 dark:text-slate-400">Visão geral</p>
+              <h1 className="mt-1 text-4xl font-bold leading-none text-slate-950 dark:text-white">Meus agendamentos</h1>
               <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
                 {greeting()}, {firstName}. Acompanhe reservas, horários e fretes em andamento.
               </p>
@@ -69,8 +69,8 @@ export default function Dashboard({ stats }) {
             <Card className="lg:col-span-2">
               <Card.Content className="h-full">
                 <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Em andamento</span>
-                  <p className="mt-3 text-4xl font-bold tabular-nums tracking-[-0.04em] text-slate-950 dark:text-white">{activeFreights}</p>
+                  <span className="stencil text-xs text-slate-500 dark:text-slate-400">Em andamento</span>
+                  <p className="mt-3 font-display text-5xl font-bold leading-none tabular-nums text-slate-950 dark:text-white">{activeFreights}</p>
                   <p className="mt-1 font-semibold text-slate-900 dark:text-white">frete(s) em operação</p>
                   <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                     Acompanhe os status ativos e identifique rapidamente o que exige atenção.

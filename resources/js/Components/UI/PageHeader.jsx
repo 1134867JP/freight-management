@@ -8,26 +8,22 @@ export default function PageHeader({
   eyebrow = null,
 }) {
   return (
-    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-3.5">
+    <div className="mb-6 flex flex-col gap-4 border-b-2 border-ink pb-5 sm:flex-row sm:items-end sm:justify-between dark:border-concrete-700">
+      <div className="flex items-start gap-4">
         {icon ? (
-          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-brand-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-brand-300">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-signal-400 text-ink">
             {icon}
           </div>
         ) : (
-          <div className="mt-1 h-8 w-0.5 shrink-0 rounded-full bg-brand-700 dark:bg-brand-400" />
+          <div className="hazard mt-1 h-10 w-2.5 shrink-0" aria-hidden="true" />
         )}
         <div>
           {eyebrow && (
-            <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
-              {eyebrow}
-            </p>
+            <p className="stencil mb-0.5 text-xs text-concrete-600 dark:text-concrete-400">{eyebrow}</p>
           )}
-          <h1 className="text-2xl font-bold leading-tight tracking-[-0.02em] text-slate-950 dark:text-white">
-            {title}
-          </h1>
+          <h1 className="text-4xl font-bold leading-none text-ink dark:text-white">{title}</h1>
           {subtitle && (
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">{subtitle}</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-concrete-600 dark:text-concrete-400">{subtitle}</p>
           )}
         </div>
       </div>

@@ -1,40 +1,28 @@
 import React from 'react';
 
+/* Faixa lateral colorida por tom, como a marcação de piso de uma doca. */
 const TONES = {
-  neutral: {
-    icon: 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  },
-  brand: {
-    icon: 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300',
-  },
-  success: {
-    icon: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300',
-  },
-  warning: {
-    icon: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-300',
-  },
-  danger: {
-    icon: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300',
-  },
-  violet: {
-    icon: 'border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-900 dark:bg-violet-950/50 dark:text-violet-300',
-  },
+  neutral: { bar: 'bg-concrete-400 dark:bg-concrete-500', icon: 'text-concrete-500 dark:text-concrete-400' },
+  brand: { bar: 'bg-signal-400', icon: 'text-signal-600 dark:text-signal-400' },
+  success: { bar: 'bg-emerald-500', icon: 'text-emerald-600 dark:text-emerald-400' },
+  warning: { bar: 'bg-amber-500', icon: 'text-amber-600 dark:text-amber-400' },
+  danger: { bar: 'bg-rose-600', icon: 'text-rose-600 dark:text-rose-400' },
+  violet: { bar: 'bg-violet-500', icon: 'text-violet-600 dark:text-violet-400' },
 };
 
 export default function MetricCard({ label, value, icon, tone = 'neutral', detail = null }) {
   const colors = TONES[tone] ?? TONES.neutral;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
+    <div className="relative overflow-hidden rounded-sm border border-concrete-300 bg-white py-4 pl-5 pr-4 dark:border-concrete-800 dark:bg-concrete-900">
+      <span className={`absolute inset-y-0 left-0 w-1.5 ${colors.bar}`} aria-hidden="true" />
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
-          <p className="mt-1.5 text-2xl font-bold tabular-nums tracking-[-0.03em] text-slate-950 dark:text-white">{value}</p>
-          {detail && <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{detail}</p>}
+          <p className="stencil text-xs text-concrete-600 dark:text-concrete-400">{label}</p>
+          <p className="mt-1 font-display text-5xl font-bold leading-none tabular-nums text-ink dark:text-white">{value}</p>
+          {detail && <p className="mt-2 text-xs text-concrete-500 dark:text-concrete-400">{detail}</p>}
         </div>
-        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${colors.icon}`}>
-          {icon}
-        </span>
+        {icon && <span className={`shrink-0 ${colors.icon}`}>{icon}</span>}
       </div>
     </div>
   );

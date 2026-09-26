@@ -67,14 +67,14 @@ function FreightSlot({ freight, now }) {
   const sinceOp = freight.status !== 'arrived' ? elapsed(freight.updated_at, now) : null;
 
   return (
-    <div className={`rounded-lg border border-slate-200 border-l-[3px] ${cfg.border} bg-white p-4 dark:border-slate-700 dark:bg-slate-900`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="font-mono text-xl font-bold tracking-widest text-slate-900 dark:text-white">{freight.truck_plate}</p>
-          <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">{freight.driver_name}</p>
+    <div className={`border border-concrete-300 border-l-[6px] ${cfg.border} bg-white p-4 dark:border-concrete-700 dark:bg-concrete-900`}>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="plate text-lg">{freight.truck_plate}</p>
+          <p className="mt-1.5 truncate text-sm font-medium text-concrete-700 dark:text-concrete-300">{freight.driver_name}</p>
         </div>
-        <span className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${cfg.badge}`}>
-          <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 font-display text-[13px] font-semibold uppercase tracking-[0.06em] ${cfg.badge}`}>
+          <span className={`h-2 w-2 ${cfg.dot}`} />
           {statusPresentation.label}
         </span>
       </div>
@@ -95,14 +95,14 @@ function FreightSlot({ freight, now }) {
         <div className="mt-3 flex gap-3 border-t border-gray-200/50 dark:border-white/5 pt-3">
           {since && (
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-600">No pátio</p>
-              <p className="font-mono text-sm font-bold text-amber-600 dark:text-amber-400">{since}</p>
+              <p className="stencil text-[11px] text-concrete-500">No pátio</p>
+              <p className="font-display text-2xl font-bold leading-none tabular-nums text-amber-700 dark:text-amber-400">{since}</p>
             </div>
           )}
           {sinceOp && (
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-600">Operando</p>
-              <p className={`font-mono text-sm font-bold ${freight.status === 'loading' ? 'text-sky-600 dark:text-sky-400' : 'text-violet-600 dark:text-violet-400'}`}>{sinceOp}</p>
+              <p className="stencil text-[11px] text-concrete-500">Operando</p>
+              <p className={`font-display text-2xl font-bold leading-none tabular-nums ${freight.status === 'loading' ? 'text-sky-700 dark:text-sky-400' : 'text-violet-700 dark:text-violet-400'}`}>{sinceOp}</p>
             </div>
           )}
         </div>
@@ -115,33 +115,33 @@ function DocaCard({ doca, now }) {
   const isEmpty = doca.freights.length === 0;
 
   return (
-    <div className={`flex flex-col rounded-xl border ${
+    <div className={`flex flex-col border-2 ${
       isEmpty
-        ? 'border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-900/50'
-        : 'border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'
+        ? 'border-dashed border-concrete-300 bg-concrete-50 dark:border-concrete-700 dark:bg-concrete-900/50'
+        : 'border-ink bg-white dark:border-concrete-600 dark:bg-concrete-900'
     }`}>
       {/* dock header */}
-      <div className={`flex items-center justify-between rounded-t-xl border-b border-slate-200 px-4 py-3 dark:border-slate-800 ${
+      <div className={`flex items-center justify-between px-4 py-2.5 ${
         isEmpty
-          ? 'bg-gray-100/40 dark:bg-gray-800/40'
-          : 'bg-gray-100/70 dark:bg-gray-800/70'
+          ? 'border-b border-dashed border-concrete-300 dark:border-concrete-700'
+          : 'bg-ink'
       }`}>
         <div className="flex items-center gap-2.5">
-          <div className={`flex h-7 w-7 items-center justify-center rounded-md ${
+          <div className={`flex h-7 w-7 items-center justify-center ${
             isEmpty
-              ? 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-              : 'bg-brand-700 text-white'
+              ? 'bg-concrete-200 text-concrete-500 dark:bg-concrete-800 dark:text-concrete-400'
+              : 'bg-signal-400 text-ink'
           }`}>
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
               <path d="M2 20V9l10-6 10 6v11H2ZM9 20v-6h6v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{doca.nome}</span>
+          <span className={`font-display text-xl font-bold uppercase tracking-[0.04em] ${isEmpty ? 'text-concrete-600 dark:text-concrete-300' : 'text-white'}`}>{doca.nome}</span>
         </div>
-        <span className={`rounded-md px-2.5 py-0.5 text-xs font-semibold ${
+        <span className={`px-2 py-0.5 font-display text-[13px] font-semibold uppercase tracking-[0.08em] ${
           isEmpty
-            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
-            : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+            ? 'bg-emerald-600 text-white'
+            : 'bg-signal-400 text-ink'
         }`}>
           {isEmpty ? 'Livre' : `${doca.freights.length} ativo`}
         </span>
@@ -150,11 +150,11 @@ function DocaCard({ doca, now }) {
       {/* dock body */}
       <div className="flex-1 p-3">
         {isEmpty ? (
-          <div className="flex h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-            <svg className="h-8 w-8 text-gray-300 dark:text-gray-700" viewBox="0 0 24 24" fill="none">
+          <div className="flex h-28 flex-col items-center justify-center gap-2">
+            <svg className="h-8 w-8 text-concrete-300 dark:text-concrete-700" viewBox="0 0 24 24" fill="none">
               <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
-            <p className="text-xs text-gray-400 dark:text-gray-700">Disponível</p>
+            <p className="stencil text-xs text-concrete-500">Disponível</p>
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -172,33 +172,30 @@ function QueueCard({ freight, now }) {
   const since = elapsed(freight.arrived_at, now);
 
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-amber-200 bg-white px-4 py-3 dark:border-amber-900/60 dark:bg-slate-900">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
-        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M10 6v4.5l2.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-        </svg>
+    <div className="relative overflow-hidden border border-concrete-300 bg-white py-3 pl-5 pr-4 dark:border-concrete-700 dark:bg-concrete-900">
+      <span className="hazard absolute inset-y-0 left-0 w-1.5" aria-hidden="true" />
+      <div className="flex items-start justify-between gap-2">
+        <p className="plate text-sm">{freight.truck_plate}</p>
+        <span className={`px-1.5 py-0.5 font-display text-xs font-semibold uppercase tracking-[0.06em] text-white ${freight.operation_type === 'load' ? 'bg-sky-700' : 'bg-violet-700'}`}>
+          {freight.operation_type === 'load' ? '↑ Carga' : '↓ Descarga'}
+        </span>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-mono text-base font-bold tracking-wider text-gray-900 dark:text-white">{freight.truck_plate}</p>
-        <p className="truncate text-xs text-gray-500 dark:text-gray-500">{freight.driver_name} · {freight.client_name}</p>
-      </div>
-      <div className="text-right">
-        <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-600">Aguardando</p>
-        {since && <p className="font-mono text-sm font-bold text-amber-600 dark:text-amber-400">{since}</p>}
-      </div>
-      <div className={`rounded-lg px-2 py-1 text-xs font-medium ${freight.operation_type === 'load' ? 'bg-sky-100/50 text-sky-700 dark:bg-sky-900/50 dark:text-sky-400' : 'bg-violet-100/50 text-violet-700 dark:bg-violet-900/50 dark:text-violet-400'}`}>
-        {freight.operation_type === 'load' ? '↑ Carga' : '↓ Desc.'}
+      <div className="mt-2.5 flex items-end justify-between gap-3">
+        <p className="min-w-0 truncate text-xs text-concrete-600 dark:text-concrete-400">{freight.driver_name} · {freight.client_name}</p>
+        <div className="shrink-0 text-right">
+          <p className="stencil text-[11px] text-concrete-500">Aguardando</p>
+          {since && <p className="font-display text-2xl font-bold leading-none tabular-nums text-amber-700 dark:text-amber-400">{since}</p>}
+        </div>
       </div>
     </div>
   );
 }
 
-function StatPill({ label, value, color = 'text-gray-600 dark:text-gray-300' }) {
+function StatPill({ label, value, color = 'text-white' }) {
   return (
-    <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">
-      <span className={`font-mono text-lg font-bold tabular-nums ${color}`}>{value}</span>
-      <span className="text-xs text-gray-500 dark:text-gray-500">{label}</span>
+    <div className="flex items-baseline gap-2 border-l-2 border-white/15 px-3 py-0.5">
+      <span className={`font-display text-3xl font-bold leading-none tabular-nums ${color}`}>{value}</span>
+      <span className="stencil text-[11px] text-concrete-400">{label}</span>
     </div>
   );
 }
@@ -290,33 +287,33 @@ export default function YardBoard({ initialData }) {
   const freeDocas = (data?.docas ?? []).filter(d => d.freights.length === 0).length;
 
   const board = (
-    <div ref={rootRef} className="min-h-screen bg-[#f5f7fa] text-gray-900 dark:bg-gray-950 dark:text-white">
+    <div ref={rootRef} className="min-h-screen bg-concrete-100 text-ink dark:bg-concrete-950 dark:text-white">
 
       {/* ── top bar ── */}
-      <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-950">
+      <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4 border-b-4 border-signal-400 bg-ink px-6 py-3 text-white">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-700">
-            <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
+          <div className="flex h-9 w-9 items-center justify-center bg-signal-400">
+            <svg className="h-5 w-5 text-ink" viewBox="0 0 24 24" fill="none">
               <path d="M3 7h10v7H3V7Zm10 2h3l3 3v2h-6V9ZM7 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
             </svg>
           </div>
           <div>
-            <span className="text-sm font-extrabold tracking-tight text-gray-900 dark:text-white">CargoHub</span>
-            <span className="mx-2 text-gray-300 dark:text-gray-700">·</span>
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Painel do Pátio</span>
+            <span className="font-display text-xl font-extrabold uppercase tracking-[0.04em] text-white">CargoHub</span>
+            <span className="mx-2 text-concrete-600">/</span>
+            <span className="stencil text-base text-signal-400">Painel do pátio</span>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <StatPill label="ativos" value={allActive} color="text-brand-700 dark:text-brand-300" />
-          <StatPill label="carregando" value={loadingCount} color="text-sky-600 dark:text-sky-400" />
-          <StatPill label="descarregando" value={unloadingCount} color="text-violet-600 dark:text-violet-400" />
-          <StatPill label="aguardando" value={waitingCount} color="text-amber-600 dark:text-amber-400" />
-          <StatPill label="docas livres" value={freeDocas} color="text-emerald-600 dark:text-emerald-400" />
+          <StatPill label="ativos" value={allActive} color="text-signal-400" />
+          <StatPill label="carregando" value={loadingCount} color="text-sky-400" />
+          <StatPill label="descarregando" value={unloadingCount} color="text-violet-400" />
+          <StatPill label="aguardando" value={waitingCount} color="text-amber-400" />
+          <StatPill label="docas livres" value={freeDocas} color="text-emerald-400" />
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+          <div className="flex items-center gap-2 font-mono text-xs text-concrete-400">
             <LiveDot color={connError ? 'bg-red-400' : refreshing ? 'bg-amber-400' : connected ? 'bg-emerald-400' : 'bg-sky-400'} />
             <span>
               {connError
@@ -329,14 +326,14 @@ export default function YardBoard({ initialData }) {
             </span>
           </div>
           <div className="hidden flex-col items-end sm:flex">
-            <span className="font-mono text-lg font-black tabular-nums text-gray-900 dark:text-white">{formatClock(now)}</span>
-            <span className="text-[11px] capitalize text-gray-400 dark:text-gray-600">{formatDate(now)}</span>
+            <span className="font-mono text-2xl font-semibold tabular-nums text-white">{formatClock(now)}</span>
+            <span className="text-[11px] capitalize text-concrete-400">{formatDate(now)}</span>
           </div>
           <button
             onClick={fetchData}
             disabled={refreshing}
             title="Atualizar agora"
-            className="rounded-lg border border-gray-300 dark:border-gray-700 p-2 text-gray-500 dark:text-gray-400 transition hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-40"
+            className="border-2 border-white/20 p-2 text-concrete-300 transition hover:border-signal-400 hover:text-signal-400 disabled:opacity-40"
           >
             <svg className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none">
               <path d="M4 4v6h6M20 20v-6h-6M4.93 15A9 9 0 1 0 6 6.93" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -345,7 +342,7 @@ export default function YardBoard({ initialData }) {
           <button
             onClick={toggleFullscreen}
             title={fullscreen ? 'Sair do fullscreen' : 'Fullscreen'}
-            className="rounded-lg border border-gray-300 dark:border-gray-700 p-2 text-gray-500 dark:text-gray-400 transition hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-200"
+            className="border-2 border-white/20 p-2 text-concrete-300 transition hover:border-signal-400 hover:text-signal-400"
           >
             {fullscreen ? (
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -367,10 +364,10 @@ export default function YardBoard({ initialData }) {
           <section>
             <div className="mb-3 flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">Fila de espera</h2>
+                <span className="hazard h-4 w-7" aria-hidden="true" />
+                <h2 className="text-2xl font-bold uppercase tracking-[0.04em] text-ink dark:text-white">Fila de espera</h2>
               </div>
-              <span className="rounded-md bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:ring-amber-900">
+              <span className="bg-signal-400 px-2 py-0.5 font-display text-sm font-semibold uppercase tracking-[0.06em] text-ink">
                 {data.waitingQueue.length} veículo{data.waitingQueue.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -385,13 +382,13 @@ export default function YardBoard({ initialData }) {
         {/* ── docas grid ── */}
         <section>
           <div className="mb-3 flex items-center gap-3">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">Docas</h2>
-            <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
-            <span className="text-xs text-gray-400 dark:text-gray-600">{data?.docas?.length ?? 0} docas ativas</span>
+            <h2 className="text-2xl font-bold uppercase tracking-[0.04em] text-ink dark:text-white">Docas</h2>
+            <span className="h-0.5 flex-1 bg-ink dark:bg-concrete-700" />
+            <span className="stencil text-xs text-concrete-600 dark:text-concrete-400">{data?.docas?.length ?? 0} docas ativas</span>
           </div>
 
           {(data?.docas?.length ?? 0) === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-300 py-20 text-center dark:border-gray-700">
+            <div className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-concrete-300 py-20 text-center dark:border-concrete-700">
               <svg className="h-12 w-12 text-gray-200 dark:text-gray-800" viewBox="0 0 24 24" fill="none">
                 <path d="M2 20V9l10-6 10 6v11H2ZM9 20v-6h6v6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
               </svg>

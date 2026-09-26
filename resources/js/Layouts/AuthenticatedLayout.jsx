@@ -255,22 +255,21 @@ export default function AuthenticatedLayout({ header, children }) {
     <Link
       href={href}
       onClick={onNavigate}
-      className={`group relative flex min-h-10 items-center rounded-lg py-2 text-sm transition-colors duration-150 ${compact ? 'justify-center px-2' : 'gap-3 px-3'} ${
+      className={`group relative flex min-h-10 items-center py-2 font-display text-[15px] uppercase tracking-[0.06em] transition-colors duration-150 ${compact ? 'justify-center px-2' : 'gap-3 px-3'} ${
         active
-          ? 'bg-white/[0.09] font-semibold text-white ring-1 ring-inset ring-white/[0.08]'
-          : 'font-medium text-slate-400 hover:bg-white/[0.07] hover:text-white'
+          ? 'bg-signal-400 font-bold text-ink'
+          : 'font-medium text-concrete-300 hover:bg-white/[0.07] hover:text-white'
       }`}
       aria-current={active ? 'page' : undefined}
       aria-label={compact ? label : undefined}
       title={compact ? label : undefined}
     >
       {icon && (
-        <span className={`flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${active ? 'text-blue-300' : 'text-slate-500 group-hover:text-slate-200'}`}>
+        <span className={`flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${active ? 'text-ink' : 'text-concrete-500 group-hover:text-signal-400'}`}>
           <MenuIcon name={icon} className="h-4 w-4" />
         </span>
       )}
       {!compact && <span className="truncate">{label}</span>}
-      {active && !compact && <span className="absolute left-0 h-5 w-0.5 rounded-r bg-blue-400" />}
     </Link>
   );
 
@@ -292,10 +291,10 @@ export default function AuthenticatedLayout({ header, children }) {
             }
             toggleGroup(item.group);
           }}
-          className={`flex min-h-10 w-full items-center rounded-lg py-2 text-sm font-medium transition-colors ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
+          className={`flex min-h-10 w-full items-center py-2 font-display text-[15px] font-medium uppercase tracking-[0.06em] transition-colors ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
             item.active
-              ? 'bg-brand-500/15 text-brand-200'
-              : 'text-slate-400 hover:bg-white/[0.07] hover:text-white'
+              ? 'bg-white/[0.06] text-signal-300'
+              : 'text-concrete-300 hover:bg-white/[0.07] hover:text-white'
           }`}
           aria-expanded={isOpen}
           aria-label={compact ? item.label : undefined}
@@ -303,7 +302,7 @@ export default function AuthenticatedLayout({ header, children }) {
         >
           <span className="flex items-center gap-3">
             {item.icon && (
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-500">
+              <span className={`flex h-7 w-7 items-center justify-center ${item.active ? 'text-signal-400' : 'text-concrete-500'}`}>
                 <MenuIcon name={item.icon} className="h-4 w-4 shrink-0" />
               </span>
             )}
@@ -316,16 +315,16 @@ export default function AuthenticatedLayout({ header, children }) {
           )}
         </button>
         {isOpen && !compact && (
-          <div className="ml-5 mt-1 space-y-1 border-l border-slate-800 pl-3">
+          <div className="ml-6 mt-1 space-y-0.5 border-l-2 border-concrete-700 pl-3">
             {item.children.map((child) => (
               <Link
                 key={child.label}
                 href={child.href}
                 onClick={onNavigate}
-                className={`block rounded-lg px-3 py-2 text-sm transition ${
+                className={`-ml-[14px] block border-l-2 px-3 py-2 text-sm transition ${
                   child.active
-                    ? 'bg-brand-500/15 font-semibold text-brand-200'
-                    : 'text-slate-500 hover:bg-white/[0.05] hover:text-white'
+                    ? 'border-signal-400 font-semibold text-signal-300'
+                    : 'border-transparent text-concrete-400 hover:bg-white/[0.05] hover:text-white'
                 }`}
               >
                 {child.label}
@@ -342,7 +341,7 @@ export default function AuthenticatedLayout({ header, children }) {
       {menuSections.map((objSection, index) => (
         <div key={objSection.section ?? '_main'} className={compact && index > 0 ? 'border-t border-white/[0.06] pt-2' : ''}>
           {objSection.section && !compact && (
-            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+            <p className="stencil mb-2 px-3 text-[11px] text-concrete-500">
               {objSection.section}
             </p>
           )}
@@ -393,26 +392,27 @@ export default function AuthenticatedLayout({ header, children }) {
   }, [sidebarCollapsed]);
 
   return (
-    <div className="min-h-screen bg-[#f5f7fa] dark:bg-slate-950 lg:flex lg:h-screen lg:overflow-hidden">
-      <aside className={`relative hidden shrink-0 overflow-hidden border-r border-slate-800 bg-[#0a1424] transition-[width] duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? 'w-[88px]' : 'w-[280px]'}`}>
-        <div className={`relative border-b border-white/[0.06] py-5 ${sidebarCollapsed ? 'px-6' : 'px-5'}`}>
+    <div className="min-h-screen bg-concrete-100 dark:bg-concrete-950 lg:flex lg:h-screen lg:overflow-hidden">
+      <aside className={`relative hidden shrink-0 overflow-hidden border-r border-black bg-ink transition-[width] duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? 'w-[88px]' : 'w-[280px]'}`}>
+        <div className="hazard h-2 shrink-0" aria-hidden="true" />
+        <div className={`relative border-b border-white/[0.08] py-5 ${sidebarCollapsed ? 'px-6' : 'px-5'}`}>
           <Link href={route('dashboard')} aria-label="Ir para o painel">
             <BrandLogo inverse compact={sidebarCollapsed} />
           </Link>
 
           {company?.name && !isPlatformAdmin && (
-            <div className={`mt-5 flex items-center rounded-lg border border-white/[0.07] bg-white/[0.035] ${sidebarCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`} title={sidebarCollapsed ? company.name : undefined}>
+            <div className={`mt-5 flex items-center border border-white/[0.1] bg-white/[0.04] ${sidebarCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`} title={sidebarCollapsed ? company.name : undefined}>
               {company?.logo_url ? (
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white p-1.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-white p-1.5">
                   <img src={logoUrl} className="max-h-full max-w-full object-contain" alt="" />
                 </span>
               ) : (
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500/15 text-xs font-bold text-brand-300">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-white/10 font-display text-base font-bold text-signal-400">
                   {company.name.charAt(0).toUpperCase()}
                 </span>
               )}
               {!sidebarCollapsed && <span className="min-w-0">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-600">Ambiente</span>
+                <span className="stencil block text-[10px] text-concrete-500">Pátio</span>
                 <span className="block truncate text-sm font-semibold text-slate-200">{company.name}</span>
               </span>}
             </div>
@@ -429,7 +429,7 @@ export default function AuthenticatedLayout({ header, children }) {
             aria-expanded={showAccountMenu}
             aria-label={sidebarCollapsed ? `Abrir menu de ${user.name}` : undefined}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-sm font-semibold text-white">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-signal-400 font-display text-lg font-bold text-ink">
               {user.name.charAt(0).toUpperCase()}
             </span>
             {!sidebarCollapsed && <span className="min-w-0 flex-1">
@@ -464,7 +464,7 @@ export default function AuthenticatedLayout({ header, children }) {
       </aside>
 
       <div className="min-w-0 flex-1 lg:overflow-y-auto">
-        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
+        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b-2 border-ink bg-white px-4 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
           <Link href={route('dashboard')} className="lg:hidden" aria-label="Ir para o painel">
             <BrandLogo compact />
           </Link>
@@ -482,10 +482,10 @@ export default function AuthenticatedLayout({ header, children }) {
               </svg>
             </button>
             <div className="min-w-0">
-              <p className="truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
+              <p className="stencil truncate text-[11px] text-concrete-500 dark:text-concrete-400">
                 {currentNavigation.section || 'Central de operações'}
               </p>
-              <p className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+              <p className="truncate font-display text-lg font-semibold uppercase leading-tight tracking-[0.04em] text-ink dark:text-concrete-100">
                 {currentNavigation.parent ? `${currentNavigation.parent} · ${currentNavigation.label}` : currentNavigation.label}
               </p>
             </div>
@@ -519,7 +519,8 @@ export default function AuthenticatedLayout({ header, children }) {
         {showMobileMenu && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <button type="button" className="absolute inset-0 bg-slate-950/60" onClick={() => setShowMobileMenu(false)} aria-label="Fechar menu" />
-            <aside className="relative flex h-full w-[min(88vw,340px)] flex-col bg-[#07111f] shadow-2xl">
+            <aside className="relative flex h-full w-[min(88vw,340px)] flex-col bg-ink shadow-2xl">
+              <div className="hazard h-2 shrink-0" aria-hidden="true" />
               <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-5">
                 <BrandLogo inverse />
                 <button type="button" onClick={() => setShowMobileMenu(false)} className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-white/10 hover:text-white" aria-label="Fechar menu">
@@ -529,7 +530,7 @@ export default function AuthenticatedLayout({ header, children }) {
               <NavigationContent onNavigate={() => setShowMobileMenu(false)} />
               <div className="border-t border-white/[0.06] p-4">
                 <div className="mb-3 flex items-center gap-3 px-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-sm font-bold text-white">{user.name.charAt(0).toUpperCase()}</span>
+                  <span className="flex h-9 w-9 items-center justify-center bg-signal-400 font-display text-lg font-bold text-ink">{user.name.charAt(0).toUpperCase()}</span>
                   <span className="min-w-0"><span className="block truncate text-sm font-semibold text-white">{user.name}</span><span className="block text-xs text-slate-500">{roleLabel}</span></span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">

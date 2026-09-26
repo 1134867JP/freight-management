@@ -1,48 +1,90 @@
+@import '@fontsource/barlow/latin-400.css';
+@import '@fontsource/barlow/latin-500.css';
+@import '@fontsource/barlow/latin-600.css';
+@import '@fontsource/barlow/latin-700.css';
+@import '@fontsource/barlow-condensed/latin-500.css';
+@import '@fontsource/barlow-condensed/latin-600.css';
+@import '@fontsource/barlow-condensed/latin-700.css';
+@import '@fontsource/barlow-condensed/latin-800.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+@import '@fontsource/ibm-plex-mono/latin-600.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html {
   font-size: 15px;
-  background: #f5f7fa;
+  background: #edebe6;
   color-scheme: light;
 }
 
 html.dark {
-  background: #020617;
+  background: #121211;
   color-scheme: dark;
 }
 
 body {
   min-width: 320px;
-  background: #f5f7fa;
-  color: #0f172a;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background: #edebe6;
+  color: #141413;
+  font-feature-settings: "tnum" 0;
   -webkit-font-smoothing: antialiased;
 }
 
 .dark body {
-  background: #020617;
-  color: #e2e8f0;
+  background: #121211;
+  color: #edebe6;
 }
 
 ::selection {
-  background: #bfdbfe;
-  color: #172554;
+  background: #f5c400;
+  color: #141413;
 }
 
-.dark ::selection {
-  background: #1d4ed8;
-  color: white;
+@layer base {
+  h1,
+  h2 {
+    font-family: theme('fontFamily.display');
+    letter-spacing: 0.01em;
+  }
+
+  h1 {
+    text-transform: uppercase;
+  }
 }
 
 @layer components {
+  /* Rótulo de sinalização: condensado, caixa alta, espaçado. */
+  .stencil {
+    @apply font-display font-semibold uppercase tracking-[0.12em];
+  }
+
+  /* Faixa zebrada amarelo/preto usada como marcador de atenção. */
+  .hazard {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      #f5c400 0 8px,
+      #141413 8px 16px
+    );
+  }
+
+  /* Placa de veículo no padrão Mercosul. */
+  .plate {
+    @apply relative inline-flex items-center justify-center border-2 border-ink bg-white px-2 pb-0.5 pt-2 font-mono font-semibold uppercase tracking-[0.14em] text-ink;
+  }
+
+  .plate::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-1.5 bg-[#1f4e9c];
+  }
+
   .table-shell table {
     @apply w-full text-left text-sm;
   }
 
   .table-shell thead {
-    @apply border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400;
+    @apply border-b-2 border-ink bg-concrete-100 font-display text-xs font-semibold uppercase tracking-[0.1em] text-ink dark:border-signal-400 dark:bg-concrete-950 dark:text-concrete-200;
   }
 
   .table-shell th {
@@ -50,15 +92,15 @@ body {
   }
 
   .table-shell tbody {
-    @apply divide-y divide-slate-100 dark:divide-slate-800;
+    @apply divide-y divide-concrete-200 dark:divide-concrete-800;
   }
 
   .table-shell td {
-    @apply px-5 py-3.5 text-slate-600 dark:text-slate-300;
+    @apply px-5 py-3.5 text-concrete-700 dark:text-concrete-300;
   }
 
   .table-shell tbody tr {
-    @apply transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/45;
+    @apply transition-colors hover:bg-signal-50 dark:hover:bg-concrete-800/60;
   }
 }
 
@@ -99,21 +141,20 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #c5c1b8;
   border: 2px solid transparent;
   background-clip: padding-box;
-  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #9b968c;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #3e3c38;
   background-clip: padding-box;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+  background: #57544e;
 }

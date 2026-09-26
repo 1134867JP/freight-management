@@ -5,8 +5,8 @@ function Card({ children, className = '' }) {
   return (
     <section
       className={[
-        'rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]',
-        'dark:border-slate-800 dark:bg-slate-900',
+        'rounded-sm border border-concrete-300 bg-white',
+        'dark:border-concrete-800 dark:bg-concrete-900',
         className,
       ].filter(Boolean).join(' ')}
     >
@@ -17,7 +17,7 @@ function Card({ children, className = '' }) {
 
 Card.Header = function CardHeader({ children, className = '' }) {
   return (
-    <div className={['border-b border-slate-200 px-5 py-4 dark:border-slate-800', className].filter(Boolean).join(' ')}>
+    <div className={['border-b border-concrete-200 px-5 py-4 dark:border-concrete-800 [&_h2]:text-lg [&_h2]:uppercase [&_h2]:tracking-[0.04em]', className].filter(Boolean).join(' ')}>
       {children}
     </div>
   );

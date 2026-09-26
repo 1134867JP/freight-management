@@ -39,13 +39,13 @@ export default function ModalShell({
     >
       <div
         ref={panelRef}
-        className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900 ${maxWidthClass}`}
+        className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-sm border-2 border-ink bg-white shadow-xl dark:border-concrete-600 dark:bg-concrete-900 ${maxWidthClass}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-          <h3 id="modal-title" className="text-base font-semibold text-slate-950 dark:text-white">{title}</h3>
+        <div className="flex shrink-0 items-center justify-between border-b-2 border-ink bg-signal-400 px-5 py-3.5 text-ink dark:border-concrete-600">
+          <h3 id="modal-title" className="font-display text-xl font-bold uppercase tracking-[0.04em] text-ink">{title}</h3>
           <IconButton
             icon={(
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -54,6 +54,7 @@ export default function ModalShell({
             )}
             label="Fechar"
             size="sm"
+            className="!border-transparent !bg-transparent !text-ink hover:!bg-black/10"
             onClick={onClose}
           />
         </div>

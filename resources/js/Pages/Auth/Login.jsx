@@ -23,8 +23,8 @@ export default function Login({ status, canResetPassword }) {
       <Head title="Entrar" />
 
       <div className="mb-7">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Acesso ao sistema</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-[-0.025em] text-slate-950">Entrar no CargoHub</h1>
+        <p className="stencil text-xs text-slate-500">Acesso ao sistema</p>
+        <h1 className="mt-2 text-4xl font-bold leading-none text-slate-950">Entrar no CargoHub</h1>
         <p className="mt-2 text-sm leading-6 text-slate-500">Informe suas credenciais para continuar.</p>
       </div>
 

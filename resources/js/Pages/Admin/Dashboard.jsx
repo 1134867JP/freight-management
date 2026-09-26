@@ -43,14 +43,14 @@ function OccupancyChart({ occupancy = [] }) {
           <h2 className="font-bold text-slate-900 dark:text-white">Ocupação dos próximos 7 dias</h2>
           <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Agendamentos ativos por data</p>
         </div>
-        <Link href={route('reports.admin.timeslots')} className="text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400">
+        <Link href={route('reports.admin.timeslots')} className="stencil text-sm text-ink underline decoration-signal-400 decoration-2 underline-offset-4 hover:bg-signal-400 dark:text-signal-400 dark:hover:text-ink">
           Abrir relatório
         </Link>
       </Card.Header>
       <Card.Content className="pb-4">
         {!hasOccupancy ? (
-          <div className="flex h-56 flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 text-center dark:border-slate-700 dark:bg-slate-950/40">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-brand-700 dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex h-56 flex-col items-center justify-center border-2 border-dashed border-concrete-300 px-6 text-center dark:border-concrete-700">
+            <span className="flex h-10 w-10 items-center justify-center bg-ink text-signal-400">
               <Icon name="calendar" className="h-5 w-5" />
             </span>
             <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-200">Nenhum agendamento nos próximos 7 dias</p>
@@ -66,15 +66,15 @@ function OccupancyChart({ occupancy = [] }) {
               const height = item.count === 0 ? 4 : Math.max((item.count / maxCount) * 100, 10);
               return (
                 <div key={item.date} className="flex h-full min-w-0 flex-col justify-end gap-2 text-center">
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.count}</span>
-                  <div className="relative flex min-h-0 flex-1 items-end overflow-hidden rounded-md bg-slate-100 dark:bg-slate-800">
+                  <span className="font-display text-lg font-bold leading-none text-ink dark:text-white">{item.count}</span>
+                  <div className="relative flex min-h-0 flex-1 items-end overflow-hidden border-b-2 border-ink bg-[repeating-linear-gradient(0deg,transparent_0_23px,rgb(20_20_19/0.06)_23px_24px)] dark:border-signal-400 dark:bg-[repeating-linear-gradient(0deg,transparent_0_23px,rgb(255_255_255/0.06)_23px_24px)]">
                     <div
-                      className="w-full rounded-md bg-brand-700 transition-[height] duration-500 dark:bg-brand-500"
+                      className="w-full bg-ink transition-[height] duration-500 hover:bg-signal-400 dark:bg-signal-400 dark:hover:bg-signal-300"
                       style={{ height: `${height}%` }}
                       title={`${item.count} agendamento(s)`}
                     />
                   </div>
-                  <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400 sm:text-xs">
+                  <div className="stencil truncate text-[11px] text-concrete-600 dark:text-concrete-400 sm:text-xs">
                     {date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit' }).replace('.', '')}
                   </div>
                 </div>
@@ -91,7 +91,7 @@ function CapacitySummary({ stats }) {
   const total = Math.max(Number(stats?.total_timeslots ?? 0), 1);
   const rows = [
     { label: 'Disponíveis', value: stats?.available_timeslots ?? 0, bar: 'bg-emerald-500' },
-    { label: 'Reservados', value: stats?.reserved_timeslots ?? 0, bar: 'bg-brand-500' },
+    { label: 'Reservados', value: stats?.reserved_timeslots ?? 0, bar: 'bg-ink dark:bg-signal-400' },
     { label: 'Lotados', value: stats?.full_timeslots ?? 0, bar: 'bg-amber-500' },
   ];
 
@@ -105,16 +105,16 @@ function CapacitySummary({ stats }) {
         {rows.map((row) => (
           <div key={row.label}>
             <div className="mb-2 flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-600 dark:text-slate-300">{row.label}</span>
-              <span className="font-bold text-slate-900 dark:text-white">{row.value}</span>
+              <span className="stencil text-sm text-concrete-700 dark:text-concrete-300">{row.label}</span>
+              <span className="font-display text-2xl font-bold leading-none text-ink dark:text-white">{row.value}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-              <div className={`h-full rounded-full ${row.bar}`} style={{ width: `${Math.min((Number(row.value) / total) * 100, 100)}%` }} />
+            <div className="h-3 overflow-hidden bg-concrete-100 dark:bg-concrete-800">
+              <div className={`h-full ${row.bar}`} style={{ width: `${Math.min((Number(row.value) / total) * 100, 100)}%` }} />
             </div>
           </div>
         ))}
 
-        <Link href={route('timeslots.index')} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-200 hover:text-brand-700 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300 dark:hover:border-brand-900 dark:hover:text-brand-300">
+        <Link href={route('timeslots.index')} className="stencil flex items-center justify-between border-2 border-ink px-4 py-3 text-sm text-ink transition-colors hover:bg-signal-400 dark:border-concrete-600 dark:text-concrete-100 dark:hover:border-signal-400 dark:hover:bg-signal-400 dark:hover:text-ink">
           Gerenciar disponibilidade
           <span aria-hidden="true">→</span>
         </Link>
@@ -144,20 +144,20 @@ export default function Dashboard({ stats, occupancy }) {
 
       <div className="py-6">
         <div className="mx-auto max-w-[1600px] space-y-6 px-4 sm:px-6 lg:px-8">
-          <section className="flex flex-col gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Visão geral</p>
-              <h1 className="mt-1 text-2xl font-bold tracking-[-0.025em] text-slate-950 dark:text-white">Painel operacional</h1>
+          <section className="flex flex-col gap-5 border-b-2 border-ink pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-concrete-700">
+            <div className="border-l-[10px] border-signal-400 pl-4">
+              <p className="stencil text-xs text-slate-500 dark:text-slate-400">Visão geral</p>
+              <h1 className="mt-1 text-5xl font-bold leading-none text-ink dark:text-white">Painel operacional</h1>
               <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
                 {greeting()}, {firstName}. Resumo de capacidade, ocupação e atividades da operação.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Link href={route('freights.approvalList')} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              <Link href={route('freights.approvalList')} className="stencil inline-flex min-h-11 items-center justify-center border-2 border-ink bg-white px-4 py-2 text-base text-ink transition-colors hover:bg-concrete-100 dark:border-concrete-500 dark:bg-transparent dark:text-concrete-100 dark:hover:bg-concrete-800">
                 Ver fretes
               </Link>
-              <Link href={route('timeslots.index')} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-brand-700 bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:border-brand-800 hover:bg-brand-800">
+              <Link href={route('timeslots.index')} className="stencil inline-flex min-h-11 items-center justify-center gap-2 border-2 border-ink bg-signal-400 px-4 py-2 text-base text-ink transition-colors hover:bg-signal-300">
                 <Icon name="calendar" className="h-4 w-4" />
                 Nova janela
               </Link>
