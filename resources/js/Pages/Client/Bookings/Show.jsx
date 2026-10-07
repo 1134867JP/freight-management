@@ -226,6 +226,17 @@ export default function Show({ booking, justConfirmed = 0, trucks = [], drivers 
             </p>
           </header>
 
+          {booking.net_weight != null && (
+            <div className="flex items-baseline justify-between gap-4 rounded-2xl border border-pinho-200 bg-pinho-50 px-5 py-4 dark:border-pinho-900 dark:bg-pinho-950/40">
+              <p className="text-[15px] font-semibold text-pinho-900 dark:text-pinho-100">
+                {booking.operation_type === 'load' ? 'Peso líquido carregado' : 'Peso líquido descarregado'}
+              </p>
+              <p className="font-display text-[26px] font-bold tabular-nums text-pinho-800 dark:text-pinho-200">
+                {formatTons(booking.net_weight)}
+              </p>
+            </div>
+          )}
+
           {pending.length > 0 && (
             <div className="flex items-start gap-3.5 rounded-2xl border border-ocre-200 bg-ocre-50 p-4 sm:p-5 dark:border-ocre-900 dark:bg-ocre-950/30">
               <IconTile tone="warning">

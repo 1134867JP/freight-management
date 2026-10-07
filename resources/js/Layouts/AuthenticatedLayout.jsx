@@ -429,11 +429,7 @@ export default function AuthenticatedLayout({ header, children }) {
   return (
     <div className="relative isolate min-h-screen text-areia-900 dark:text-areia-100 lg:flex lg:h-screen lg:overflow-hidden">
       {/* Fundo: luz suave nas cores da marca, base para o vidro. */}
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[#F1ECE2] dark:bg-[#121512]" aria-hidden="true">
-        <div className="absolute -left-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-pinho-300/45 blur-[110px] dark:bg-pinho-700/25" />
-        <div className="absolute -right-32 top-1/3 h-[30rem] w-[30rem] rounded-full bg-ocre-200/55 blur-[120px] dark:bg-ocre-700/15" />
-        <div className="absolute bottom-[-12rem] left-1/3 h-[28rem] w-[28rem] rounded-full bg-aco-200/40 blur-[110px] dark:bg-aco-800/20" />
-      </div>
+      <div className="app-backdrop pointer-events-none fixed inset-0 -z-10" aria-hidden="true" />
 
       <aside className={`glass relative m-3 mr-0 hidden shrink-0 flex-col rounded-3xl transition-[width] duration-200 lg:flex ${sidebarCollapsed ? 'w-[76px]' : 'w-[256px]'}`}>
         <div className={`flex items-center pb-2 pt-4 ${sidebarCollapsed ? 'flex-col gap-3 px-3' : 'justify-between gap-2 pl-4 pr-3'}`}>

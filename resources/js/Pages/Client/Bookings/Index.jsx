@@ -7,7 +7,7 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import IconTile from '@/Components/UI/IconTile';
 import PageHeader from '@/Components/UI/PageHeader';
 import StatusBadge from '@/Components/UI/StatusBadge';
-import { formatClock, dateParts } from '@/Features/Quota/format';
+import { formatClock, formatTons, dateParts } from '@/Features/Quota/format';
 import { Head, Link, router } from '@inertiajs/react';
 
 const TABS = [
@@ -78,6 +78,11 @@ function BookingItem({ booking }) {
 
           <div className="mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-areia-600 dark:text-areia-400">
             {plate ? <span className="plate text-[13px]">{plate}</span> : <span>Veículo a informar</span>}
+            {booking.net_weight != null && (
+              <span className="font-semibold text-pinho-800 dark:text-pinho-200">
+                Peso líquido {formatTons(booking.net_weight)}
+              </span>
+            )}
             <span className="inline-flex items-center gap-2">
               <span className="h-1.5 w-14 overflow-hidden rounded-full bg-areia-200 dark:bg-areia-700" aria-hidden="true">
                 <span className={`block h-full rounded-full ${docsDone ? 'bg-pinho-600 dark:bg-pinho-400' : 'bg-ocre-400'}`} style={{ width: `${docsPct}%` }} />

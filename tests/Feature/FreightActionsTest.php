@@ -273,4 +273,77 @@ class FreightActionsTest extends TestCase
 
         app(FinalizeOperation::class)->execute($freight);
     }
+
+    public function test_finalize_unload_directly_from_reservation_without_gate(): void
+    {
+        $this->company->update(['pilot_mode' => true]);
+
+        $freight = Freight::create([
+            'company_id' => $this->company->id,
+            'user_id' => $this->client->id,
+            'timeslot_id' => $this->timeslot->id,
+            'operation_type' => 'unload',
+            'truck_plate' => 'ABC1234',
+            'driver_name' => 'Motorista',
+            'cargo_description' => 'Carga',
+            'status' => 'reserved',
+        ]);
+
+        app(FinalizeOperation::class)->execute($freight, 32000, 27500);
+
+        $freight->refresh();
+        $this->assertSame('completed', $freight->status->value);
+        $this->assertEquals(27500, (float) $freight->net_weight);
+        $this->assertNotNull($freight->arrived_at);
+        $this->assertNotNull($freight->operation_started_at);
+        $this->assertNotNull($freight->completed_at);
+    }
+
+    public function test_finalize_from_reservation_requires_gate_checkin_when_company_uses_queues(): void
+    {
+        $this->company->update(['pilot_mode' => false, 'uses_queues' => true]);
+
+        $freight = Freight::create([
+            'company_id' => $this->company->id,
+            'user_id' => $this->client->id,
+            'timeslot_id' => $this->timeslot->id,
+            'operation_type' => 'unload',
+            'truck_plate' => 'ABC1234',
+            'driver_name' => 'Motorista',
+            'cargo_description' => 'Carga',
+            'status' => 'reserved',
+        ]);
+
+        try {
+            app(FinalizeOperation::class)->execute($freight, 32000, 27500);
+            $this->fail('Deveria exigir o check-in na portaria.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('check-in', $e->getMessage());
+        }
+
+        $this->assertSame('reserved', $freight->fresh()->status->value);
+    }
+
+    public function test_finalize_rejects_net_weight_above_gross_weight(): void
+    {
+        $freight = Freight::create([
+            'company_id' => $this->company->id,
+            'user_id' => $this->client->id,
+            'timeslot_id' => $this->timeslot->id,
+            'operation_type' => 'unload',
+            'truck_plate' => 'ABC1234',
+            'driver_name' => 'Motorista',
+            'cargo_description' => 'Carga',
+            'status' => 'unloading',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->patch(route('freights.finalize-operation', $freight), [
+                'gross_weight' => 20000,
+                'net_weight' => 25000,
+            ])
+            ->assertSessionHasErrors('net_weight');
+
+        $this->assertSame('unloading', $freight->fresh()->status->value);
+    }
 }

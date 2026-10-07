@@ -6,6 +6,7 @@ import FormField from '@/Components/UI/FormField';
 import Button from '@/Components/UI/Button';
 import SectionTitle from '@/Components/UI/SectionTitle';
 import { plural } from '@/Features/Quota/format';
+import QuickClientModal from '@/Features/Quota/QuickClientModal';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 const DEFAULT_HOURS = [
@@ -127,6 +128,7 @@ export default function Form({ quota = null, clients = [], products = [], destin
 
   const [audience, setAudience] = useState(initialAllocations.length > 0 ? 'selected' : 'all');
   const [clientSearch, setClientSearch] = useState('');
+  const [quickClientOpen, setQuickClientOpen] = useState(false);
 
   const form = useForm({
     product_name: quota?.product_name ?? '',
@@ -187,6 +189,17 @@ export default function Form({ quota = null, clients = [], products = [], destin
     }
   };
 
+  const selectCreatedClient = (client) => {
+    setData((current) =>
+      current.allocations.some((a) => a.user_id === client.id)
+        ? current
+        : {
+            ...current,
+            allocations: [...current.allocations, { user_id: client.id, quantity: '' }],
+          },
+    );
+  };
+
   const setClientQuantity = (userId, quantity) => {
     setData(
       'allocations',
@@ -232,7 +245,7 @@ export default function Form({ quota = null, clients = [], products = [], destin
   const submitLabel = isEdit ? 'Salvar alterações' : 'Publicar cotas';
 
   const summary = canPreview
-    ? `${plural(total, 'carga', 'cargas')} · ${data.product_name || 'Produto'} → ${data.destination || 'Destino'}`
+    ? `${plural(total, 'caminhão', 'caminhões')} · ${data.product_name || 'Produto'} → ${data.destination || 'Destino'}`
     : 'Preencha produto, destino e quantidade';
 
   const fieldClass = 'mt-1 block w-full';
@@ -347,7 +360,8 @@ export default function Form({ quota = null, clients = [], products = [], destin
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormField
                       id="total_quantity"
-                      label="Quantidade de cargas"
+                      label="Capacidade (caminhões)"
+                      hint="Total de caminhões da cota. Cada agendamento usa 1."
                       error={errors.total_quantity}
                       required
                     >
@@ -364,9 +378,9 @@ export default function Form({ quota = null, clients = [], products = [], destin
                     </FormField>
                     <FormField
                       id="expected_weight_tons"
-                      label="Toneladas por carga"
+                      label="Toneladas por caminhão"
                       error={errors.expected_weight_tons}
-                      hint="Opcional. Peso esperado de cada carga."
+                      hint="Opcional. Peso esperado de cada caminhão."
                     >
                       <input
                         id="expected_weight_tons"
@@ -452,9 +466,9 @@ export default function Form({ quota = null, clients = [], products = [], destin
                 <div>
                   <FormField
                     id="slot_capacity"
-                    label="Veículos por horário"
+                    label="Caminhões por horário"
                     error={errors.slot_capacity}
-                    hint="Opcional. Se ficar vazio, calculamos para distribuir todas as cargas."
+                    hint="Opcional. Se ficar vazio, calculamos para distribuir todos os caminhões."
                     className="max-w-xs"
                   >
                     <input
@@ -499,7 +513,7 @@ export default function Form({ quota = null, clients = [], products = [], destin
                         <>
                           <p>
                             <strong className="tabular-nums">{total}</strong>{' '}
-                            {total === 1 ? 'carga' : 'cargas'} em{' '}
+                            {total === 1 ? 'caminhão' : 'caminhões'} em{' '}
                             <strong className="tabular-nums">{days}</strong>{' '}
                             {days === 1 ? 'dia' : 'dias'} ×{' '}
                             <strong className="tabular-nums">{hoursCount}</strong>{' '}
@@ -507,7 +521,7 @@ export default function Form({ quota = null, clients = [], products = [], destin
                             <strong className="tabular-nums">{windows}</strong>{' '}
                             {windows === 1 ? 'janela' : 'janelas'} ·{' '}
                             <strong className="tabular-nums">{capacity}</strong>{' '}
-                            {capacity === 1 ? 'veículo' : 'veículos'} por horário
+                            {capacity === 1 ? 'caminhão' : 'caminhões'} por horário
                           </p>
                           {capacityTooLow && (
                             <p className="mt-1 font-semibold">
@@ -517,8 +531,8 @@ export default function Form({ quota = null, clients = [], products = [], destin
                         </>
                       ) : (
                         <p>
-                          Informe a quantidade, o período e os horários para ver como as cargas
-                          serão distribuídas.
+                          Informe a quantidade, o período e os horários para ver como os caminhões
+                          serão distribuídos.
                         </p>
                       )}
                     </div>
@@ -555,7 +569,7 @@ export default function Form({ quota = null, clients = [], products = [], destin
                     id="max_per_client"
                     label="Limite por cliente"
                     error={errors.max_per_client}
-                    hint="Opcional. Máximo de cargas que um mesmo cliente pode reservar."
+                    hint="Opcional. Máximo de caminhões que um mesmo cliente pode agendar."
                     className="mt-3 max-w-xs"
                   >
                     <input
@@ -583,6 +597,13 @@ export default function Form({ quota = null, clients = [], products = [], destin
                       <span className="text-sm text-areia-600 dark:text-areia-400">
                         {plural(data.allocations.length, 'selecionado', 'selecionados')}
                       </span>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setQuickClientOpen(true)}
+                      >
+                        Cadastrar cliente
+                      </Button>
                     </div>
 
                     <ul className="mt-3 max-h-80 divide-y divide-areia-200 overflow-y-auto rounded-lg border border-areia-200 dark:divide-areia-800 dark:border-areia-800">
@@ -636,7 +657,7 @@ export default function Form({ quota = null, clients = [], products = [], destin
                       })}
                     </ul>
                     <p className="mt-2 text-sm text-areia-600 dark:text-areia-400">
-                      Deixe o saldo vazio para não limitar as cargas daquele cliente.
+                      Deixe o saldo vazio para não limitar os caminhões daquele cliente.
                     </p>
                     {allocationErrors.length > 0 && (
                       <p
@@ -729,6 +750,11 @@ export default function Form({ quota = null, clients = [], products = [], destin
           </div>
         </form>
       </div>
+      <QuickClientModal
+        open={quickClientOpen}
+        onClose={() => setQuickClientOpen(false)}
+        onCreated={selectCreatedClient}
+      />
     </AuthenticatedLayout>
   );
 }

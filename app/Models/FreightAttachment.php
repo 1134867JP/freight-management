@@ -14,7 +14,7 @@ class FreightAttachment extends Model
     /** Comprovante de pesagem (ticket de balança). */
     public const TYPE_WEIGHT_TICKET = 'weight_ticket';
 
-    /** Comprovante de entrega/canhoto e demais comprovantes enviados pelo cliente. */
+    /** Anexo livre: canhoto, comprovantes, fotos e demais arquivos (cliente ou operação). */
     public const TYPE_RECEIPT = 'receipt';
 
     public const CLIENT_UPLOADABLE_TYPES = [self::TYPE_INVOICE, self::TYPE_WEIGHT_TICKET, self::TYPE_RECEIPT];
@@ -22,7 +22,7 @@ class FreightAttachment extends Model
     public const LABELS = [
         self::TYPE_INVOICE => 'Nota fiscal',
         self::TYPE_WEIGHT_TICKET => 'Comprovante de peso',
-        self::TYPE_RECEIPT => 'Comprovante',
+        self::TYPE_RECEIPT => 'Anexo',
         self::TYPE_ATTACHMENT => 'Documento da operação',
     ];
 
