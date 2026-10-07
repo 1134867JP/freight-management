@@ -46,3 +46,16 @@ export function formatTons(kg, emptyValue = '—') {
 export function plural(count, singular, pluralForm) {
   return `${count} ${count === 1 ? singular : pluralForm}`;
 }
+
+/** Data/hora ISO → partes para blocos de calendário ({ day:"08", month:"out", short:"08/10", weekday:"quarta-feira" }). */
+export function dateParts(iso) {
+  if (!iso) return null;
+  const date = new Date(iso);
+  const fmt = (options) => new Intl.DateTimeFormat(LOCALE, options).format(date);
+  return {
+    day: fmt({ day: '2-digit' }),
+    month: fmt({ month: 'short' }).replace('.', ''),
+    short: fmt({ day: '2-digit', month: '2-digit' }),
+    weekday: fmt({ weekday: 'long' }),
+  };
+}

@@ -11,12 +11,33 @@ const OTHER = '__other';
 
 function StepTitle({ n, children }) {
   return (
-    <h2 className="mb-3 flex items-center gap-2.5 text-lg font-bold text-areia-900 dark:text-white">
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-pinho-700 text-sm font-bold text-white dark:bg-pinho-400 dark:text-areia-950">
+    <h2 className="mb-4 flex items-center gap-3 font-display text-lg font-bold text-areia-900 dark:text-white">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pinho-700 text-sm font-bold text-white dark:bg-pinho-400 dark:text-areia-950">
         {n}
       </span>
       {children}
     </h2>
+  );
+}
+
+/* Barrinhas de capacidade: cada traço é uma vaga (limitado a 8 para não poluir). */
+function CapacityDots({ free, capacity, active, muted }) {
+  const total = Math.min(Math.max(Number(capacity) || 0, 0), 8);
+  if (total === 0) return null;
+  const filled = capacity > 8 ? Math.round((free / capacity) * total) : Math.min(free, total);
+  return (
+    <span className="mt-2 flex gap-1" aria-hidden="true">
+      {Array.from({ length: total }).map((_, index) => (
+        <span
+          key={index}
+          className={`h-1.5 flex-1 rounded-full ${
+            index < filled && !muted
+              ? active ? 'bg-pinho-700 dark:bg-pinho-300' : 'bg-pinho-400 dark:bg-pinho-500'
+              : 'bg-areia-200 dark:bg-areia-700'
+          }`}
+        />
+      ))}
+    </span>
   );
 }
 
@@ -111,32 +132,35 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
   return (
     <AuthenticatedLayout>
       <Head title="Agendar cota" />
-      <div className="py-6">
-        <form onSubmit={submit} className="mx-auto max-w-3xl space-y-8 px-4 sm:px-6 lg:px-8">
+      <div>
+        <form onSubmit={submit} className="mx-auto max-w-3xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
           <FlashMessages />
 
           <div>
-            <Link href={route('client.quotas')} className="text-[15px] font-semibold text-pinho-700 hover:underline dark:text-pinho-300">
-              ← Cotas disponíveis
+            <Link href={route('client.quotas')} className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-pinho-700 hover:underline dark:text-pinho-300">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m15 6-6 6 6 6" />
+              </svg>
+              Cotas disponíveis
             </Link>
           </div>
 
           {/* (a) Resumo */}
-          <header className="rounded-2xl border border-pinho-200 bg-pinho-50 p-5 dark:border-pinho-900 dark:bg-pinho-950/40">
-            <p className="text-[22px] font-bold leading-snug text-pinho-900 dark:text-pinho-100">
-              Você possui {plural(available, 'cota disponível', 'cotas disponíveis')}
+          <header className="rounded-3xl bg-[#10241B] p-5 text-white shadow-[0_12px_32px_-18px_rgba(16,36,27,0.6)] sm:p-6 dark:bg-[#0D1A14] dark:ring-1 dark:ring-white/10">
+            <p className="font-display text-[22px] font-bold leading-snug sm:text-[26px]">
+              Você possui <span className="text-ocre-300">{plural(available, 'cota disponível', 'cotas disponíveis')}</span>
             </p>
-            <p className="mt-2 text-lg font-semibold text-areia-900 dark:text-white">
+            <p className="mt-3 text-lg font-semibold">
               {quota.product_name} → {quota.destination}
             </p>
-            <p className="mt-0.5 text-[15px] text-areia-700 dark:text-areia-300">
+            <p className="mt-0.5 text-[15px] text-white/70">
               {quota.operation_label} · {formatPeriod(quota.starts_on, quota.ends_on)}
               {quota.expected_weight_kg ? ` · ${formatTons(quota.expected_weight_kg)} por carga` : ''}
             </p>
           </header>
 
           {available === 0 && (
-            <p className="rounded-lg border border-ocre-300 bg-ocre-50 p-4 text-[15px] font-medium text-ocre-900 dark:border-ocre-800 dark:bg-ocre-950/30 dark:text-ocre-100">
+            <p className="rounded-2xl border border-ocre-200 bg-ocre-50 p-4 text-[15px] font-medium text-ocre-900 dark:border-ocre-900 dark:bg-ocre-950/30 dark:text-ocre-100">
               Você não tem saldo nesta cota no momento.
             </p>
           )}
@@ -147,10 +171,11 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
             {days.length === 0 ? (
               <p className="text-[15px] text-areia-600 dark:text-areia-400">Nenhum horário disponível nesta cota.</p>
             ) : (
-              <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0" role="radiogroup" aria-label="Dia">
+              <div className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0" role="radiogroup" aria-label="Dia">
                 {days.map((item) => {
                   const disabled = item.free === 0;
                   const active = item.date === selectedDate;
+                  const [weekday, ...dateRest] = formatWeekdayDate(item.date).split(' ');
                   return (
                     <button
                       key={item.date}
@@ -160,17 +185,18 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
                       disabled={disabled}
                       onClick={() => pickDate(item.date)}
                       className={[
-                        'flex min-h-[64px] shrink-0 flex-col items-center justify-center rounded-xl border px-4 py-2 text-center transition',
-                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-400',
+                        'flex min-h-[84px] min-w-[88px] shrink-0 flex-col items-center justify-center rounded-2xl border px-4 py-3 text-center transition',
+                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-400 focus-visible:ring-offset-2',
                         active
-                          ? 'border-pinho-700 bg-pinho-700 text-white dark:border-pinho-400 dark:bg-pinho-400 dark:text-areia-950'
+                          ? 'border-pinho-700 bg-pinho-700 text-white shadow-md dark:border-pinho-400 dark:bg-pinho-400 dark:text-areia-950'
                           : disabled
-                            ? 'cursor-not-allowed border-areia-200 bg-areia-100 text-areia-400 line-through dark:border-areia-800 dark:bg-areia-900 dark:text-areia-600'
-                            : 'border-areia-300 bg-white text-areia-900 hover:border-pinho-500 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-100',
+                            ? 'cursor-not-allowed border-areia-200 bg-areia-100 text-areia-400 dark:border-areia-800 dark:bg-areia-900 dark:text-areia-600'
+                            : 'border-areia-200 bg-white text-areia-900 hover:border-pinho-400 hover:bg-pinho-50 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-100 dark:hover:bg-areia-800',
                       ].join(' ')}
                     >
-                      <span className="text-[15px] font-bold capitalize">{formatWeekdayDate(item.date)}</span>
-                      <span className="text-[13px] font-medium opacity-90">
+                      <span className="text-[12px] font-bold uppercase tracking-wide opacity-80">{weekday.replace('.', '')}</span>
+                      <span className="font-display text-xl font-bold leading-tight tabular-nums">{dateRest.join(' ')}</span>
+                      <span className="text-[12px] font-medium opacity-90">
                         {disabled ? 'Sem vagas' : plural(item.free, 'vaga', 'vagas')}
                       </span>
                     </button>
@@ -184,7 +210,7 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
           {day && (
             <section>
               <StepTitle n={2}>Escolha o horário</StepTitle>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Horário">
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3" role="radiogroup" aria-label="Horário">
                 {day.slots.map((item) => {
                   const full = item.free === 0;
                   const active = item.id === data.timeslot_id;
@@ -197,19 +223,20 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
                       disabled={full}
                       onClick={() => setData('timeslot_id', item.id)}
                       className={[
-                        'flex min-h-[56px] items-center justify-between rounded-xl border px-4 py-3 text-left transition',
-                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-400',
+                        'flex min-h-[76px] flex-col justify-center rounded-xl border px-4 py-3 text-left transition',
+                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-400 focus-visible:ring-offset-2',
                         active
                           ? 'border-pinho-700 bg-pinho-50 ring-2 ring-pinho-700 dark:border-pinho-400 dark:bg-pinho-950/50 dark:ring-pinho-400'
                           : full
-                            ? 'cursor-not-allowed border-areia-200 bg-areia-100 text-areia-400 dark:border-areia-800 dark:bg-areia-900 dark:text-areia-600'
-                            : 'border-areia-300 bg-white hover:border-pinho-500 dark:border-areia-700 dark:bg-areia-900',
+                            ? 'cursor-not-allowed border-areia-200 bg-areia-100/70 text-areia-400 dark:border-areia-800 dark:bg-areia-900 dark:text-areia-600'
+                            : 'border-areia-200 bg-white hover:border-pinho-400 hover:bg-pinho-50/60 dark:border-areia-700 dark:bg-areia-900 dark:hover:bg-areia-800',
                       ].join(' ')}
                     >
-                      <span className={`text-xl font-bold ${full ? '' : 'text-areia-900 dark:text-white'}`}>{item.time}</span>
-                      <span className={`text-[15px] font-medium ${full ? '' : active ? 'text-pinho-800 dark:text-pinho-200' : 'text-pinho-700 dark:text-pinho-300'}`}>
-                        {full ? 'ocupado' : `disponível (${plural(item.free, 'vaga', 'vagas')})`}
+                      <span className={`font-display text-[22px] font-bold leading-none tabular-nums ${full ? '' : 'text-areia-900 dark:text-white'}`}>{item.time}</span>
+                      <span className={`mt-1.5 text-[13px] font-medium ${full ? '' : active ? 'text-pinho-800 dark:text-pinho-200' : 'text-pinho-700 dark:text-pinho-300'}`}>
+                        {full ? 'Ocupado' : plural(item.free, 'vaga', 'vagas')}
                       </span>
+                      <CapacityDots free={item.free} capacity={item.capacity} active={active} muted={full} />
                     </button>
                   );
                 })}
@@ -225,7 +252,7 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
             <section>
               <StepTitle n={3}>Quantidade</StepTitle>
               <div className="flex items-center gap-4">
-                <div className="inline-flex items-center overflow-hidden rounded-xl border border-areia-300 bg-white dark:border-areia-700 dark:bg-areia-900">
+                <div className="inline-flex items-center overflow-hidden rounded-2xl border border-areia-200 bg-white shadow-sm dark:border-areia-700 dark:bg-areia-900">
                   <button
                     type="button"
                     onClick={() => changeQuantity(quantity - 1)}
@@ -235,7 +262,7 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
                   >
                     −
                   </button>
-                  <span className="w-14 text-center text-2xl font-bold text-areia-900 dark:text-white" aria-live="polite">{quantity}</span>
+                  <span className="w-14 text-center font-display text-2xl font-bold tabular-nums text-areia-900 dark:text-white" aria-live="polite">{quantity}</span>
                   <button
                     type="button"
                     onClick={() => changeQuantity(quantity + 1)}
@@ -259,9 +286,9 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
           {/* (e)(f) Veículo, NF e peso */}
           {slot && (
             <section>
-              <StepTitle n={4}>Detalhes <span className="text-sm font-normal text-areia-500">(opcional)</span></StepTitle>
+              <StepTitle n={4}>Detalhes <span className="font-sans text-sm font-normal text-areia-500 dark:text-areia-400">(opcional)</span></StepTitle>
               <Card>
-                <Card.Content className="space-y-5 p-5">
+                <Card.Content className="space-y-5 p-5 sm:p-6">
                   {single ? (
                     showVehicle ? (
                       <div className="space-y-4">
@@ -396,7 +423,7 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
           )}
 
           {/* (g) Confirmação */}
-          <div className="sticky bottom-0 z-20 -mx-4 border-t border-areia-200 bg-white/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border dark:border-areia-800 dark:bg-areia-900/95">
+          <div className="sticky bottom-0 z-20 -mx-4 border-t border-areia-200 bg-white/90 px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(37,35,32,0.18)] backdrop-blur sm:mx-0 sm:rounded-2xl sm:border sm:px-5 sm:shadow-[0_8px_30px_-8px_rgba(37,35,32,0.25)] dark:border-areia-800 dark:bg-areia-900/90">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[15px] font-semibold text-areia-900 dark:text-areia-100" aria-live="polite">
                 {slot

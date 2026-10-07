@@ -4,6 +4,7 @@ import Button from '@/Components/UI/Button';
 import Card from '@/Components/UI/Card';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import FormField from '@/Components/UI/FormField';
+import IconTile from '@/Components/UI/IconTile';
 import StatusBadge from '@/Components/UI/StatusBadge';
 import { useConfirm } from '@/Components/UI/ConfirmModal';
 import BookingTimeline from '@/Features/Booking/BookingTimeline';
@@ -18,7 +19,7 @@ const OTHER = '__other';
 function Section({ title, aside = null, children }) {
   return (
     <Card>
-      <Card.Header className="flex flex-wrap items-center justify-between gap-2">
+      <Card.Header className="flex min-h-[60px] flex-wrap items-center justify-between gap-2 !py-3 [&_h2]:font-display [&_h2]:!text-base [&_h2]:!font-bold [&_h2]:text-areia-900 dark:[&_h2]:text-white">
         <h2>{title}</h2>
         {aside}
       </Card.Header>
@@ -31,7 +32,7 @@ function ReceiptRow({ label, value }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-pinho-200 py-2 last:border-0 dark:border-pinho-900">
       <dt className="text-[15px] text-pinho-800 dark:text-pinho-200">{label}</dt>
-      <dd className="text-right text-[17px] font-bold text-pinho-950 dark:text-white">{value}</dd>
+      <dd className="text-right font-display text-[17px] font-bold text-pinho-950 dark:text-white">{value}</dd>
     </div>
   );
 }
@@ -175,64 +176,81 @@ export default function Show({ booking, justConfirmed = 0, trucks = [], drivers 
   return (
     <AuthenticatedLayout>
       <Head title={`Agendamento ${booking.code}`} />
-      <div className="py-6">
-        <div className="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
           <FlashMessages />
 
-          <Link href={route('client.bookings')} className="inline-block text-[15px] font-semibold text-pinho-700 hover:underline dark:text-pinho-300">
-            ← Meus agendamentos
+          <Link href={route('client.bookings')} className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-pinho-700 hover:underline dark:text-pinho-300">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m15 6-6 6 6 6" />
+            </svg>
+            Meus agendamentos
           </Link>
 
           {justConfirmed > 0 && (
-            <section className="rounded-2xl border border-pinho-300 bg-pinho-50 p-5 sm:p-6 dark:border-pinho-800 dark:bg-pinho-950/40" aria-live="polite">
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-pinho-700 text-white dark:bg-pinho-400 dark:text-areia-950" aria-hidden="true">
-                  <svg className="h-6 w-6" viewBox="0 0 20 20" fill="none"><path d="m5 10 3.5 3.5L15 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <section className="overflow-hidden rounded-2xl border border-pinho-200 bg-pinho-50 shadow-[0_8px_24px_-16px_rgba(16,36,27,0.35)] dark:border-pinho-900 dark:bg-pinho-950/40" aria-live="polite">
+              <div className="flex items-center gap-4 px-5 py-5 sm:px-6">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pinho-700 text-white dark:bg-pinho-400 dark:text-areia-950" aria-hidden="true">
+                  <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
                 </span>
-                <h2 className="text-[26px] font-bold text-pinho-900 dark:text-pinho-100">Agendamento confirmado.</h2>
+                <div className="min-w-0">
+                  <h2 className="font-display text-[22px] font-bold leading-tight text-pinho-900 sm:text-[26px] dark:text-pinho-100">Agendamento confirmado.</h2>
+                  <p className="mt-1 font-display text-[28px] font-bold leading-none tracking-wide text-pinho-700 tabular-nums dark:text-pinho-300">{booking.code}</p>
+                </div>
               </div>
-              <dl className="mt-4">
-                <ReceiptRow label="Código" value={booking.code} />
-                <ReceiptRow label="Data" value={booking.scheduled_at ? formatDate(booking.scheduled_at) : '—'} />
-                <ReceiptRow label="Horário" value={formatClock(booking.scheduled_at)} />
-                <ReceiptRow label="Destino" value={booking.destination} />
-                <ReceiptRow label="Quantidade" value={formatTons(booking.weight, '1 carga')} />
-              </dl>
-              {justConfirmed > 1 && (
-                <p className="mt-3 text-[15px] font-medium text-pinho-800 dark:text-pinho-200">
-                  Os demais agendamentos estão em{' '}
-                  <Link href={route('client.bookings')} className="underline">Meus agendamentos</Link>.
-                </p>
-              )}
+              <div className="border-t-2 border-dashed border-pinho-300 px-5 pb-5 pt-2 sm:px-6 dark:border-pinho-800">
+                <dl>
+                  <ReceiptRow label="Código" value={booking.code} />
+                  <ReceiptRow label="Data" value={booking.scheduled_at ? formatDate(booking.scheduled_at) : '—'} />
+                  <ReceiptRow label="Horário" value={formatClock(booking.scheduled_at)} />
+                  <ReceiptRow label="Destino" value={booking.destination} />
+                  <ReceiptRow label="Quantidade" value={formatTons(booking.weight, '1 carga')} />
+                </dl>
+                {justConfirmed > 1 && (
+                  <p className="mt-3 text-[15px] font-medium text-pinho-800 dark:text-pinho-200">
+                    Os demais agendamentos estão em{' '}
+                    <Link href={route('client.bookings')} className="underline">Meus agendamentos</Link>.
+                  </p>
+                )}
+              </div>
             </section>
           )}
 
-          <header className="space-y-2">
+          <header className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-[28px] font-bold leading-tight text-areia-900 dark:text-white">{booking.code}</h1>
+              <h1 className="font-display text-[32px] font-bold leading-tight tracking-[-0.01em] text-areia-900 dark:text-white">{booking.code}</h1>
               <StatusBadge label={booking.stage.label} tone={booking.stage.tone} />
             </div>
-            <p className="text-[22px] font-bold text-areia-900 dark:text-white">{formatSchedule(booking.scheduled_at)}</p>
+            <p className="font-display text-[24px] font-bold leading-tight text-pinho-800 dark:text-pinho-200">{formatSchedule(booking.scheduled_at)}</p>
             <p className="text-lg text-areia-700 dark:text-areia-300">
               {booking.product_name} → {booking.destination} · {booking.operation_label}
             </p>
           </header>
 
           {pending.length > 0 && (
-            <div className="rounded-xl border border-ocre-300 border-l-4 border-l-ocre-500 bg-ocre-50 p-4 dark:border-ocre-800 dark:border-l-ocre-400 dark:bg-ocre-950/30">
-              <p className="text-[13px] font-bold uppercase tracking-wider text-ocre-800 dark:text-ocre-200">O que falta</p>
-              <ul className="mt-1.5 space-y-1">
-                {pending.map((action) => (
-                  <li key={action.key} className="text-[15px] font-medium text-areia-900 dark:text-areia-100">{action.label}</li>
-                ))}
-              </ul>
+            <div className="flex items-start gap-3.5 rounded-2xl border border-ocre-200 bg-ocre-50 p-4 sm:p-5 dark:border-ocre-900 dark:bg-ocre-950/30">
+              <IconTile tone="warning">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 4 3 19h18L12 4Z" />
+                  <path d="M12 10v4M12 16.8v.2" />
+                </svg>
+              </IconTile>
+              <div className="min-w-0">
+                <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-ocre-800 dark:text-ocre-200">O que falta</p>
+                <ul className="mt-1.5 space-y-1">
+                  {pending.map((action) => (
+                    <li key={action.key} className="text-[15px] font-medium text-areia-900 dark:text-areia-100">{action.label}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
 
           {showGateCode && (
             <Section title="Código de entrada na portaria">
-              <div className="flex flex-col items-center gap-2 text-center">
-                <QrCodeDisplay value={booking.qr_token} size={200} />
+              <div className="mx-auto flex max-w-sm flex-col items-center gap-3 rounded-2xl bg-areia-50 px-5 py-6 text-center dark:bg-areia-800/40">
+                <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-areia-200">
+                  <QrCodeDisplay value={booking.qr_token} size={200} />
+                </div>
                 <p className="plate text-lg">{booking.vehicle.plate}</p>
                 <p className="text-sm text-areia-600 dark:text-areia-400">Apresente este código ao porteiro para o check-in rápido.</p>
               </div>
@@ -257,8 +275,8 @@ export default function Show({ booking, justConfirmed = 0, trucks = [], drivers 
               <dl className="grid grid-cols-2 gap-4 text-[15px]">
                 <div>
                   <dt className="text-[13px] text-areia-600 dark:text-areia-400">Placa</dt>
-                  <dd className={`font-semibold ${hasVehicle ? 'text-areia-900 dark:text-white' : 'text-ocre-800 dark:text-ocre-200'}`}>
-                    {booking.vehicle?.plate ?? 'A informar'}
+                  <dd className={`mt-0.5 font-semibold ${hasVehicle ? 'text-areia-900 dark:text-white' : 'text-ocre-800 dark:text-ocre-200'}`}>
+                    {hasVehicle ? <span className="plate text-base">{booking.vehicle.plate}</span> : 'A informar'}
                   </dd>
                 </div>
                 <div>
@@ -330,7 +348,7 @@ export default function Show({ booking, justConfirmed = 0, trucks = [], drivers 
           </Section>
 
           {booking.quota_rules && (
-            <details className="rounded-xl border border-areia-200 bg-white px-5 py-3 dark:border-areia-800 dark:bg-areia-900">
+            <details className="rounded-2xl border border-areia-200 bg-white px-5 py-3.5 shadow-[0_1px_2px_rgba(37,35,32,0.04)] dark:border-areia-800 dark:bg-areia-900">
               <summary className="cursor-pointer text-[15px] font-semibold text-areia-800 dark:text-areia-200">Regras da cota</summary>
               <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-areia-700 dark:text-areia-300">{booking.quota_rules}</p>
             </details>
@@ -341,7 +359,6 @@ export default function Show({ booking, justConfirmed = 0, trucks = [], drivers 
               <Button variant="danger-subtle" onClick={cancelBooking} className="w-full sm:w-auto">Cancelar agendamento</Button>
             </div>
           )}
-        </div>
       </div>
     </AuthenticatedLayout>
   );
