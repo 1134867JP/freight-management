@@ -97,7 +97,7 @@ function Section({ title, children }) {
 }
 
 
-function FinalizeModal({ booking, open, onClose }) {
+function FinalizeModal({ booking, open, onClose, title }) {
   const { data, setData, patch, processing, errors, reset } = useForm({
     gross_weight: '',
     net_weight: '',
@@ -116,15 +116,29 @@ function FinalizeModal({ booking, open, onClose }) {
   };
 
   const declared = booking.weight ? `Declarado: ${formatWeight(booking.weight)}` : undefined;
+  const isLoad = booking.operation_type === 'load';
 
   return (
-    <ModalShell show={open} title="Finalizar operação" onClose={onClose} maxWidthClass="max-w-md">
+    <ModalShell show={open} title={title} onClose={onClose} maxWidthClass="max-w-md">
       <form onSubmit={submit} className="space-y-4">
+        <FormField id="net_weight" label={isLoad ? 'Peso líquido carregado (kg)' : 'Peso líquido descarregado (kg)'}
+          hint={declared} error={errors.net_weight} required>
+          <FormField.Input
+            id="net_weight"
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min="0.01"
+            value={data.net_weight}
+            error={errors.net_weight}
+            onChange={(event) => setData('net_weight', event.target.value)}
+            required
+          />
+        </FormField>
         <FormField
           id="gross_weight"
           label="Peso bruto (kg)"
           error={errors.gross_weight}
-          hint={declared}
           required
         >
           <FormField.Input
@@ -136,19 +150,6 @@ function FinalizeModal({ booking, open, onClose }) {
             value={data.gross_weight}
             error={errors.gross_weight}
             onChange={(event) => setData('gross_weight', event.target.value)}
-            required
-          />
-        </FormField>
-        <FormField id="net_weight" label="Peso líquido (kg)" error={errors.net_weight} required>
-          <FormField.Input
-            id="net_weight"
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min="0.01"
-            value={data.net_weight}
-            error={errors.net_weight}
-            onChange={(event) => setData('net_weight', event.target.value)}
             required
           />
         </FormField>
@@ -198,6 +199,7 @@ export default function BookingShow({ booking, flow = {} }) {
 
   const startUrl = route(isLoad ? 'freights.start-load' : 'freights.start-unload', booking.id);
   const startLabel = isLoad ? 'Iniciar carregamento' : 'Iniciar descarga';
+  const finalizeLabel = isLoad ? 'Finalizar carregamento' : 'Finalizar descarga';
 
   const needsVehicle = status === 'reserved' && !booking.vehicle?.plate;
   const [editingVehicle, setEditingVehicle] = useState(false);
@@ -214,15 +216,13 @@ export default function BookingShow({ booking, flow = {} }) {
     };
     hint = 'O veículo ainda não chegou. Registre a chegada na portaria.';
   } else if (status === 'reserved' || status === 'arrived') {
-    primary = { label: startLabel, onClick: () => mutate(startUrl) };
-    hint =
-      status === 'arrived'
-        ? 'Veículo no pátio, pronto para iniciar.'
-        : 'Pode iniciar a operação direto.';
+    primary = { label: finalizeLabel, onClick: () => setFinalizeOpen(true) };
+    hint = `Terminou? Informe o peso líquido e o bruto para concluir. Se quiser avisar o cliente que começou, use "${startLabel}".`;
   } else if (status === 'loading' || status === 'unloading') {
-    primary = { label: 'Finalizar operação', onClick: () => setFinalizeOpen(true) };
+    primary = { label: finalizeLabel, onClick: () => setFinalizeOpen(true) };
     hint = `${isLoad ? 'Carregamento' : 'Descarga'} em andamento. Informe os pesos para concluir.`;
   }
+  const showStart = Boolean(primary) && ['reserved', 'arrived'].includes(status) && !(status === 'reserved' && requiresCheckin);
 
   const markNoShow = async () => {
     const ok = await confirm(
@@ -350,7 +350,7 @@ export default function BookingShow({ booking, flow = {} }) {
             </div>
           )}
 
-          {(showNoShow || showCancel) && (
+          {(showStart || showNoShow || showCancel) && (
             <div
               className={`relative mt-5 flex flex-wrap gap-2 border-t pt-5 ${
                 primary ? 'border-white/10' : 'border-areia-200/80 dark:border-areia-800'
@@ -358,6 +358,11 @@ export default function BookingShow({ booking, flow = {} }) {
             >
               {primary ? (
                 <>
+                  {showStart && (
+                    <Button variant="inverse" onClick={() => mutate(startUrl)} disabled={busy}>
+                      {startLabel}
+                    </Button>
+                  )}
                   {showNoShow && (
                     <Button variant="inverse" onClick={markNoShow} disabled={busy}>
                       Não compareceu
@@ -530,7 +535,12 @@ export default function BookingShow({ booking, flow = {} }) {
         </div>
       </div>
 
-      <FinalizeModal booking={booking} open={finalizeOpen} onClose={() => setFinalizeOpen(false)} />
+      <FinalizeModal
+        booking={booking}
+        title={finalizeLabel}
+        open={finalizeOpen}
+        onClose={() => setFinalizeOpen(false)}
+      />
     </AuthenticatedLayout>
   );
 }

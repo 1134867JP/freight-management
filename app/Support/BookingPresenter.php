@@ -154,6 +154,7 @@ final class BookingPresenter
             ->map(fn (string $type) => [
                 'type' => $type,
                 'label' => FreightAttachment::LABELS[$type],
+                'hint' => $type === FreightAttachment::TYPE_RECEIPT ? 'Comprovante, foto ou outro arquivo.' : null,
                 'required' => in_array($type, $required, true),
                 'received' => $byType->has($type),
                 'files' => ($byType->get($type) ?? collect())->map($fileOf)->values()->all(),

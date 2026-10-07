@@ -24,6 +24,7 @@ export default function DocumentChecklist({ documents = [], uploadUrl, canUpload
                   {doc.label}
                   {!doc.required && <span className="ml-2 text-[13px] font-normal text-areia-500">opcional</span>}
                 </p>
+                {doc.hint && <p className="text-[13px] text-areia-500 dark:text-areia-400">{doc.hint}</p>}
                 <p className={`text-sm ${doc.received ? 'text-pinho-700 dark:text-pinho-300' : doc.required ? 'text-ocre-800 dark:text-ocre-200' : 'text-areia-500'}`}>
                   {doc.received ? (doc.type === 'invoice' ? 'Recebida' : 'Recebido') : doc.required ? 'Pendente' : (doc.type === 'invoice' ? 'Não enviada' : 'Não enviado')}
                 </p>
@@ -47,7 +48,7 @@ export default function DocumentChecklist({ documents = [], uploadUrl, canUpload
                 size="sm"
                 onClick={() => setOpenType(doc.type)}
               >
-                {doc.received ? (doc.type === 'receipt' ? 'Enviar outro' : 'Substituir') : 'Enviar'}
+                {doc.type === 'receipt' ? 'Adicionar anexo' : doc.received ? 'Substituir' : 'Enviar'}
               </Button>
             )}
           </div>
