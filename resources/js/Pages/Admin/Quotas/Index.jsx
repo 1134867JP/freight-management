@@ -4,6 +4,8 @@ import FlashMessages from '@/Components/UI/FlashMessages';
 import PageHeader from '@/Components/UI/PageHeader';
 import EmptyState from '@/Components/UI/EmptyState';
 import StatusBadge from '@/Components/UI/StatusBadge';
+import StatStrip from '@/Components/UI/StatStrip';
+import IconTile from '@/Components/UI/IconTile';
 import Button from '@/Components/UI/Button';
 import QuotaUsageBar from '@/Features/Quota/QuotaUsageBar';
 import { formatPeriod, plural } from '@/Features/Quota/format';
@@ -15,35 +17,46 @@ const FILTERS = [
   { key: 'all', label: 'Todas' },
 ];
 
-const COUNTERS = [
-  { key: 'available', label: 'Disponíveis', accent: 'text-pinho-700 dark:text-pinho-300' },
-  { key: 'booked', label: 'Reservadas', accent: 'text-ocre-700 dark:text-ocre-300' },
-  { key: 'in_operation', label: 'Em operação', accent: 'text-aco-700 dark:text-aco-300' },
-  { key: 'completed', label: 'Utilizadas', accent: 'text-areia-900 dark:text-white' },
-  { key: 'expired', label: 'Não utilizadas', accent: 'text-areia-500 dark:text-areia-400' },
-];
-
-function TotalsStrip({ totals }) {
+function Chevron() {
   return (
-    <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-areia-200 bg-areia-200 shadow-sm dark:border-areia-800 dark:bg-areia-800 sm:grid-cols-5">
-      {COUNTERS.map((counter, index) => (
-        <div
-          key={counter.key}
-          className={`bg-white px-5 py-4 dark:bg-areia-900 ${index === COUNTERS.length - 1 ? 'col-span-2 sm:col-span-1' : ''}`}
-        >
-          <dt className="text-[13px] font-medium text-areia-600 dark:text-areia-400">{counter.label}</dt>
-          <dd className={`mt-0.5 text-[28px] font-bold leading-none tabular-nums ${counter.accent}`}>
-            {Number(totals?.[counter.key] ?? 0).toLocaleString('pt-BR')}
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <svg
+      className="h-5 w-5 shrink-0 text-areia-400 transition group-hover:translate-x-0.5 group-hover:text-areia-700 dark:group-hover:text-areia-200"
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="m8 5 5 5-5 5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
+}
+
+function rowTone(quota) {
+  const key = quota.lifecycle?.key;
+  if (key === 'open') return 'success';
+  if (key === 'scheduled') return 'violet';
+  return 'neutral';
 }
 
 function QuotaRow({ quota }) {
   const usage = quota.usage || {};
   const open = () => router.visit(route('admin.quotas.show', quota.id));
+  const total = Number(usage.total ?? 0);
+  const reservedPct =
+    total > 0
+      ? Math.round(
+          ((Number(usage.booked ?? 0) +
+            Number(usage.in_operation ?? 0) +
+            Number(usage.completed ?? 0)) /
+            total) *
+            100,
+        )
+      : 0;
 
   return (
     <li
@@ -55,19 +68,31 @@ function QuotaRow({ quota }) {
       }}
       className="group cursor-pointer px-4 py-4 transition hover:bg-areia-50 focus:outline-none focus-visible:bg-areia-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocre-400 dark:hover:bg-areia-800/50 dark:focus-visible:bg-areia-800/50 sm:px-6"
     >
-      <div className="grid gap-3 md:grid-cols-[minmax(0,2.2fr)_minmax(0,1.3fr)_minmax(0,1.6fr)_auto] md:items-center md:gap-6">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 md:grid-cols-[auto_minmax(0,2.2fr)_auto_minmax(0,1.6fr)_auto] md:items-center md:gap-x-5">
+        <IconTile tone={rowTone(quota)} size="md">
+          {(quota.product_name ?? '?').charAt(0).toUpperCase()}
+        </IconTile>
+
         <div className="min-w-0">
           <div className="flex items-start justify-between gap-3 md:block">
             <p className="min-w-0 text-[17px] font-semibold leading-snug text-areia-900 dark:text-white">
-              <span className="mr-2 text-[13px] font-semibold tabular-nums text-areia-500 dark:text-areia-400">{quota.code}</span>
-              {quota.product_name} <span className="text-areia-400" aria-hidden="true">→</span> {quota.destination}
+              {quota.product_name}{' '}
+              <span className="text-areia-400" aria-hidden="true">
+                →
+              </span>{' '}
+              {quota.destination}
             </p>
             <span className="shrink-0 md:hidden">
               <StatusBadge label={quota.lifecycle?.label} tone={quota.lifecycle?.tone} />
             </span>
           </div>
           <p className="mt-0.5 text-sm text-areia-600 dark:text-areia-400">
-            {quota.operation_label} · {formatPeriod(quota.starts_on, quota.ends_on)} · {plural(quota.hours?.length ?? 0, 'horário', 'horários')}
+            <span className="font-mono text-[13px] font-semibold text-pinho-800 dark:text-pinho-300">
+              {quota.code}
+            </span>
+            {' · '}
+            {quota.operation_label} · {formatPeriod(quota.starts_on, quota.ends_on)} ·{' '}
+            {plural(quota.hours?.length ?? 0, 'horário', 'horários')}
           </p>
         </div>
 
@@ -75,12 +100,16 @@ function QuotaRow({ quota }) {
           <StatusBadge label={quota.lifecycle?.label} tone={quota.lifecycle?.tone} />
         </div>
 
-        <div className="min-w-0">
-          <QuotaUsageBar usage={usage} size="sm" />
-          <p className="mt-1.5 text-[13px] text-areia-600 dark:text-areia-400">
-            <span className="font-semibold tabular-nums text-areia-900 dark:text-areia-100">{usage.available ?? 0}</span>
-            {' '}de{' '}
-            <span className="tabular-nums">{usage.total ?? 0}</span> disponíveis
+        <div className="col-span-2 min-w-0 md:col-span-1">
+          <QuotaUsageBar usage={usage} />
+          <p className="mt-1.5 flex items-baseline justify-between gap-2 text-[13px] text-areia-600 dark:text-areia-400">
+            <span>
+              <span className="font-semibold tabular-nums text-areia-900 dark:text-areia-100">
+                {usage.available ?? 0}
+              </span>{' '}
+              de <span className="tabular-nums">{usage.total ?? 0}</span> disponíveis
+            </span>
+            <span className="tabular-nums">{reservedPct}% reservado</span>
           </p>
         </div>
 
@@ -88,9 +117,10 @@ function QuotaRow({ quota }) {
           <Link
             href={route('admin.quotas.show', quota.id)}
             onClick={(event) => event.stopPropagation()}
-            className="inline-flex min-h-9 items-center gap-1 rounded-lg px-3 text-sm font-semibold text-pinho-700 transition hover:bg-pinho-50 dark:text-pinho-300 dark:hover:bg-pinho-950/60"
+            aria-label={`Abrir cota ${quota.code}`}
+            className="inline-flex min-h-9 items-center rounded-lg px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-400"
           >
-            Abrir <span aria-hidden="true" className="transition group-hover:translate-x-0.5">→</span>
+            <Chevron />
           </Link>
         </div>
       </div>
@@ -105,7 +135,15 @@ export default function Index({ quotas = [], totals = {}, filter = 'active' }) {
   const publishButton = isCompanyAdmin ? (
     <Link href={route('admin.quotas.create')}>
       <Button size="lg">
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+        <svg
+          className="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          aria-hidden="true"
+        >
           <path d="M12 5v14M5 12h14" />
         </svg>
         Publicar cotas
@@ -115,27 +153,42 @@ export default function Index({ quotas = [], totals = {}, filter = 'active' }) {
 
   const changeFilter = (next) => {
     if (next === filter) return;
-    router.get(route('admin.quotas.index'), { filter: next }, { preserveState: true, preserveScroll: true });
+    router.get(
+      route('admin.quotas.index'),
+      { filter: next },
+      { preserveState: true, preserveScroll: true },
+    );
   };
+
+  const stats = [
+    { label: 'Disponíveis', tone: 'success', value: totals?.available ?? 0 },
+    { label: 'Reservadas', tone: 'warning', value: totals?.booked ?? 0 },
+    { label: 'Em operação', tone: 'info', value: totals?.in_operation ?? 0 },
+    { label: 'Utilizadas', tone: 'success', value: totals?.completed ?? 0 },
+    { label: 'Não utilizadas', tone: 'danger', value: totals?.expired ?? 0 },
+  ];
 
   return (
     <AuthenticatedLayout>
       <Head title="Cotas" />
-      <div className="py-6">
-        <div className="mx-auto max-w-[1600px] space-y-6 px-4 sm:px-6 lg:px-8">
-          <FlashMessages />
+      <div className="mx-auto max-w-[1440px] space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        <FlashMessages />
 
-          <PageHeader
-            eyebrow="Operação"
-            title="Cotas"
-            subtitle="Publique cotas e acompanhe quem reservou cada uma."
-            actions={publishButton}
-          />
+        <PageHeader
+          title="Cotas"
+          subtitle="Publique cotas e acompanhe quem reservou cada uma."
+          actions={publishButton}
+        />
 
-          <TotalsStrip totals={totals} />
+        <StatStrip items={stats} />
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div role="tablist" aria-label="Filtrar cotas" className="inline-flex rounded-lg bg-areia-100 p-1 dark:bg-areia-800">
+        <section>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div
+              role="tablist"
+              aria-label="Filtrar cotas"
+              className="inline-flex rounded-xl bg-areia-200/60 p-1 dark:bg-areia-800/60"
+            >
               {FILTERS.map((item) => {
                 const active = item.key === filter;
                 return (
@@ -146,9 +199,9 @@ export default function Index({ quotas = [], totals = {}, filter = 'active' }) {
                     aria-selected={active}
                     onClick={() => changeFilter(item.key)}
                     className={[
-                      'min-h-10 rounded-md px-4 text-[15px] font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-400',
+                      'min-h-10 rounded-lg px-4 text-[15px] font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-400',
                       active
-                        ? 'bg-white text-areia-900 shadow-sm dark:bg-areia-900 dark:text-white'
+                        ? 'bg-white text-areia-900 shadow-sm dark:bg-areia-700 dark:text-white'
                         : 'text-areia-600 hover:text-areia-900 dark:text-areia-400 dark:hover:text-white',
                     ].join(' ')}
                   >
@@ -157,19 +210,30 @@ export default function Index({ quotas = [], totals = {}, filter = 'active' }) {
                 );
               })}
             </div>
-            <p className="text-sm text-areia-600 dark:text-areia-400">{plural(quotas.length, 'cota', 'cotas')}</p>
+            <p className="text-sm text-areia-600 dark:text-areia-400">
+              {plural(quotas.length, 'cota', 'cotas')}
+            </p>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-areia-200 bg-white shadow-sm dark:border-areia-800 dark:bg-areia-900">
+          <div className="overflow-hidden rounded-2xl border border-areia-200 bg-white shadow-[0_1px_2px_rgba(37,35,32,0.04),0_8px_24px_-16px_rgba(37,35,32,0.12)] dark:border-areia-800 dark:bg-areia-900">
             {quotas.length === 0 ? (
               <EmptyState
-                icon={(
-                  <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                icon={
+                  <svg
+                    className="h-6 w-6"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M3 7l9-4 9 4-9 4-9-4z" />
                     <path d="M3 7v10l9 4 9-4V7" />
                     <path d="M12 11v10" />
                   </svg>
-                )}
+                }
                 title={filter === 'finished' ? 'Nenhuma cota encerrada' : 'Nenhuma cota publicada'}
                 description={
                   filter === 'finished'
@@ -179,22 +243,14 @@ export default function Index({ quotas = [], totals = {}, filter = 'active' }) {
                 action={filter !== 'finished' ? publishButton : null}
               />
             ) : (
-              <>
-                <div className="hidden border-b border-areia-200 bg-areia-50 px-6 py-2.5 text-[13px] font-semibold uppercase tracking-wide text-areia-500 dark:border-areia-800 dark:bg-areia-950/40 dark:text-areia-400 md:grid md:grid-cols-[minmax(0,2.2fr)_minmax(0,1.3fr)_minmax(0,1.6fr)_auto] md:gap-6">
-                  <span>Cota</span>
-                  <span>Situação</span>
-                  <span>Disponibilidade</span>
-                  <span className="w-[72px]" aria-hidden="true" />
-                </div>
-                <ul className="divide-y divide-areia-200 dark:divide-areia-800">
-                  {quotas.map((quota) => (
-                    <QuotaRow key={quota.id} quota={quota} />
-                  ))}
-                </ul>
-              </>
+              <ul className="divide-y divide-areia-200 dark:divide-areia-800">
+                {quotas.map((quota) => (
+                  <QuotaRow key={quota.id} quota={quota} />
+                ))}
+              </ul>
             )}
           </div>
-        </div>
+        </section>
       </div>
     </AuthenticatedLayout>
   );
