@@ -52,7 +52,7 @@ function SpotCard({ spot }) {
       </div>
       {freight ? (
         <div className="mt-1 space-y-0.5">
-          <p className="font-mono font-semibold text-gray-900 dark:text-gray-100 truncate">{freight.truck_plate}</p>
+          <p className="font-mono font-semibold text-gray-900 dark:text-gray-100 truncate">{freight.truck_plate || 'A definir'}</p>
           <p className="text-gray-500 dark:text-gray-400 truncate">{freight.driver_name}</p>
           <div className="flex items-center gap-1 mt-1">
             <ElapsedBadge minutes={freight.dwell_minutes} isDetaining={freight.is_detaining} />
@@ -78,7 +78,7 @@ function DocaCard({ doca }) {
       <p className="text-gray-600 dark:text-gray-300">{doca.nome}</p>
       {freight ? (
         <div className="mt-1">
-          <p className="font-mono font-semibold text-gray-900 dark:text-gray-100">{freight.truck_plate}</p>
+          <p className="font-mono font-semibold text-gray-900 dark:text-gray-100">{freight.truck_plate || 'A definir'}</p>
           <ElapsedBadge minutes={freight.dwell_minutes} isDetaining={freight.is_detaining} />
         </div>
       ) : (
@@ -148,7 +148,7 @@ export default function YardMap({ initialData }) {
               <div className="flex flex-wrap gap-2">
                 {noLocation.map(f => (
                   <span key={f.id} className="rounded-lg border border-orange-200 bg-white px-3 py-1.5 text-xs font-mono font-semibold text-gray-700 dark:border-orange-800 dark:bg-gray-800 dark:text-gray-300">
-                    {f.truck_plate}
+                    {f.truck_plate || 'A definir'}
                     <span className="ml-1 font-normal text-gray-400">{f.driver_name}</span>
                   </span>
                 ))}

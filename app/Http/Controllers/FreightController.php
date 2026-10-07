@@ -371,7 +371,7 @@ class FreightController extends Controller
     {
         $this->authorize('downloadAttachmentClient', $freight);
         abort_unless($attachment->freight_id === $freight->id, 404);
-        abort_unless($attachment->type === FreightAttachment::TYPE_ATTACHMENT, 404);
+        abort_unless($attachment->type !== FreightAttachment::TYPE_INVOICE, 404);
 
         return $this->serveAttachment($attachment);
     }
@@ -396,49 +396,6 @@ class FreightController extends Controller
         string $type,
         string $directory,
     ): FreightAttachment {
-        // Salva o novo arquivo ANTES da transação para evitar I/O dentro da tx.
-        // Se a tx falhar, deletamos o arquivo recém-salvo no catch.
-        $newPath = $file->store($directory);
-
-        if ($newPath === false) {
-            throw new \RuntimeException('Falha ao salvar o arquivo no disco.');
-        }
-
-        try {
-            [$oldPath, $attachment] = DB::transaction(function () use ($freight, $file, $type, $newPath) {
-                $existing = $type === FreightAttachment::TYPE_INVOICE
-                    ? $freight->attachments()->where('type', $type)->first()
-                    : null;
-                $oldPath = $existing?->path;
-
-                $existing?->delete();
-
-                $attachment = $freight->attachments()->create([
-                    'company_id' => $freight->company_id,
-                    'type' => $type,
-                    'path' => $newPath,
-                    'original_name' => $file->getClientOriginalName(),
-                    'size_bytes' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                ]);
-
-                return [$oldPath, $attachment];
-            });
-
-            // Transação confirmada: remove o arquivo antigo do disco
-            if ($oldPath) {
-                if (Storage::disk('local')->exists($oldPath)) {
-                    Storage::disk('local')->delete($oldPath);
-                } else {
-                    Storage::delete($oldPath);
-                }
-            }
-
-            return $attachment;
-        } catch (\Throwable $e) {
-            // Transação falhou: remove o arquivo recém-salvo para não deixar órfão
-            Storage::delete($newPath);
-            throw $e;
-        }
+        return app(\App\Actions\Freight\StoreFreightAttachment::class)->execute($freight, $file, $type);
     }
 }

@@ -251,7 +251,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
                       </td>
 
                       <td className="px-4 py-4 align-top text-sm">
-                        <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate}</p>
+                        <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate || 'A definir'}</p>
                         {freight.driver_name && (
                           <p className="text-xs text-gray-500 dark:text-gray-400">{freight.driver_name}</p>
                         )}
@@ -369,7 +369,7 @@ export default function MyReservations({ freights: freightsPaginated, filters = 
             />
             <div className="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800">
               <p className="text-center text-sm font-bold text-gray-800 dark:text-gray-200">
-                {qrFreight.truck_plate}
+                {qrFreight.truck_plate || 'A definir'}
               </p>
               <p className="text-center text-xs text-gray-500 dark:text-gray-400">{qrFreight.driver_name}</p>
               {qrFreight.timeslot && (

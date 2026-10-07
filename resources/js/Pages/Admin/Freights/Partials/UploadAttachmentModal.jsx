@@ -26,7 +26,7 @@ export default function UploadAttachmentModal({
               Cliente: <span className="font-medium">{freight.user?.name || '-'}</span>
             </p>
             <p className="text-gray-600 dark:text-gray-400">
-              Placa: <span className="font-medium">{freight.truck_plate}</span>
+              Placa: <span className="font-medium">{freight.truck_plate || 'A definir'}</span>
             </p>
           </div>
         )}

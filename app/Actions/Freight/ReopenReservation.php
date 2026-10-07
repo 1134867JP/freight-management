@@ -32,6 +32,11 @@ class ReopenReservation
                 throw new \RuntimeException('Apenas reservas canceladas podem ser reabertas.');
             }
 
+            if ($locked->quota_id) {
+                $guard = app(\App\Actions\Quota\QuotaCapacityGuard::class);
+                $guard->assertCanBook($guard->lock((int) $locked->quota_id), $locked->user);
+            }
+
             /** @var Timeslot|null $timeslot */
             $timeslot = Timeslot::query()
                 ->lockForUpdate()

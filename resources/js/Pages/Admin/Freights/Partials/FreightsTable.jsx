@@ -113,7 +113,7 @@ export default function FreightsTable({
               </td>
 
               <td className="w-[13%] px-4 py-3">
-                <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate}</p>
+                <p className="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">{freight.truck_plate || 'A definir'}</p>
                 <StatusBadge
                   label={translateOperationType(freight.operation_type)}
                   tone="neutral"

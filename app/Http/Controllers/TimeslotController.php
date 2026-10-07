@@ -8,7 +8,6 @@ use App\Http\Requests\Timeslot\StoreTimeslotRequest;
 use App\Http\Requests\Timeslot\UpdateTimeslotRequest;
 use App\Models\Doca;
 use App\Models\DropoffAddress;
-use App\Models\Freight;
 use App\Models\Produto;
 use App\Models\Timeslot;
 use App\Models\User;
@@ -20,48 +19,6 @@ use Inertia\Response;
 
 class TimeslotController extends Controller
 {
-    public function dashboard(): Response
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        $arrStats = [
-            'total_timeslots' => Timeslot::where('company_id', $user->company_id)->count(),
-            'available_timeslots' => Timeslot::where('company_id', $user->company_id)->where('status', 'available')->count(),
-            'reserved_timeslots' => Timeslot::where('company_id', $user->company_id)
-                ->whereHas('freights', fn ($q) => $q->occupying())
-                ->count(),
-            'full_timeslots' => Timeslot::where('company_id', $user->company_id)->where('status', 'full')->count(),
-        ];
-
-        // Ocupação dos timeslots nos próximos 7 dias
-        $today = now()->startOfDay();
-        $endDate = now()->addDays(6)->endOfDay();
-
-        $occupancyRaw = Freight::query()
-            ->join('timeslots', 'freights.timeslot_id', '=', 'timeslots.id')
-            ->where('freights.company_id', $user->company_id)
-            ->whereNotIn('freights.status', ['cancelled'])
-            ->whereBetween('timeslots.start_time', [$today, $endDate])
-            ->selectRaw("DATE(timeslots.start_time) as date, COUNT(*) as count")
-            ->groupByRaw("DATE(timeslots.start_time)")
-            ->pluck('count', 'date');
-
-        $arrOccupancy = [];
-        for ($i = 0; $i < 7; $i++) {
-            $strDate = now()->addDays($i)->format('Y-m-d');
-            $arrOccupancy[] = [
-                'date' => $strDate,
-                'count' => (int) ($occupancyRaw[$strDate] ?? 0),
-            ];
-        }
-
-        return Inertia::render('Admin/Dashboard', [
-            'stats' => $arrStats,
-            'occupancy' => $arrOccupancy,
-        ]);
-    }
-
     public function agenda(): Response
     {
         $arrTimeslots = Timeslot::with(['freights.user'])
@@ -76,7 +33,9 @@ class TimeslotController extends Controller
 
     public function index(): Response
     {
+        // Janelas geradas por cota são geridas na própria cota.
         $arrTimeslots = Timeslot::with(['clients', 'dropoffAddress'])
+            ->whereNull('quota_id')
             ->withCount(['freights as current_reservations' => fn ($q) => $q->occupying()])
             ->orderBy('start_time', 'desc')
             ->paginate(10)
@@ -180,7 +139,9 @@ class TimeslotController extends Controller
 
         $idUser = $objUser->id;
 
+        // Cotas têm fluxo próprio de agendamento (portal do cliente).
         $arrTimeslots = Timeslot::visibleForClient($idUser)
+            ->whereNull('timeslots.quota_id')
             ->with(['clients', 'dropoffAddress', 'produto', 'doca'])
             ->withCount(['freights as current_reservations' => fn ($q) => $q->occupying()])
             ->orderBy('start_time', 'asc')

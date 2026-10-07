@@ -56,6 +56,13 @@ export default function AuthenticatedLayout({ header, children }) {
     }
 
     if (isAdmin) {
+      // Cota é o recurso central: publicar, acompanhar e controlar o ciclo.
+      const coreItems = [
+        { label: 'Central', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
+        { label: 'Cotas', href: route('admin.quotas.index'), active: route().current('admin.quotas.*'), icon: 'quota' },
+        { label: 'Agendamentos', href: route('admin.bookings.index'), active: route().current('admin.bookings.*'), icon: 'clipboard' },
+      ];
+
       const registrationChildren = [
         { label: 'Clientes',  href: route('clients.index'),           active: route().current('clients.*') },
         { label: 'Destinos',  href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*') },
@@ -77,7 +84,7 @@ export default function AuthenticatedLayout({ header, children }) {
           {
             section: 'Operação',
             items: [
-              { label: 'Visão geral', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
+              ...coreItems,
               { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
             ],
           },
@@ -85,7 +92,7 @@ export default function AuthenticatedLayout({ header, children }) {
             section: 'Agendamento',
             items: [
               { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda'), icon: 'schedule' },
-              { label: 'Janelas', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
+              { label: 'Horários avulsos', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
             ],
           },
           {
@@ -131,7 +138,7 @@ export default function AuthenticatedLayout({ header, children }) {
         {
           section: 'Operação',
           items: [
-            { label: 'Visão geral', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
+            ...coreItems,
             ...((usesQueues || usesDocks) ? [{ label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' }] : []),
             { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
           ],
@@ -148,7 +155,7 @@ export default function AuthenticatedLayout({ header, children }) {
           section: 'Agendamento',
           items: [
             { label: 'Agenda', href: route('admin.agenda'),    active: route().current('admin.agenda'), icon: 'schedule' },
-            { label: 'Janelas', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
+            { label: 'Horários avulsos', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
           ],
         },
         {
@@ -195,29 +202,32 @@ export default function AuthenticatedLayout({ header, children }) {
       ];
     }
 
+    // Portal do cliente: o que tenho, o que agendei, o que preciso fazer.
+    const clientCoreItems = [
+      { label: 'Início', href: route('client.dashboard'), active: route().current('client.dashboard'), icon: 'dashboard' },
+      { label: 'Cotas disponíveis', href: route('client.quotas'), active: route().current('client.quotas*'), icon: 'quota' },
+      { label: 'Meus agendamentos', href: route('client.bookings'), active: route().current('client.bookings*'), icon: 'clipboard' },
+    ];
+
+    const legacySection = {
+      section: 'Outros agendamentos',
+      items: [
+        { label: 'Horários avulsos', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
+        { label: 'Reservas avulsas', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'freight' },
+      ],
+    };
+
     if (pilotMode) {
-      return [
-        {
-          section: 'Operação',
-          items: [
-            { label: 'Visão geral', href: route('client.dashboard'), active: route().current('client.dashboard'), icon: 'dashboard' },
-            { label: 'Agendar horário', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
-            { label: 'Meus agendamentos', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'clipboard' },
-          ],
-        },
-      ];
+      return [{ section: null, items: clientCoreItems }, legacySection];
     }
 
     // Client
     return [
       {
-        section: 'Operação',
-        items: [
-          { label: 'Visão geral', href: route('client.dashboard'), active: route().current('client.dashboard'), icon: 'dashboard' },
-          { label: 'Agendar horário', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
-          { label: 'Meus agendamentos', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'clipboard' },
-        ],
+        section: null,
+        items: clientCoreItems,
       },
+      legacySection,
       {
         section: 'Cadastros',
         items: [
@@ -248,7 +258,7 @@ export default function AuthenticatedLayout({ header, children }) {
       }
     }
 
-    return { section: 'Central de operações', label: company?.name || 'CargoHub YMS', parent: null };
+    return { section: null, label: company?.name || 'CargoHub', parent: null };
   }, [company?.name, menuSections]);
 
   const SideLink = ({ href, active, label, icon, onNavigate, compact = false }) => (
@@ -483,7 +493,7 @@ export default function AuthenticatedLayout({ header, children }) {
             </button>
             <div className="min-w-0">
               <p className="truncate text-[13px] text-areia-500 dark:text-areia-400">
-                {currentNavigation.section || 'Central de operações'}
+                {currentNavigation.section || (isAdmin || isPlatformAdmin ? 'Central de operações' : 'Portal do cliente')}
               </p>
               <p className="truncate text-base font-semibold leading-tight text-areia-900 dark:text-areia-100">
                 {currentNavigation.parent ? `${currentNavigation.parent} · ${currentNavigation.label}` : currentNavigation.label}
@@ -615,6 +625,8 @@ function MenuIcon({ name, className = '' }) {
       'M1 3h15v13H1V3Zm15 5 5 3v5h-5V8ZM5.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
     kpi:
       'M18 20V10M12 20V4M6 20v-6',
+    quota:
+      'M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9ZM4 7.5l8 4.5 8-4.5M12 12v9M8 5.25l8 4.5',
     driver:
       'M12 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 13a7 7 0 0 1 14 0',
     whatsapp:

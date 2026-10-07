@@ -4,6 +4,7 @@ namespace App\Actions\Freight;
 
 use App\Enums\FreightStatus;
 use App\Events\YardBoardUpdated;
+use App\Exceptions\Freight\FreightException;
 use App\Models\Freight;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -31,6 +32,10 @@ class GateCheckIn
 
             if ($lockedFreight->status !== FreightStatus::Reserved) {
                 throw new RuntimeException('Check-in só pode ser feito em reservas com status "Reservado".');
+            }
+
+            if (blank($lockedFreight->truck_plate)) {
+                throw new FreightException('Informe a placa do veículo antes de registrar a chegada.');
             }
 
             $lockedFreight->update([

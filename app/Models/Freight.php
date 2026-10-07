@@ -28,6 +28,7 @@ class Freight extends Model
         'truck_plate', 'driver_name', 'driver_phone', 'cargo_description', 'weight', 'gross_weight', 'net_weight',
         'status', 'admin_notes', 'arrived_at', 'departed_at', 'operation_started_at', 'completed_at',
         'qr_token', 'dwell_limit_minutos', 'detention_valor_hora',
+        'quota_id', 'invoice_number', 'no_show_at',
     ];
 
     protected $casts = [
@@ -40,16 +41,18 @@ class Freight extends Model
         'departed_at'          => 'datetime',
         'operation_started_at' => 'datetime',
         'completed_at'         => 'datetime',
+        'no_show_at'           => 'datetime',
     ];
 
     /**
-     * Fretes que ocupam capacidade do timeslot (todos exceto cancelados).
+     * Fretes que ocupam capacidade do timeslot e da cota (todos exceto
+     * cancelados e não comparecimentos).
      * Fonte única de verdade para contagem de capacidade — usar este scope
      * em vez de replicar whereNotIn('status', ['cancelled']) pelo código.
      */
     public function scopeOccupying(Builder $query): Builder
     {
-        return $query->where('status', '!=', FreightStatus::Cancelled->value);
+        return $query->whereNotIn('status', FreightStatus::releasingValues());
     }
 
     public function scopeActive(Builder $query): Builder
@@ -57,6 +60,7 @@ class Freight extends Model
         return $query->whereNotIn('status', [
             FreightStatus::Cancelled->value,
             FreightStatus::Completed->value,
+            FreightStatus::NoShow->value,
         ]);
     }
 
@@ -120,6 +124,17 @@ class Freight extends Model
     public function timeslot(): BelongsTo
     {
         return $this->belongsTo(Timeslot::class);
+    }
+
+    public function quota(): BelongsTo
+    {
+        return $this->belongsTo(Quota::class);
+    }
+
+    /** Código curto exibido ao cliente e à operação (ex.: AGD-00042). */
+    public function getCodeAttribute(): string
+    {
+        return 'AGD-'.str_pad((string) $this->getKey(), 5, '0', STR_PAD_LEFT);
     }
 
     public function truck(): BelongsTo

@@ -31,6 +31,7 @@ class Timeslot extends Model
 
     protected $fillable = [
         'company_id',
+        'quota_id',
         'start_time',
         'end_time',
         'operation_type',
@@ -81,6 +82,11 @@ class Timeslot extends Model
         return $this->belongsTo(Doca::class);
     }
 
+    public function quota(): BelongsTo
+    {
+        return $this->belongsTo(Quota::class);
+    }
+
     public function freights(): HasMany
     {
         return $this->hasMany(Freight::class);
@@ -125,9 +131,14 @@ class Timeslot extends Model
             ->where('end_time', '>=', now())
             ->where('status', '!=', self::STATUS_CLOSED)
             ->whereRaw(
-                '(SELECT COUNT(*) FROM freights WHERE freights.timeslot_id = timeslots.id AND freights.status != ?) < timeslots.capacity',
-                [FreightStatus::Cancelled->value]
+                '(SELECT COUNT(*) FROM freights WHERE freights.timeslot_id = timeslots.id AND freights.status NOT IN (?, ?)) < timeslots.capacity',
+                FreightStatus::releasingValues()
             )
+            // Janelas geradas por cota seguem a visibilidade da cota.
+            ->where(function ($q) use ($userId) {
+                $q->whereNull('timeslots.quota_id')
+                    ->orWhereHas('quota', fn ($quota) => $quota->bookableBy($userId));
+            })
             ->where(function ($q) use ($userId) {
                 // Público: sem clientes vinculados
                 $q->whereDoesntHave('clients')

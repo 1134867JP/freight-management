@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Quota\PublishQuota;
 use App\Models\Company;
 use App\Models\DropoffAddress;
 use App\Models\Timeslot;
@@ -40,6 +41,8 @@ class DatabaseSeeder extends Seeder
                 'password' => 'password',
             ],
         );
+
+        $admin = User::query()->where('email', 'admin@example.com')->firstOrFail();
 
         // Criar clientes
         foreach ([1, 2, 3] as $i) {
@@ -119,6 +122,22 @@ class DatabaseSeeder extends Seeder
             'operation_type' => 'load',
             'description' => 'Turno noturno - carga apenas - público',
             'dropoff_address_id' => null,
+        ]);
+
+        // Cota de demonstração: o fluxo principal do CargoHub (publicar → agendar → documentos).
+        app(PublishQuota::class)->execute($admin, [
+            'product_name' => 'Soja',
+            'destination' => 'B&8',
+            'operation_type' => 'unload',
+            'total_quantity' => 150,
+            'starts_on' => $now->copy()->addDay()->toDateString(),
+            'ends_on' => $now->copy()->addDays(6)->toDateString(),
+            'hours' => ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'],
+            'slot_capacity' => 4,
+            'expected_weight_kg' => 20000,
+            'rules' => 'Chegar com 30 minutos de antecedência. Lona obrigatória.',
+            'requires_invoice' => true,
+            'requires_weight_ticket' => true,
         ]);
     }
 }

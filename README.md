@@ -1,13 +1,48 @@
 # CargoHub
 
-Yard Management System (YMS) para organizar agendamentos, entrada de veículos e
-operações de carga e descarga no pátio.
+Plataforma que digitaliza o ciclo completo entre **cotas de carga/descarga,
+agendamento e operação de pátio**. A empresa publica as cotas; os clientes
+enxergam o que têm disponível, agendam sozinhos, enviam NF e comprovantes, e a
+operação acompanha tudo em um único lugar. O WhatsApp deixa de ser o sistema
+operacional da empresa e passa a ser apenas o canal que avisa e leva ao CargoHub.
 
-O CargoHub centraliza cotas de atendimento, reservas, portaria, docas, vagas,
-movimentações internas, documentos, indicadores e comunicação por WhatsApp. O
-produto está em fase de piloto controlado com uma empresa e um pátio; o escopo do
-piloto deve permanecer congelado enquanto volume, tempos, falhas e tarefas manuais
-são medidos.
+O CargoHub também centraliza portaria, docas, vagas, movimentações internas,
+indicadores e comunicação por WhatsApp. O produto está em fase de piloto
+controlado com uma empresa e um pátio.
+
+## Ciclo de cotas
+
+```
+EMPRESA PUBLICA COTAS → CLIENTE VISUALIZA → CLIENTE AGENDA → CARGOHUB CONTROLA
+DISPONIBILIDADE → CLIENTE ENVIA NF / PESO / COMPROVANTES → EMPRESA ACOMPANHA →
+OPERAÇÃO ACONTECE → CARGOHUB REGISTRA TUDO
+```
+
+- **Publicação em uma ação** (`/admin/quotas/create`): produto, destino, carga ou
+  descarga, quantidade, período, horários, veículos por horário (calculado
+  automaticamente se omitido), clientes com saldo individual ou cota aberta a
+  todos, documentos exigidos e regras. O CargoHub gera a grade de horários.
+- **Portal do cliente** (`/client`): "o que tenho disponível, o que agendei, o que
+  preciso fazer". Agendamento self-service em poucos toques: dia → horário →
+  quantidade → veículo (agora ou depois) → confirmação com código `AGD-00042`.
+- **Disponibilidade em tempo real sem overbooking**: saldo da cota, saldo do
+  cliente e capacidade do horário são conferidos sob lock (`QuotaCapacityGuard`),
+  inclusive nos caminhos antigos de reserva e no WhatsApp.
+- **Documentos no agendamento**: NF (com número), comprovante de peso (com peso) e
+  comprovantes, com checklist e rastreabilidade por agendamento.
+- **Visão da empresa**: Central da operação (pendências, atrasos, cotas que expiram,
+  horários com vaga), Cotas (disponíveis, reservadas, em operação, utilizadas,
+  não utilizadas, ocupação por horário e quem reservou) e Agendamentos (cliente,
+  veículo, NF, peso, documentos e status), com registro de não comparecimento.
+- **Sinais da operação**: baixa adesão para amanhã, concentração de veículos,
+  horários que lotam primeiro, cotas expirando com saldo e no-show histórico por
+  horário. Regras determinísticas sobre os próprios dados, sem IA.
+- **WhatsApp como canal**: "Avisar clientes" envia o saldo de cada cliente com o
+  link para agendar; a confirmação do agendamento chega com o link para acompanhar.
+
+Estados do agendamento: Confirmado, Documentação pendente, Aguardando chegada,
+Atrasado, No pátio, Em operação, Concluído, Não compareceu e Cancelado.
+Estados da cota: Publicada, Aberta, Esgotada, Encerrada, Expirada e Cancelada.
 
 ## Funcionalidades
 

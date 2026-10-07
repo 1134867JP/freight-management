@@ -4,11 +4,13 @@ Guia para o agente de desenvolvimento que trabalha neste repositório.
 
 ## O produto
 
-CargoHub é um **YMS (Yard Management System)** para operações de pátio:
-cotas (`timeslots`), reservas de carga/descarga, portaria, docas, vagas,
-movimentações internas, documentos, indicadores e WhatsApp. Está em **piloto
-controlado** (uma empresa, um pátio) — não amplie o escopo do piloto sem pedido
-explícito.
+CargoHub digitaliza o ciclo **cotas → agendamento → documentos → operação de
+pátio** que antes acontecia pelo WhatsApp. A **Cota** (`Quota`, `COT-0001`) é a
+entidade central: a empresa publica, o CargoHub gera as janelas (`timeslots` com
+`quota_id`) e cada agendamento (`Freight`, `AGD-00001`) consome uma unidade.
+Regras de saldo ficam em `QuotaCapacityGuard` (sempre sob lock: cota → horário);
+o ciclo exibido ao usuário vem de `BookingPresenter`/`QuotaPresenter`. Está em
+**piloto controlado** (uma empresa, um pátio).
 
 Preserve a identidade: ferramenta operacional útil para quem está no pátio.
 Não transformar em SaaS genérico, ERP tradicional, dashboard cheio de cards,
