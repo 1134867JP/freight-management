@@ -243,38 +243,22 @@ export default function AuthenticatedLayout({ header, children }) {
     ];
   }, [canManageAdmins, canManageEmployees, canManageWhatsApp, canViewAuditLogs, isAdmin, isPlatformAdmin, pilotMode, usesQueues, usesDocks]);
 
-  const currentNavigation = useMemo(() => {
-    for (const section of menuSections) {
-      for (const item of section.items) {
-        if (item.children) {
-          const activeChild = item.children.find((child) => child.active);
-          if (activeChild) {
-            return { section: section.section, label: activeChild.label, parent: item.label };
-          }
-        }
-
-        if (item.active) return { section: section.section, label: item.label, parent: null };
-      }
-    }
-
-    return { section: null, label: company?.name || 'CargoHub', parent: null };
-  }, [company?.name, menuSections]);
-
   const SideLink = ({ href, active, label, icon, onNavigate, compact = false }) => (
     <Link
       href={href}
       onClick={onNavigate}
       className={`group relative flex min-h-11 items-center rounded-lg py-2 text-[15px] transition-colors duration-150 ${compact ? 'justify-center px-2' : 'gap-3 px-3'} ${
         active
-          ? 'bg-white font-semibold text-pinho-800 shadow-sm ring-1 ring-areia-200 dark:bg-areia-800 dark:text-white dark:ring-areia-700'
-          : 'font-medium text-areia-700 hover:bg-white/70 hover:text-areia-900 dark:text-areia-300 dark:hover:bg-areia-800/60 dark:hover:text-white'
+          ? 'bg-white/[0.09] font-semibold text-white'
+          : 'font-medium text-pinho-100/75 hover:bg-white/[0.05] hover:text-white'
       }`}
       aria-current={active ? 'page' : undefined}
       aria-label={compact ? label : undefined}
       title={compact ? label : undefined}
     >
+      {active && <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-ocre-400" aria-hidden="true" />}
       {icon && (
-        <span className={`flex h-6 w-6 shrink-0 items-center justify-center transition-colors ${active ? 'text-pinho-700 dark:text-pinho-300' : 'text-areia-500 group-hover:text-areia-800 dark:text-areia-400 dark:group-hover:text-areia-200'}`}>
+        <span className={`flex h-6 w-6 shrink-0 items-center justify-center transition-colors ${active ? 'text-ocre-300' : 'text-pinho-200/60 group-hover:text-pinho-100'}`}>
           <MenuIcon name={icon} className="h-5 w-5" />
         </span>
       )}
@@ -301,9 +285,7 @@ export default function AuthenticatedLayout({ header, children }) {
             toggleGroup(item.group);
           }}
           className={`flex min-h-11 w-full items-center rounded-lg py-2 text-[15px] font-medium transition-colors ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
-            item.active
-              ? 'text-pinho-800 dark:text-white'
-              : 'text-areia-700 hover:bg-white/70 hover:text-areia-900 dark:text-areia-300 dark:hover:bg-areia-800/60 dark:hover:text-white'
+            item.active ? 'text-white' : 'text-pinho-100/75 hover:bg-white/[0.05] hover:text-white'
           }`}
           aria-expanded={isOpen}
           aria-label={compact ? item.label : undefined}
@@ -311,20 +293,20 @@ export default function AuthenticatedLayout({ header, children }) {
         >
           <span className="flex items-center gap-3">
             {item.icon && (
-              <span className={`flex h-6 w-6 items-center justify-center ${item.active ? 'text-pinho-700 dark:text-pinho-300' : 'text-areia-500 dark:text-areia-400'}`}>
+              <span className={`flex h-6 w-6 items-center justify-center ${item.active ? 'text-ocre-300' : 'text-pinho-200/60'}`}>
                 <MenuIcon name={item.icon} className="h-5 w-5 shrink-0" />
               </span>
             )}
             {!compact && item.label}
           </span>
           {!compact && (
-            <svg className={`h-4 w-4 text-areia-500 transition ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <svg className={`h-4 w-4 text-pinho-200/50 transition ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           )}
         </button>
         {isOpen && !compact && (
-          <div className="ml-[23px] mt-1 space-y-0.5 border-l border-areia-300 pl-3 dark:border-areia-700">
+          <div className="ml-[23px] mt-1 space-y-0.5 border-l border-white/10 pl-3">
             {item.children.map((child) => (
               <Link
                 key={child.label}
@@ -332,8 +314,8 @@ export default function AuthenticatedLayout({ header, children }) {
                 onClick={onNavigate}
                 className={`flex min-h-10 items-center rounded-lg px-3 py-2 text-[15px] transition ${
                   child.active
-                    ? 'bg-white font-semibold text-pinho-800 shadow-sm ring-1 ring-areia-200 dark:bg-areia-800 dark:text-white dark:ring-areia-700'
-                    : 'text-areia-600 hover:bg-white/70 hover:text-areia-900 dark:text-areia-400 dark:hover:bg-areia-800/60 dark:hover:text-white'
+                    ? 'bg-white/[0.09] font-semibold text-white'
+                    : 'text-pinho-100/70 hover:bg-white/[0.05] hover:text-white'
                 }`}
                 aria-current={child.active ? 'page' : undefined}
               >
@@ -347,15 +329,15 @@ export default function AuthenticatedLayout({ header, children }) {
   };
 
   const NavigationContent = ({ onNavigate = undefined, compact = false }) => (
-    <nav aria-label="Navegação principal" className={`flex-1 overflow-y-auto py-5 ${compact ? 'space-y-2 px-3' : 'space-y-6 px-4'}`}>
+    <nav aria-label="Navegação principal" className={`flex-1 overflow-y-auto py-4 [scrollbar-color:rgba(255,255,255,0.15)_transparent] ${compact ? 'space-y-2 px-3' : 'space-y-6 px-3'}`}>
       {menuSections.map((objSection, index) => (
-        <div key={objSection.section ?? '_main'} className={compact && index > 0 ? 'border-t border-areia-300/70 pt-2 dark:border-areia-800' : ''}>
+        <div key={objSection.section ?? '_main'} className={compact && index > 0 ? 'border-t border-white/10 pt-2' : ''}>
           {objSection.section && !compact && (
-            <p className="mb-1.5 px-3 text-[13px] font-semibold text-areia-500 dark:text-areia-400">
+            <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.09em] text-pinho-200/45">
               {objSection.section}
             </p>
           )}
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {objSection.items.map((item) => {
               if (item.children) return <NavGroup key={item.label} item={item} onNavigate={onNavigate} compact={compact} />;
               return <SideLink key={item.label} {...item} onNavigate={onNavigate} compact={compact} />;
@@ -364,6 +346,34 @@ export default function AuthenticatedLayout({ header, children }) {
         </div>
       ))}
     </nav>
+  );
+
+  const CompanyChip = ({ compact = false }) => (
+    company?.name && !isPlatformAdmin ? (
+      <div className={`flex items-center rounded-xl bg-white/[0.06] ring-1 ring-inset ring-white/10 ${compact ? 'justify-center p-2' : 'gap-3 p-2.5'}`} title={compact ? company.name : undefined}>
+        {logoUrl ? (
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white p-1.5">
+            <img src={logoUrl} className="max-h-full max-w-full object-contain" alt="" />
+          </span>
+        ) : (
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ocre-400 font-display text-base font-bold text-pinho-950">
+            {company.name.charAt(0).toUpperCase()}
+          </span>
+        )}
+        {!compact && (
+          <span className="min-w-0">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.08em] text-pinho-200/50">{isAdmin ? 'Empresa' : 'Portal do cliente'}</span>
+            <span className="block truncate text-[15px] font-semibold text-white">{company.name}</span>
+          </span>
+        )}
+      </div>
+    ) : null
+  );
+
+  const Avatar = () => (
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pinho-700 font-display text-base font-bold text-white ring-2 ring-white/10">
+      {user.name.charAt(0).toUpperCase()}
+    </span>
   );
 
   // fecha menu ao clicar fora / esc
@@ -401,55 +411,53 @@ export default function AuthenticatedLayout({ header, children }) {
     window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
+  const sidebarSurface = 'bg-[#10241B] dark:bg-[#0D1A14]';
+
   return (
     <div className="min-h-screen bg-areia-100 dark:bg-[#1d1f1c] lg:flex lg:h-screen lg:overflow-hidden">
-      <aside className={`relative hidden shrink-0 overflow-hidden border-r border-areia-200 bg-[#EDE7DB] transition-[width] dark:border-areia-800 dark:bg-areia-950 duration-200 lg:flex lg:flex-col ${sidebarCollapsed ? 'w-[88px]' : 'w-[280px]'}`}>
-        <div className={`relative border-b border-areia-300/70 py-5 dark:border-areia-800 ${sidebarCollapsed ? 'px-6' : 'px-5'}`}>
-          <Link href={route('dashboard')} aria-label="Ir para o painel">
-            <BrandLogo compact={sidebarCollapsed} />
+      <aside className={`relative hidden shrink-0 flex-col transition-[width] duration-200 lg:flex ${sidebarSurface} ${sidebarCollapsed ? 'w-[80px]' : 'w-[268px]'}`}>
+        <div className={`flex items-center py-5 ${sidebarCollapsed ? 'flex-col gap-4 px-3' : 'justify-between px-5'}`}>
+          <Link href={route('dashboard')} aria-label="Ir para o início" className="rounded-lg">
+            <BrandLogo compact={sidebarCollapsed} inverse />
           </Link>
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed((value) => !value)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-pinho-200/60 transition-colors hover:bg-white/[0.06] hover:text-white"
+            aria-label={sidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+            title={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.7" />
+              <path d={sidebarCollapsed ? 'M9 4.5v15M13 10l2 2-2 2' : 'M9 4.5v15M15.5 10l-2 2 2 2'} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
 
-          {company?.name && !isPlatformAdmin && (
-            <div className={`mt-5 flex items-center rounded-lg border border-areia-300/70 bg-white/60 dark:border-areia-800 dark:bg-areia-900 ${sidebarCollapsed ? 'justify-center p-2' : 'gap-3 p-3'}`} title={sidebarCollapsed ? company.name : undefined}>
-              {company?.logo_url ? (
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white p-1.5 ring-1 ring-areia-200">
-                  <img src={logoUrl} className="max-h-full max-w-full object-contain" alt="" />
-                </span>
-              ) : (
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-pinho-100 font-display text-base font-bold text-pinho-800">
-                  {company.name.charAt(0).toUpperCase()}
-                </span>
-              )}
-              {!sidebarCollapsed && <span className="min-w-0">
-                <span className="block text-[13px] text-areia-500 dark:text-areia-400">Empresa</span>
-                <span className="block truncate text-[15px] font-semibold text-areia-900 dark:text-areia-100">{company.name}</span>
-              </span>}
-            </div>
-          )}
+        <div className={sidebarCollapsed ? 'px-3' : 'px-4'}>
+          <CompanyChip compact={sidebarCollapsed} />
         </div>
 
         <NavigationContent compact={sidebarCollapsed} />
 
-        <div className="relative border-t border-areia-300/70 p-3 dark:border-areia-800" ref={accountMenuRef}>
+        <div className="relative border-t border-white/10 p-3" ref={accountMenuRef}>
           <button
             type="button"
             onClick={() => setShowAccountMenu((v) => !v)}
-            className={`flex min-h-12 w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-white/70 dark:hover:bg-areia-800/60 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
+            className={`flex min-h-12 w-full items-center rounded-lg p-2 text-left transition-colors hover:bg-white/[0.06] ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
             aria-expanded={showAccountMenu}
             aria-label={sidebarCollapsed ? `Abrir menu de ${user.name}` : undefined}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pinho-700 font-display text-base font-bold text-white">
-              {user.name.charAt(0).toUpperCase()}
-            </span>
+            <Avatar />
             {!sidebarCollapsed && <span className="min-w-0 flex-1">
-              <span className="block truncate text-[15px] font-semibold text-areia-900 dark:text-white">{user.name}</span>
-              <span className="block text-[13px] text-areia-600 dark:text-areia-400">{roleLabel}</span>
+              <span className="block truncate text-[15px] font-semibold text-white">{user.name}</span>
+              <span className="block text-[13px] text-pinho-200/60">{roleLabel}</span>
             </span>}
-            {!sidebarCollapsed && <GearIcon className="h-5 w-5 text-areia-500" />}
+            {!sidebarCollapsed && <GearIcon className="h-5 w-5 text-pinho-200/50" />}
           </button>
 
           {showAccountMenu && (
-            <div className={`overflow-hidden rounded-xl border border-areia-200 bg-white p-1.5 shadow-xl dark:border-areia-700 dark:bg-areia-900 ${sidebarCollapsed ? 'fixed bottom-4 left-[96px] z-50 w-56' : 'absolute bottom-[72px] left-4 right-4'}`}>
+            <div className={`overflow-hidden rounded-xl border border-areia-200 bg-white p-1.5 shadow-xl dark:border-areia-700 dark:bg-areia-900 ${sidebarCollapsed ? 'fixed bottom-4 left-[88px] z-50 w-56' : 'absolute bottom-[72px] left-3 right-3'}`}>
               <Link
                 href={route('profile.edit')}
                 className="block rounded-lg px-3 py-2.5 text-[15px] text-areia-800 transition hover:bg-areia-100 dark:text-areia-200 dark:hover:bg-areia-800"
@@ -473,77 +481,46 @@ export default function AuthenticatedLayout({ header, children }) {
       </aside>
 
       <div className="min-w-0 flex-1 lg:overflow-y-auto">
-        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-areia-200 bg-areia-50/95 px-4 sm:px-6 lg:px-8 dark:border-areia-800 dark:bg-areia-950">
-          <Link href={route('dashboard')} className="lg:hidden" aria-label="Ir para o painel">
-            <BrandLogo compact />
+        <div className={`sticky top-0 z-30 flex h-16 items-center justify-between px-4 sm:px-6 lg:hidden ${sidebarSurface}`}>
+          <Link href={route('dashboard')} aria-label="Ir para o início">
+            <BrandLogo compact inverse />
           </Link>
-
-          <div className="hidden min-w-0 items-center gap-3 lg:flex">
-            <button
-              type="button"
-              onClick={() => setSidebarCollapsed((value) => !value)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-white"
-              aria-label={sidebarCollapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
-              title={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
-            >
-              <svg className={`h-4 w-4 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="m14 6-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <div className="min-w-0">
-              <p className="truncate text-[13px] text-areia-500 dark:text-areia-400">
-                {currentNavigation.section || (isAdmin || isPlatformAdmin ? 'Central de operações' : 'Portal do cliente')}
-              </p>
-              <p className="truncate text-base font-semibold leading-tight text-areia-900 dark:text-areia-100">
-                {currentNavigation.parent ? `${currentNavigation.parent} · ${currentNavigation.label}` : currentNavigation.label}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="hidden max-w-64 items-center gap-2 rounded-lg border border-areia-200 bg-white px-3 py-1.5 text-sm font-medium text-areia-700 sm:inline-flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-              <MenuIcon name="buildings" className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-              <span className="truncate">{company?.name || 'CargoHub YMS'}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowMobileMenu((state) => !state)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 lg:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-              aria-label={showMobileMenu ? 'Fechar menu' : 'Abrir menu'}
-              aria-expanded={showMobileMenu}
-            >
-              {showMobileMenu ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-              )}
-            </button>
-          </div>
+          {company?.name && !isPlatformAdmin && (
+            <span className="mx-3 min-w-0 flex-1 truncate text-center text-[15px] font-semibold text-pinho-100/80">{company.name}</span>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowMobileMenu((state) => !state)}
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
+            aria-label={showMobileMenu ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={showMobileMenu}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 7h16M4 12h16M4 17h16"/>
+            </svg>
+          </button>
         </div>
 
         {showMobileMenu && (
           <div className="fixed inset-0 z-50 lg:hidden">
-            <button type="button" className="absolute inset-0 bg-areia-950/50" onClick={() => setShowMobileMenu(false)} aria-label="Fechar menu" />
-            <aside className="relative flex h-full w-[min(88vw,340px)] flex-col bg-[#EDE7DB] shadow-2xl dark:bg-areia-950">
-              <div className="flex items-center justify-between border-b border-areia-300/70 px-5 py-5 dark:border-areia-800">
-                <BrandLogo />
-                <button type="button" onClick={() => setShowMobileMenu(false)} className="flex h-11 w-11 items-center justify-center rounded-lg text-areia-600 hover:bg-white/70 hover:text-areia-900 dark:text-areia-300 dark:hover:bg-areia-800" aria-label="Fechar menu">
+            <button type="button" className="absolute inset-0 bg-areia-950/60 backdrop-blur-[2px]" onClick={() => setShowMobileMenu(false)} aria-label="Fechar menu" />
+            <aside className={`relative flex h-full w-[min(86vw,320px)] flex-col shadow-2xl ${sidebarSurface}`}>
+              <div className="flex items-center justify-between px-5 py-5">
+                <BrandLogo inverse />
+                <button type="button" onClick={() => setShowMobileMenu(false)} className="flex h-11 w-11 items-center justify-center rounded-lg text-pinho-100/80 hover:bg-white/10 hover:text-white" aria-label="Fechar menu">
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
                 </button>
               </div>
+              <div className="px-4"><CompanyChip /></div>
               <NavigationContent onNavigate={() => setShowMobileMenu(false)} />
-              <div className="border-t border-areia-300/70 p-4 dark:border-areia-800">
-                <div className="mb-3 flex items-center gap-3 px-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pinho-700 font-display text-base font-bold text-white">{user.name.charAt(0).toUpperCase()}</span>
-                  <span className="min-w-0"><span className="block truncate text-[15px] font-semibold text-areia-900 dark:text-white">{user.name}</span><span className="block text-[13px] text-areia-600 dark:text-areia-400">{roleLabel}</span></span>
+              <div className="border-t border-white/10 p-4">
+                <div className="mb-3 flex items-center gap-3 px-1">
+                  <Avatar />
+                  <span className="min-w-0"><span className="block truncate text-[15px] font-semibold text-white">{user.name}</span><span className="block text-[13px] text-pinho-200/60">{roleLabel}</span></span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <Link href={route('profile.edit')} onClick={() => setShowMobileMenu(false)} className="flex min-h-11 items-center justify-center rounded-lg border border-areia-300 bg-white px-3 py-2 text-[15px] font-medium text-areia-800 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-200">Perfil</Link>
-                  <Link href={route('logout')} method="post" as="button" onClick={() => setShowMobileMenu(false)} className="flex min-h-11 items-center justify-center rounded-lg border border-tijolo-200 bg-tijolo-50 px-3 py-2 text-[15px] font-medium text-tijolo-700 dark:border-tijolo-900 dark:bg-tijolo-950/40 dark:text-tijolo-300">Sair</Link>
+                  <Link href={route('profile.edit')} onClick={() => setShowMobileMenu(false)} className="flex min-h-11 items-center justify-center rounded-lg bg-white/[0.08] px-3 py-2 text-[15px] font-medium text-white hover:bg-white/[0.12]">Perfil</Link>
+                  <Link href={route('logout')} method="post" as="button" onClick={() => setShowMobileMenu(false)} className="flex min-h-11 items-center justify-center rounded-lg bg-tijolo-500/15 px-3 py-2 text-[15px] font-medium text-tijolo-200 hover:bg-tijolo-500/25">Sair</Link>
                 </div>
               </div>
             </aside>
@@ -556,7 +533,7 @@ export default function AuthenticatedLayout({ header, children }) {
           </header>
         )}
 
-        <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+        <main className="min-h-[calc(100vh-4rem)] lg:min-h-screen lg:pt-3">{children}</main>
       </div>
     </div>
   );
