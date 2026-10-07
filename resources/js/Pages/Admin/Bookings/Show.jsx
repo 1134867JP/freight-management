@@ -96,7 +96,6 @@ function Section({ title, children }) {
   );
 }
 
-
 function FinalizeModal({ booking, open, onClose, title }) {
   const { data, setData, patch, processing, errors, reset } = useForm({
     gross_weight: '',
@@ -121,8 +120,13 @@ function FinalizeModal({ booking, open, onClose, title }) {
   return (
     <ModalShell show={open} title={title} onClose={onClose} maxWidthClass="max-w-md">
       <form onSubmit={submit} className="space-y-4">
-        <FormField id="net_weight" label={isLoad ? 'Peso líquido carregado (kg)' : 'Peso líquido descarregado (kg)'}
-          hint={declared} error={errors.net_weight} required>
+        <FormField
+          id="net_weight"
+          label={isLoad ? 'Peso líquido carregado (kg)' : 'Peso líquido descarregado (kg)'}
+          hint={declared}
+          error={errors.net_weight}
+          required
+        >
           <FormField.Input
             id="net_weight"
             type="number"
@@ -135,12 +139,7 @@ function FinalizeModal({ booking, open, onClose, title }) {
             required
           />
         </FormField>
-        <FormField
-          id="gross_weight"
-          label="Peso bruto (kg)"
-          error={errors.gross_weight}
-          required
-        >
+        <FormField id="gross_weight" label="Peso bruto (kg)" error={errors.gross_weight} required>
           <FormField.Input
             id="gross_weight"
             type="number"
@@ -222,7 +221,10 @@ export default function BookingShow({ booking, flow = {} }) {
     primary = { label: finalizeLabel, onClick: () => setFinalizeOpen(true) };
     hint = `${isLoad ? 'Carregamento' : 'Descarga'} em andamento. Informe os pesos para concluir.`;
   }
-  const showStart = Boolean(primary) && ['reserved', 'arrived'].includes(status) && !(status === 'reserved' && requiresCheckin);
+  const showStart =
+    Boolean(primary) &&
+    ['reserved', 'arrived'].includes(status) &&
+    !(status === 'reserved' && requiresCheckin);
 
   const markNoShow = async () => {
     const ok = await confirm(

@@ -193,7 +193,10 @@ export default function Form({ quota = null, clients = [], products = [], destin
     setData((current) =>
       current.allocations.some((a) => a.user_id === client.id)
         ? current
-        : { ...current, allocations: [...current.allocations, { user_id: client.id, quantity: '' }] },
+        : {
+            ...current,
+            allocations: [...current.allocations, { user_id: client.id, quantity: '' }],
+          },
     );
   };
 
@@ -594,7 +597,11 @@ export default function Form({ quota = null, clients = [], products = [], destin
                       <span className="text-sm text-areia-600 dark:text-areia-400">
                         {plural(data.allocations.length, 'selecionado', 'selecionados')}
                       </span>
-                      <Button variant="secondary" size="sm" onClick={() => setQuickClientOpen(true)}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setQuickClientOpen(true)}
+                      >
                         Cadastrar cliente
                       </Button>
                     </div>
