@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from '@/Components/UI/Button';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import StatusBadge from '@/Components/UI/StatusBadge';
@@ -116,21 +117,6 @@ function Panel({ children, className = '' }) {
   );
 }
 
-function HeroButton({ children, onClick, primary = false }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2 text-[15px] font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#10241B] ${
-        primary
-          ? 'bg-ocre-400 text-pinho-950 shadow-sm hover:bg-ocre-300'
-          : 'bg-white/10 text-white hover:bg-white/15'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
 
 function plural(count, singular, pluralForm) {
   return `${count} ${count === 1 ? singular : pluralForm}`;
@@ -174,21 +160,21 @@ function Hero({ companyName, dateLabel, attention, today, canPublish }) {
         <p className="mt-2 text-base text-white/80">{statusSentence(attention, today)}</p>
 
         <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Ações">
-          <HeroButton
-            primary
+          <Button
+            variant="accent"
             onClick={() => router.visit(route('admin.bookings.index', { filter: 'documents' }))}
           >
             Resolver pendências
-          </HeroButton>
-          <HeroButton onClick={() => router.visit(route('admin.bookings.index'))}>
+          </Button>
+          <Button variant="inverse" onClick={() => router.visit(route('admin.bookings.index'))}>
             Ver agendamentos
-          </HeroButton>
+          </Button>
           {canPublish && (
-            <HeroButton onClick={() => router.visit(route('admin.quotas.create'))}>
+            <Button variant="inverse" onClick={() => router.visit(route('admin.quotas.create'))}>
               Publicar cotas
-            </HeroButton>
+            </Button>
           )}
-          <HeroButton onClick={() => router.visit(route('admin.agenda'))}>Ver operação</HeroButton>
+          <Button variant="inverse" onClick={() => router.visit(route('admin.agenda'))}>Ver operação</Button>
         </div>
       </div>
     </section>

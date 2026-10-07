@@ -1,6 +1,6 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import Button from '@/Components/UI/Button';
+import Button, { buttonClassName } from '@/Components/UI/Button';
 import Card from '@/Components/UI/Card';
 import FlashMessages from '@/Components/UI/FlashMessages';
 import IconTile from '@/Components/UI/IconTile';
@@ -196,7 +196,7 @@ export default function Home({
 
           <Link
             href={route('client.quotas')}
-            className="mt-6 inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-ocre-400 px-6 text-base font-semibold text-areia-950 shadow-sm transition-colors hover:bg-ocre-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#10241B] sm:w-auto"
+            className={buttonClassName({ variant: 'accent', size: 'lg', className: 'mt-6 w-full sm:w-auto' })}
           >
             Agendar cota
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -96,22 +96,6 @@ function Section({ title, children }) {
   );
 }
 
-function HeroButton({ children, onClick, disabled = false, tone = 'default' }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2 text-[15px] font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#10241B] disabled:cursor-not-allowed disabled:opacity-50 ${
-        tone === 'danger'
-          ? 'bg-white/10 text-tijolo-200 hover:bg-white/15'
-          : 'bg-white/10 text-white hover:bg-white/15'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
 
 function FinalizeModal({ booking, open, onClose }) {
   const { data, setData, patch, processing, errors, reset } = useForm({
@@ -345,37 +329,15 @@ export default function BookingShow({ booking, flow = {} }) {
                 </p>
                 {hint && <p className="mt-1.5 max-w-xl text-[15px] text-white/75">{hint}</p>}
               </div>
-              <button
-                type="button"
+              <Button
+                variant="accent"
+                size="lg"
                 onClick={primary.onClick}
-                disabled={busy}
-                aria-busy={busy}
-                className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-lg bg-ocre-400 px-6 py-3 text-base font-semibold text-pinho-950 shadow-sm transition-colors hover:bg-ocre-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#10241B] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[320px]"
+                loading={busy}
+                className="w-full sm:w-auto sm:min-w-[320px]"
               >
-                {busy && (
-                  <svg
-                    className="h-4 w-4 animate-spin"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                )}
                 {primary.label}
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
@@ -397,14 +359,14 @@ export default function BookingShow({ booking, flow = {} }) {
               {primary ? (
                 <>
                   {showNoShow && (
-                    <HeroButton onClick={markNoShow} disabled={busy}>
+                    <Button variant="inverse" onClick={markNoShow} disabled={busy}>
                       Não compareceu
-                    </HeroButton>
+                    </Button>
                   )}
                   {showCancel && (
-                    <HeroButton tone="danger" onClick={cancelBooking} disabled={busy}>
+                    <Button variant="inverse-danger" onClick={cancelBooking} disabled={busy}>
                       Cancelar agendamento
-                    </HeroButton>
+                    </Button>
                   )}
                 </>
               ) : (
