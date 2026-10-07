@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function root(): RedirectResponse
+    /** Visitantes veem a landing; quem já entrou vai direto ao seu painel. */
+    public function root(): RedirectResponse|Response
     {
-        return redirect()->route('login');
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+
+        return Inertia::render('Landing', ['canLogin' => true]);
     }
 
     public function dashboard(): RedirectResponse

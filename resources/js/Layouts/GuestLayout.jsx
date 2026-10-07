@@ -7,7 +7,7 @@ export default function GuestLayout({ children }) {
   return (
     <div className="min-h-screen bg-areia-100">
       <div className="mx-auto grid min-h-screen max-w-[1320px] grid-cols-1 gap-10 px-5 py-8 sm:px-8 lg:grid-cols-[1fr_480px] lg:items-center lg:gap-16 lg:py-12">
-        <div className="hidden lg:block">
+        <div className="rise-in hidden lg:block">
           <Link href="/" className="inline-flex" aria-label="CargoHub">
             <BrandLogo />
           </Link>
@@ -36,7 +36,7 @@ export default function GuestLayout({ children }) {
           </figure>
         </div>
 
-        <div className="w-full">
+        <div className="rise-in w-full [animation-delay:120ms]">
           <div className="mb-8 flex justify-center lg:hidden">
             <BrandLogo />
           </div>
