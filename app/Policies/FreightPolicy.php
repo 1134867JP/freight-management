@@ -61,16 +61,6 @@ class FreightPolicy
         return $user->isClient() && $user->id === $freight->user_id;
     }
 
-    public function reopen(User $user, Freight $freight): bool
-    {
-        return $user->isClient() && $user->id === $freight->user_id;
-    }
-
-    public function uploadInvoice(User $user, Freight $freight): bool
-    {
-        return $user->isClient() && $user->id === $freight->user_id;
-    }
-
     public function downloadInvoiceClient(User $user, Freight $freight): bool
     {
         return $user->isClient() && $user->id === $freight->user_id;

@@ -16,6 +16,7 @@ export const STATUS_PRESENTATIONS = {
     unloading: { label: 'Descarregando', tone: 'info' },
     completed: { label: 'Finalizado', tone: 'success' },
     cancelled: { label: 'Cancelado', tone: 'danger' },
+    no_show: { label: 'Não compareceu', tone: 'danger' },
   },
   timeslot: {
     available: { label: 'Disponível', tone: 'success' },

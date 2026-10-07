@@ -141,7 +141,7 @@ function QrLookupPanel() {
         {result && (
           <div className="flex w-full flex-wrap items-center justify-between gap-3 rounded-lg border border-pinho-200 bg-pinho-50 px-4 py-3 dark:border-pinho-800 dark:bg-pinho-950/50">
             <div className="flex items-center gap-3">
-              <p className="plate text-base">{result.truck_plate}</p>
+              <p className="plate text-base">{result.truck_plate || 'A definir'}</p>
               <div>
                 <p className="text-[15px] font-semibold text-areia-900 dark:text-white">{result.driver_name}</p>
                 <p className="text-sm text-areia-600 dark:text-areia-400">{result.status_label}</p>
@@ -190,7 +190,7 @@ function FreightCard({ freight, action, now }) {
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="plate text-base">{freight.truck_plate}</p>
+        <p className="plate text-base">{freight.truck_plate || 'A definir'}</p>
         <OpBadge type={freight.operation_type} />
       </div>
 
@@ -318,7 +318,7 @@ export default function GateIndex({ expected, waiting, inProgress, completedToda
           </PipelineColumn>
         </div>
 
-        <section className="mt-4 shrink-0 rounded-xl border border-areia-200 bg-white shadow-sm dark:border-areia-800 dark:bg-areia-900">
+        <section className="glass mt-4 shrink-0 rounded-xl">
           <button
             type="button"
             onClick={() => setShowCompleted((v) => !v)}

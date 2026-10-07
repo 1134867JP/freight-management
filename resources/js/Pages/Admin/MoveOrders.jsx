@@ -85,7 +85,7 @@ export default function MoveOrders({ orders, activeFreights, availableSpots, doc
                     <div className="flex flex-wrap items-center gap-3">
                       <StatusBadge {...getStatusPresentation('moveOrder', order.status)} />
                       <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-100">
-                        {order.freight?.truck_plate}
+                        {order.freight?.truck_plate || 'A definir'}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
                         <LocationLabel tipo={order.origem_tipo} id={order.origem_id} spots={availableSpots} docas={docas} />
@@ -138,7 +138,7 @@ export default function MoveOrders({ orders, activeFreights, availableSpots, doc
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                     {doneOrders.map(order => (
                       <tr key={order.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-700/50">
-                        <td className="px-4 py-2.5 font-mono text-xs font-bold text-gray-800 dark:text-gray-200">{order.freight?.truck_plate}</td>
+                        <td className="px-4 py-2.5 font-mono text-xs font-bold text-gray-800 dark:text-gray-200">{order.freight?.truck_plate || 'A definir'}</td>
                         <td className="px-4 py-2.5 text-xs text-gray-500"><LocationLabel tipo={order.origem_tipo} id={order.origem_id} spots={availableSpots} docas={docas} /></td>
                         <td className="px-4 py-2.5 text-xs text-gray-500"><LocationLabel tipo={order.destino_tipo} id={order.destino_id} spots={availableSpots} docas={docas} /></td>
                         <td className="px-4 py-2.5"><StatusBadge {...getStatusPresentation('moveOrder', order.status)} /></td>
@@ -162,7 +162,7 @@ export default function MoveOrders({ orders, activeFreights, availableSpots, doc
             <select className={`mt-1 block w-full ${FormField.inputClass(errors.freight_id)}`} value={data.freight_id} onChange={e => setData('freight_id', e.target.value)} required>
               <option value="">Selecione o frete...</option>
               {(activeFreights || []).map(f => (
-                <option key={f.id} value={f.id}>{f.truck_plate} — {f.driver_name}</option>
+                <option key={f.id} value={f.id}>{f.truck_plate || 'A definir'} — {f.driver_name}</option>
               ))}
             </select>
           </FormField>

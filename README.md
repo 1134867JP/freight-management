@@ -1,13 +1,48 @@
 # CargoHub
 
-Yard Management System (YMS) para organizar agendamentos, entrada de veículos e
-operações de carga e descarga no pátio.
+Plataforma que digitaliza o ciclo completo entre **cotas de carga/descarga,
+agendamento e operação de pátio**. A empresa publica as cotas; os clientes
+enxergam o que têm disponível, agendam sozinhos, enviam NF e comprovantes, e a
+operação acompanha tudo em um único lugar. O WhatsApp deixa de ser o sistema
+operacional da empresa e passa a ser apenas o canal que avisa e leva ao CargoHub.
 
-O CargoHub centraliza cotas de atendimento, reservas, portaria, docas, vagas,
-movimentações internas, documentos, indicadores e comunicação por WhatsApp. O
-produto está em fase de piloto controlado com uma empresa e um pátio; o escopo do
-piloto deve permanecer congelado enquanto volume, tempos, falhas e tarefas manuais
-são medidos.
+O CargoHub também centraliza portaria, docas, vagas, movimentações internas,
+indicadores e comunicação por WhatsApp. O produto está em fase de piloto
+controlado com uma empresa e um pátio.
+
+## Ciclo de cotas
+
+```
+EMPRESA PUBLICA COTAS → CLIENTE VISUALIZA → CLIENTE AGENDA → CARGOHUB CONTROLA
+DISPONIBILIDADE → CLIENTE ENVIA NF / PESO / COMPROVANTES → EMPRESA ACOMPANHA →
+OPERAÇÃO ACONTECE → CARGOHUB REGISTRA TUDO
+```
+
+- **Publicação em uma ação** (`/admin/quotas/create`): produto, destino, carga ou
+  descarga, quantidade, período, horários, veículos por horário (calculado
+  automaticamente se omitido), clientes com saldo individual ou cota aberta a
+  todos, documentos exigidos e regras. O CargoHub gera a grade de horários.
+- **Portal do cliente** (`/client`): "o que tenho disponível, o que agendei, o que
+  preciso fazer". Agendamento self-service em poucos toques: dia → horário →
+  quantidade → veículo (agora ou depois) → confirmação com código `AGD-00042`.
+- **Disponibilidade em tempo real sem overbooking**: saldo da cota, saldo do
+  cliente e capacidade do horário são conferidos sob lock (`QuotaCapacityGuard`),
+  inclusive nos caminhos antigos de reserva e no WhatsApp.
+- **Documentos no agendamento**: NF (com número), comprovante de peso (com peso) e
+  comprovantes, com checklist e rastreabilidade por agendamento.
+- **Visão da empresa**: Central da operação (pendências, atrasos, cotas que expiram,
+  horários com vaga), Cotas (disponíveis, reservadas, em operação, utilizadas,
+  não utilizadas, ocupação por horário e quem reservou) e Agendamentos (cliente,
+  veículo, NF, peso, documentos e status), com registro de não comparecimento.
+- **Sinais da operação**: baixa adesão para amanhã, concentração de veículos,
+  horários que lotam primeiro, cotas expirando com saldo e no-show histórico por
+  horário. Regras determinísticas sobre os próprios dados, sem IA.
+- **WhatsApp como canal**: "Avisar clientes" envia o saldo de cada cliente com o
+  link para agendar; a confirmação do agendamento chega com o link para acompanhar.
+
+Estados do agendamento: Confirmado, Documentação pendente, Aguardando chegada,
+Atrasado, No pátio, Em operação, Concluído, Não compareceu e Cancelado.
+Estados da cota: Publicada, Aberta, Esgotada, Encerrada, Expirada e Cancelada.
 
 ## Funcionalidades
 
@@ -23,13 +58,13 @@ são medidos.
 
 ### Agendamento e operação
 
-- criação de cotas (`timeslots`) públicas ou restritas a clientes;
+- publicação de cotas (produto, destino, quantidade, período e horários) — ver
+  [Ciclo de cotas](#ciclo-de-cotas);
+- horários avulsos (`timeslots` sem cota), públicos ou restritos a clientes;
 - agenda operacional e controle de capacidade;
-- reservas de carga e descarga;
 - cadastro de caminhões e motoristas pelo cliente;
-- nota fiscal obrigatória para reservas de descarga;
-- cancelamento/rejeição, reabertura, acompanhamento e finalização das reservas;
-- anexos operacionais e exportações;
+- cancelamento/rejeição, não comparecimento, acompanhamento e finalização;
+- documentos por agendamento (NF, comprovante de peso, comprovantes) e exportações;
 - fechamento automático de horários expirados.
 
 ### Pátio
@@ -58,7 +93,7 @@ são medidos.
 | Administrador da plataforma | `platform_admin`   | Gerencia empresas, administradores principais e instâncias de WhatsApp.        |
 | Administrador da empresa    | `company_admin`    | Possui acesso administrativo e operacional completo dentro da própria empresa. |
 | Funcionário                 | `company_employee` | Opera o YMS e recebe somente as permissões administrativas delegadas.          |
-| Cliente                     | `client`           | Mantém motoristas e caminhões, reserva horários e acompanha suas operações.    |
+| Cliente                     | `client`           | Agenda cotas, envia documentos, mantém motoristas e caminhões e acompanha.     |
 
 As permissões delegáveis a funcionários são: visualizar auditoria, gerenciar
 administradores, gerenciar funcionários, gerenciar WhatsApp, criar cotas pelo
@@ -67,10 +102,10 @@ permissões nem delegar uma permissão que não possua.
 
 ## Fluxo operacional
 
-1. O administrador cria uma cota, pela interface ou pelo WhatsApp.
-2. O cliente escolhe um horário e cria a reserva com caminhão, motorista e operação.
-3. Em uma descarga, a nota fiscal é enviada junto com a reserva.
-4. A portaria faz o check-in e o veículo entra no pátio.
+1. O administrador publica uma cota (ou um horário avulso, pela interface ou WhatsApp).
+2. O cliente agenda pelo portal: dia, horário, quantidade e, se já souber, o veículo.
+3. O cliente envia NF, comprovante de peso e comprovantes no próprio agendamento.
+4. A portaria registra a chegada (informando a placa, se ainda faltar).
 5. O operador atribui vaga ou doca e, quando necessário, cria uma ordem de movimentação.
 6. A carga ou descarga é iniciada e finalizada.
 7. A portaria registra o check-out e libera os recursos associados.
@@ -81,7 +116,8 @@ O fluxo principal de status é:
 reserved -> arrived -> loading|unloading -> completed
 ```
 
-Uma reserva ainda ativa pode ser alterada para `cancelled`. No modo piloto, ou
+Um agendamento que aguarda chegada pode ir para `cancelled` ou, depois do horário,
+para `no_show` (a unidade volta ao saldo da cota). No modo piloto, ou
 quando a empresa não utiliza fila, a operação pode avançar de `reserved` para
 `loading` ou `unloading` sem uma etapa manual de check-in.
 

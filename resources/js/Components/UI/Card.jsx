@@ -5,7 +5,7 @@ function Card({ children, className = '' }) {
   return (
     <section
       className={[
-        'rounded-xl border border-areia-200 bg-white shadow-sm',
+        'glass rounded-2xl',
         'dark:border-areia-800 dark:bg-areia-900',
         className,
       ].filter(Boolean).join(' ')}

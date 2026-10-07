@@ -38,7 +38,7 @@ export default function AssignDocaModal({ open, freight, docasDisponiveis, onClo
     <ModalShell show={open} title="Atribuir Doca" onClose={handleClose} maxWidthClass="max-w-md">
       <div className="mb-4">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Frete: <span className="font-semibold text-gray-900 dark:text-gray-100">{freight?.truck_plate}</span>
+          Frete: <span className="font-semibold text-gray-900 dark:text-gray-100">{freight?.truck_plate || 'A definir'}</span>
           {freight?.driver_name && (
             <> &mdash; <span className="font-medium">{freight.driver_name}</span></>
           )}

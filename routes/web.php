@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\FreightExportController;
+use App\Http\Controllers\Admin\OperationsController;
+use App\Http\Controllers\Admin\QuotaController;
+use App\Http\Controllers\Client\PortalController;
 use App\Http\Controllers\AdminManagementController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ClientManagementController;
@@ -52,7 +56,27 @@ Route::middleware('auth')->group(function () {
     // ROTAS DO ADMIN
     // -------------------------
     Route::middleware('admin')->prefix('admin')->group(function () {
-        Route::get('/', [TimeslotController::class, 'dashboard'])->name('admin.dashboard');
+        // Central da operação
+        Route::get('/', [OperationsController::class, 'index'])->name('admin.dashboard');
+
+        // Cotas: recurso central da publicação e do controle de disponibilidade
+        Route::get('/quotas', [QuotaController::class, 'index'])->name('admin.quotas.index');
+        Route::get('/quotas/create', [QuotaController::class, 'create'])->name('admin.quotas.create');
+        Route::post('/quotas', [QuotaController::class, 'store'])->name('admin.quotas.store');
+        Route::get('/quotas/{quota}', [QuotaController::class, 'show'])->name('admin.quotas.show');
+        Route::get('/quotas/{quota}/edit', [QuotaController::class, 'edit'])->name('admin.quotas.edit');
+        Route::put('/quotas/{quota}', [QuotaController::class, 'update'])->name('admin.quotas.update');
+        Route::patch('/quotas/{quota}/close', [QuotaController::class, 'close'])->name('admin.quotas.close');
+        Route::patch('/quotas/{quota}/reopen', [QuotaController::class, 'reopen'])->name('admin.quotas.reopen');
+        Route::post('/quotas/{quota}/notify', [QuotaController::class, 'notify'])->name('admin.quotas.notify');
+
+        // Agendamentos (ciclo completo de cada cota agendada)
+        Route::get('/bookings', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
+        Route::post('/bookings/no-show', [AdminBookingController::class, 'bulkNoShow'])->name('admin.bookings.bulk-no-show');
+        Route::get('/bookings/{freight}', [AdminBookingController::class, 'show'])->name('admin.bookings.show');
+        Route::patch('/bookings/{freight}/no-show', [AdminBookingController::class, 'noShow'])->name('admin.bookings.no-show');
+        Route::post('/bookings/{freight}/documents', [AdminBookingController::class, 'uploadDocument'])->name('admin.bookings.documents');
+        Route::patch('/bookings/{freight}/vehicle', [AdminBookingController::class, 'updateVehicle'])->name('admin.bookings.vehicle');
         Route::get('/agenda', [TimeslotController::class, 'agenda'])->name('admin.agenda');
 
         Route::resource('timeslots', TimeslotController::class)->except(['show']);
@@ -164,16 +188,23 @@ Route::middleware('auth')->group(function () {
     // ROTAS DO CLIENTE
     // -------------------------
     Route::middleware('client')->prefix('client')->group(function () {
-        Route::get('/', [DashboardController::class, 'clientDashboard'])->name('client.dashboard');
+        // Portal do cliente
+        Route::get('/', [PortalController::class, 'home'])->name('client.dashboard');
+        Route::get('/quotas', [PortalController::class, 'quotas'])->name('client.quotas');
+        Route::get('/quotas/{quota}/book', [PortalController::class, 'book'])->name('client.quotas.book');
+        Route::post('/quotas/{quota}/book', [PortalController::class, 'storeBooking'])->name('client.quotas.book.store');
+        Route::get('/bookings', [PortalController::class, 'bookings'])->name('client.bookings');
+        Route::get('/bookings/{freight}', [PortalController::class, 'showBooking'])->name('client.bookings.show');
+        Route::patch('/bookings/{freight}/vehicle', [PortalController::class, 'updateVehicle'])->name('client.bookings.vehicle');
+        Route::post('/bookings/{freight}/documents', [PortalController::class, 'uploadDocument'])->name('client.bookings.documents');
 
         Route::get('/available-slots', [TimeslotController::class, 'available'])->name('client.available');
-        Route::get('/my-reservations', [FreightController::class, 'myReservations'])->name('client.reservations');
+        // Endereço antigo (links já enviados por e-mail/WhatsApp) → Meus agendamentos.
+        Route::redirect('/my-reservations', '/client/bookings')->name('client.reservations');
         Route::post('/reserve/{timeslot}', [FreightController::class, 'store'])->name('client.reserve');
         Route::delete('/my-reservations/{freight}', [FreightController::class, 'cancelMyReservation'])->name('client.reservations.cancel');
-        Route::patch('/my-reservations/{freight}/reopen', [FreightController::class, 'reopenMyReservation'])->name('client.reservations.reopen');
 
-        // Upload e download de nota fiscal
-        Route::post('/my-reservations/{freight}/upload-invoice', [FreightController::class, 'uploadInvoice'])->name('client.upload-invoice');
+        // Download de nota fiscal e documentos
         Route::get('/freights/{freight}/nota-fiscal', [FreightController::class, 'downloadInvoiceClient'])->name('client.download-invoice');
         Route::get('/my-reservations/{freight}/attachments/{attachment}', [FreightController::class, 'downloadAttachmentClient'])->name('client.download-attachment');
 

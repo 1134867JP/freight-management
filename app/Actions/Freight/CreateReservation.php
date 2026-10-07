@@ -33,7 +33,10 @@ class CreateReservation
         ?string $driverPhone = null,
         ?array $invoiceAttachment = null,
     ): Freight {
+        $guard = app(\App\Actions\Quota\QuotaCapacityGuard::class);
+
         return DB::transaction(function () use (
+            $guard,
             $user,
             $timeslot,
             $truckPlate,
@@ -45,6 +48,10 @@ class CreateReservation
             $driverPhone,
             $invoiceAttachment,
         ) {
+            // Janela gerada por cota: bloqueia a cota antes do horário (mesma
+            // ordem de BookQuota) e aplica as regras de saldo do cliente.
+            $lockedQuota = $timeslot->quota_id ? $guard->lock((int) $timeslot->quota_id) : null;
+
             /**
              * A capacidade precisa ser conferida sobre a mesma linha que será
              * usada para criar a reserva. Em PostgreSQL, o lock serializa duas
@@ -90,7 +97,12 @@ class CreateReservation
                 throw new \RuntimeException("O timeslot não permite operação '{$operationType}'.");
             }
 
-            if ($operationType === 'unload' && ! $invoicePath) {
+            if ($lockedQuota) {
+                $guard->assertCanBook($lockedQuota, $user);
+            }
+
+            // Em cotas a NF é enviada depois do agendamento, no próprio CargoHub.
+            if ($operationType === 'unload' && ! $invoicePath && ! $lockedQuota) {
                 throw new \RuntimeException('Nota fiscal é obrigatória para descarga.');
             }
 
@@ -110,6 +122,7 @@ class CreateReservation
                 'company_id'       => $timeslot->company_id,
                 'user_id'          => $user->id,
                 'timeslot_id'      => $timeslot->id,
+                'quota_id'         => $lockedQuota?->id,
                 'produto_id'       => $timeslot->produto_id,
                 'doca_id'          => $timeslot->doca_id,
                 'truck_id'         => $truck?->id,

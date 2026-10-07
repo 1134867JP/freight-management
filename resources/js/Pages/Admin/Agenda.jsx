@@ -325,7 +325,7 @@ export default function Agenda({ timeslots }) {
                                     </p>
                                     <p className="text-sm text-gray-700 dark:text-gray-300">
                                       <span className="font-semibold">Placa:</span>{' '}
-                                      {freight.truck_plate}
+                                      {freight.truck_plate || 'A definir'}
                                     </p>
                                   </div>
                                 </div>

@@ -77,9 +77,9 @@ function FreightSlot({ freight, now }) {
   const sinceOp = freight.status !== 'arrived' ? elapsed(freight.updated_at, now) : null;
 
   return (
-    <div className="rounded-lg border border-areia-200 bg-white p-4 dark:border-areia-700 dark:bg-areia-900">
+    <div className="glass rounded-lg p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="plate text-lg">{freight.truck_plate}</p>
+        <p className="plate text-lg">{freight.truck_plate || 'A definir'}</p>
         <StatusBadge label={statusPresentation.label} tone={statusPresentation.tone} />
       </div>
       <p className="mt-2.5 truncate text-base font-semibold text-areia-900 dark:text-white">{freight.driver_name}</p>
@@ -148,7 +148,7 @@ function QueueCard({ freight, now }) {
       }`}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="plate text-base">{freight.truck_plate}</p>
+        <p className="plate text-base">{freight.truck_plate || 'A definir'}</p>
         <OpLabel type={freight.operation_type} />
       </div>
       <p className="mt-2.5 truncate text-base font-semibold text-areia-900 dark:text-white">{freight.driver_name}</p>
@@ -170,7 +170,7 @@ function Counter({ label, value, tone }) {
     success: 'bg-pinho-500',
   };
   return (
-    <div className="min-w-[120px] rounded-lg border border-areia-200 bg-white px-4 py-2.5 dark:border-areia-800 dark:bg-areia-900">
+    <div className="glass min-w-[120px] rounded-lg px-4 py-2.5">
       <p className="flex items-center gap-2 text-sm font-medium text-areia-600 dark:text-areia-400">
         <span className={`h-2 w-2 rounded-full ${dots[tone]}`} aria-hidden="true" />
         {label}
