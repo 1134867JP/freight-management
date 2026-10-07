@@ -3,6 +3,23 @@ import { Link, usePage } from '@inertiajs/react';
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 
 const SIDEBAR_STORAGE_KEY = 'cargohub.sidebar.collapsed';
+const NAV_MORE_STORAGE_KEY = 'cargohub.nav.more';
+
+function readStoredFlag(key) {
+  try {
+    return window.localStorage.getItem(key) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function writeStoredFlag(key, value) {
+  try {
+    window.localStorage.setItem(key, String(value));
+  } catch {
+    // armazenamento indisponível: o menu continua funcionando sem lembrar.
+  }
+}
 
 export default function AuthenticatedLayout({ header, children }) {
   useTheme();
@@ -12,7 +29,11 @@ export default function AuthenticatedLayout({ header, children }) {
   const company = auth.company;
   const permissions = auth.permissions;
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [openGroups, setOpenGroups] = useState({});
+  // Grupos recolhidos por padrão; só "Mais ferramentas" lembra que ficou aberto.
+  const [openGroups, setOpenGroups] = useState(() => {
+    if (typeof window === 'undefined') return {};
+    return readStoredFlag(NAV_MORE_STORAGE_KEY) ? { more: true, 'client-more': true } : {};
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
@@ -55,149 +76,79 @@ export default function AuthenticatedLayout({ header, children }) {
     }
 
     if (isAdmin) {
-      // Cota é o recurso central: publicar, acompanhar e controlar o ciclo.
-      const coreItems = [
-        { label: 'Central', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
+      // Menu mínimo: o que exige atenção, cotas, agendamentos e portaria.
+      // O resto fica recolhido em "Mais ferramentas" e "Configurações".
+      const showGate = !pilotMode && (usesQueues || usesDocks);
+
+      const primaryItems = [
+        { label: 'Início', href: route('admin.dashboard'), active: route().current('admin.dashboard'), icon: 'dashboard' },
         { label: 'Cotas', href: route('admin.quotas.index'), active: route().current('admin.quotas.*'), icon: 'quota' },
         { label: 'Agendamentos', href: route('admin.bookings.index'), active: route().current('admin.bookings.*'), icon: 'clipboard' },
+        ...(showGate ? [{ label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' }] : []),
+        ...(isCompanyAdmin ? [{ cta: true, label: 'Publicar cotas', href: route('admin.quotas.create'), active: route().current('admin.quotas.create') }] : []),
       ];
 
-      const registrationChildren = [
-        { label: 'Clientes',  href: route('clients.index'),           active: route().current('clients.*') },
-        { label: 'Destinos',  href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*') },
-        { label: 'Produtos',  href: route('produtos.index'),          active: route().current('produtos.*') },
-        ...(usesDocks   ? [{ label: 'Docas',             href: route('docas.index'),       active: route().current('docas.*')       }] : []),
-        ...(usesQueues  ? [{ label: 'Zonas do Pátio',    href: route('yard-zones.index'),  active: route().current('yard-zones.*')  }] : []),
-        ...(usesQueues  ? [{ label: 'Vagas do Pátio',    href: route('yard-spots.index'),  active: route().current('yard-spots.*')  }] : []),
-        ...(usesQueues  ? [{ label: 'Veículos do Pátio', href: route('yard-trucks.index'), active: route().current('yard-trucks.*') }] : []),
-      ];
+      const moreChildren = pilotMode
+        ? [
+            { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda') },
+            { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*') },
+            { label: 'Horários avulsos', href: route('timeslots.index'), active: route().current('timeslots.*') },
+          ]
+        : [
+            { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda') },
+            { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*') },
+            { label: 'Horários avulsos', href: route('timeslots.index'), active: route().current('timeslots.*') },
+            ...(usesQueues ? [
+              { label: 'Visão operacional', href: route('admin.yard-board'), active: route().current('admin.yard-board') },
+              { label: 'Mapa do pátio', href: route('admin.yard-map'), active: route().current('admin.yard-map') },
+              { label: 'Movimentações', href: route('admin.move-orders'), active: route().current('admin.move-orders*') },
+            ] : []),
+            { label: 'Indicadores', href: route('admin.kpi'), active: route().current('admin.kpi') },
+            { label: 'Relatório de horários', href: route('reports.admin.timeslots'), active: route().current('reports.admin.timeslots') },
+            { label: 'Relatório de fretes', href: route('reports.admin.freights'), active: route().current('reports.admin.freights') },
+          ];
 
-      if (pilotMode) {
-        const pilotRegistrations = registrationChildren.slice(0, 2);
-        const pilotAccessChildren = [
-          ...(canManageAdmins ? [{ label: 'Administradores', href: route('admins.index'), active: route().current('admins.*') }] : []),
-          ...(canManageEmployees ? [{ label: 'Funcionários e permissões', href: route('employees.index'), active: route().current('employees.*') }] : []),
-        ];
-
-        return [
-          {
-            section: 'Operação',
-            items: [
-              ...coreItems,
-              { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
-            ],
-          },
-          {
-            section: 'Agendamento',
-            items: [
-              { label: 'Agenda', href: route('admin.agenda'), active: route().current('admin.agenda'), icon: 'schedule' },
-              { label: 'Horários avulsos', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
-            ],
-          },
-          {
-            section: 'Gestão',
-            items: [
-              {
-                label: 'Cadastros',
-                icon: 'box',
-                group: 'registrations',
-                active: pilotRegistrations.some((item) => item.active),
-                children: pilotRegistrations,
-              },
-              ...(pilotAccessChildren.length > 0 ? [{
-                label: 'Equipe e acesso',
-                icon: 'users',
-                group: 'access',
-                active: pilotAccessChildren.some((item) => item.active),
-                children: pilotAccessChildren,
-              }] : []),
-            ],
-          },
-          ...(canManageWhatsApp ? [{
-            section: 'Integrações',
-            items: [
-              {
-                label: 'WhatsApp',
-                href: route('admin.whatsapp'),
-                active: route().current('admin.whatsapp*'),
-                icon: 'whatsapp',
-              },
-            ],
-          }] : []),
-        ];
-      }
-
-      const accessChildren = [
+      const settingsChildren = [
+        { label: 'Clientes', href: route('clients.index'), active: route().current('clients.*') },
+        { label: 'Destinos', href: route('dropoff-addresses.index'), active: route().current('dropoff-addresses.*') },
+        ...(pilotMode ? [] : [
+          { label: 'Produtos', href: route('produtos.index'), active: route().current('produtos.*') },
+          ...(usesDocks ? [{ label: 'Docas', href: route('docas.index'), active: route().current('docas.*') }] : []),
+          ...(usesQueues ? [
+            { label: 'Zonas do Pátio', href: route('yard-zones.index'), active: route().current('yard-zones.*') },
+            { label: 'Vagas do Pátio', href: route('yard-spots.index'), active: route().current('yard-spots.*') },
+            { label: 'Veículos do Pátio', href: route('yard-trucks.index'), active: route().current('yard-trucks.*') },
+          ] : []),
+        ]),
         ...(canManageAdmins ? [{ label: 'Administradores', href: route('admins.index'), active: route().current('admins.*') }] : []),
-        ...(canManageEmployees ? [{ label: 'Funcionários e permissões', href: route('employees.index'), active: route().current('employees.*') }] : []),
-        ...(canViewAuditLogs ? [{ label: 'Logs de auditoria', href: route('audit-logs.index'), active: route().current('audit-logs.*') }] : []),
+        ...(canManageEmployees ? [{ label: 'Funcionários', href: route('employees.index'), active: route().current('employees.*') }] : []),
+        ...(!pilotMode && canViewAuditLogs ? [{ label: 'Logs de auditoria', href: route('audit-logs.index'), active: route().current('audit-logs.*') }] : []),
+        ...(canManageWhatsApp ? [{ label: 'WhatsApp', href: route('admin.whatsapp'), active: route().current('admin.whatsapp*') }] : []),
       ];
 
       return [
+        { section: null, items: primaryItems },
         {
-          section: 'Operação',
-          items: [
-            ...coreItems,
-            ...((usesQueues || usesDocks) ? [{ label: 'Portaria', href: route('admin.gate'), active: route().current('admin.gate'), icon: 'gate' }] : []),
-            { label: 'Fretes', href: route('freights.approvalList'), active: route().current('freights.*'), icon: 'freight' },
-          ],
-        },
-        ...(usesQueues ? [{
-          section: 'Pátio',
-          items: [
-            { label: 'Visão operacional', href: route('admin.yard-board'), active: route().current('admin.yard-board'), icon: 'yardboard' },
-            { label: 'Mapa do pátio', href: route('admin.yard-map'), active: route().current('admin.yard-map'), icon: 'map' },
-            { label: 'Movimentações', href: route('admin.move-orders'), active: route().current('admin.move-orders*'), icon: 'moveorder' },
-          ],
-        }] : []),
-        {
-          section: 'Agendamento',
-          items: [
-            { label: 'Agenda', href: route('admin.agenda'),    active: route().current('admin.agenda'), icon: 'schedule' },
-            { label: 'Horários avulsos', href: route('timeslots.index'), active: route().current('timeslots.*'), icon: 'calendar' },
-          ],
-        },
-        {
-          section: 'Gestão',
-          items: [
-            { label: 'Indicadores', href: route('admin.kpi'), active: route().current('admin.kpi'), icon: 'kpi' },
-            {
-              label: 'Relatórios',
-              icon: 'chart',
-              group: 'reports-admin',
-              active: route().current('reports.admin.*'),
-              children: [
-                { label: 'Janelas de agendamento', href: route('reports.admin.timeslots'), active: route().current('reports.admin.timeslots') },
-                { label: 'Fretes', href: route('reports.admin.freights'), active: route().current('reports.admin.freights') },
-              ],
-            },
-            {
-              label: 'Cadastros',
-              icon: 'box',
-              group: 'registrations',
-              active: registrationChildren.some((item) => item.active),
-              children: registrationChildren,
-            },
-            ...(accessChildren.length > 0 ? [{
-              label: 'Equipe e acesso',
-              icon: 'users',
-              group: 'access',
-              active: accessChildren.some((item) => item.active),
-              children: accessChildren,
-            }] : []),
-          ],
-        },
-        ...(canManageWhatsApp ? [{
-          section: 'Integrações',
+          section: null,
+          divider: true,
           items: [
             {
-              label: 'WhatsApp',
-              href: route('admin.whatsapp'),
-              active: route().current('admin.whatsapp*'),
-              icon: 'whatsapp',
+              label: 'Mais ferramentas',
+              icon: 'yardboard',
+              group: 'more',
+              persist: NAV_MORE_STORAGE_KEY,
+              active: moreChildren.some((item) => item.active),
+              children: moreChildren,
+            },
+            {
+              label: 'Configurações',
+              icon: 'sliders',
+              group: 'settings',
+              active: settingsChildren.some((item) => item.active),
+              children: settingsChildren,
             },
           ],
-        }] : []),
+        },
       ];
     }
 
@@ -208,39 +159,33 @@ export default function AuthenticatedLayout({ header, children }) {
       { label: 'Meus agendamentos', href: route('client.bookings'), active: route().current('client.bookings*'), icon: 'clipboard' },
     ];
 
-    const legacySection = {
-      section: 'Outros agendamentos',
-      items: [
-        { label: 'Horários avulsos', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
-      ],
-    };
+    const clientMoreChildren = [
+      { label: 'Horários avulsos', href: route('client.available'), active: route().current('client.available') },
+      ...(pilotMode ? [] : [
+        { label: 'Caminhões', href: route('client.trucks'), active: route().current('client.trucks') },
+        { label: 'Motoristas', href: route('client.drivers'), active: route().current('client.drivers') },
+        { label: 'Histórico de fretes', href: route('reports.client.reservations'), active: route().current('reports.client.*') },
+      ]),
+    ];
 
-    if (pilotMode) {
-      return [{ section: null, items: clientCoreItems }, legacySection];
-    }
-
-    // Client
     return [
+      { section: null, items: clientCoreItems },
       {
         section: null,
-        items: clientCoreItems,
-      },
-      legacySection,
-      {
-        section: 'Cadastros',
+        divider: true,
         items: [
-          { label: 'Caminhões', href: route('client.trucks'), active: route().current('client.trucks'), icon: 'truck' },
-          { label: 'Motoristas', href: route('client.drivers'), active: route().current('client.drivers'), icon: 'driver' },
-        ],
-      },
-      {
-        section: 'Análise',
-        items: [
-          { label: 'Histórico de fretes', href: route('reports.client.reservations'), active: route().current('reports.client.*'), icon: 'chart' },
+          {
+            label: 'Mais',
+            icon: 'yardboard',
+            group: 'client-more',
+            persist: NAV_MORE_STORAGE_KEY,
+            active: clientMoreChildren.some((item) => item.active),
+            children: clientMoreChildren,
+          },
         ],
       },
     ];
-  }, [canManageAdmins, canManageEmployees, canManageWhatsApp, canViewAuditLogs, isAdmin, isPlatformAdmin, pilotMode, usesQueues, usesDocks]);
+  }, [canManageAdmins, canManageEmployees, canManageWhatsApp, canViewAuditLogs, isAdmin, isCompanyAdmin, isPlatformAdmin, pilotMode, usesQueues, usesDocks]);
 
   const SideLink = ({ href, active, label, icon, onNavigate, compact = false }) => (
     <Link
@@ -264,9 +209,27 @@ export default function AuthenticatedLayout({ header, children }) {
     </Link>
   );
 
-  const toggleGroup = useCallback((key) => {
-    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  const setGroupOpen = useCallback((item, value) => {
+    setOpenGroups((prev) => ({ ...prev, [item.group]: value }));
+    if (item.persist) writeStoredFlag(item.persist, value);
   }, []);
+
+  const PublishLink = ({ href, label, onNavigate, compact = false }) => (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={
+        compact
+          ? 'mx-auto my-1 flex h-11 w-11 items-center justify-center rounded-full bg-pinho-700 text-white shadow-sm transition-colors hover:bg-pinho-800'
+          : 'mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-pinho-700 px-4 py-2 text-[15px] font-semibold text-white shadow-sm transition-colors hover:bg-pinho-800'
+      }
+      aria-label={compact ? label : undefined}
+      title={compact ? label : undefined}
+    >
+      <MenuIcon name="plus" className="h-5 w-5 shrink-0" />
+      {!compact && <span>{label}</span>}
+    </Link>
+  );
 
   const NavGroup = ({ item, onNavigate, compact = false }) => {
     const isOpen = openGroups[item.group] !== undefined ? openGroups[item.group] : (item.active ?? false);
@@ -277,10 +240,10 @@ export default function AuthenticatedLayout({ header, children }) {
           onClick={() => {
             if (compact) {
               setSidebarCollapsed(false);
-              setOpenGroups((prev) => ({ ...prev, [item.group]: true }));
+              setGroupOpen(item, true);
               return;
             }
-            toggleGroup(item.group);
+            setGroupOpen(item, !isOpen);
           }}
           className={`flex min-h-11 w-full items-center rounded-lg py-2 text-[15px] font-medium transition-colors ${compact ? 'justify-center px-2' : 'justify-between px-3'} ${
             item.active ? 'text-areia-900 dark:text-white' : 'text-areia-600 hover:bg-white/55 hover:text-areia-900 dark:text-areia-400 dark:hover:bg-white/[0.05] dark:hover:text-white'
@@ -327,9 +290,12 @@ export default function AuthenticatedLayout({ header, children }) {
   };
 
   const NavigationContent = ({ onNavigate = undefined, compact = false }) => (
-    <nav aria-label="Navegação principal" className={`flex-1 overflow-y-auto py-4 [scrollbar-width:thin] ${compact ? 'space-y-2 px-3' : 'space-y-6 px-3'}`}>
+    <nav aria-label="Navegação principal" className={`flex-1 overflow-y-auto py-4 [scrollbar-width:thin] ${compact ? 'space-y-2 px-3' : 'space-y-3 px-3'}`}>
       {menuSections.map((objSection, index) => (
-        <div key={objSection.section ?? '_main'} className={compact && index > 0 ? 'border-t border-areia-300/50 pt-2 dark:border-white/10' : ''}>
+        <div
+          key={objSection.section ?? `_section-${index}`}
+          className={(compact ? index > 0 : objSection.divider) ? `border-t border-areia-300/50 dark:border-white/10 ${compact ? 'pt-2' : 'pt-3'}` : ''}
+        >
           {objSection.section && !compact && (
             <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-areia-500/80 dark:text-areia-500">
               {objSection.section}
@@ -338,6 +304,7 @@ export default function AuthenticatedLayout({ header, children }) {
           <div className="space-y-0.5">
             {objSection.items.map((item) => {
               if (item.children) return <NavGroup key={item.label} item={item} onNavigate={onNavigate} compact={compact} />;
+              if (item.cta) return <PublishLink key={item.label} {...item} onNavigate={onNavigate} compact={compact} />;
               return <SideLink key={item.label} {...item} onNavigate={onNavigate} compact={compact} />;
             })}
           </div>
@@ -600,6 +567,10 @@ function MenuIcon({ name, className = '' }) {
       'M1 3h15v13H1V3Zm15 5 5 3v5h-5V8ZM5.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
     kpi:
       'M18 20V10M12 20V4M6 20v-6',
+    plus:
+      'M12 5v14M5 12h14',
+    sliders:
+      'M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4',
     quota:
       'M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9ZM4 7.5l8 4.5 8-4.5M12 12v9M8 5.25l8 4.5',
     driver:

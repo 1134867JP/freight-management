@@ -160,23 +160,123 @@ function Hero({ companyName, dateLabel, attention, today, canPublish }) {
         <p className="mt-2 text-base text-white/80">{statusSentence(attention, today)}</p>
 
         <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Ações">
-          <Button
-            variant="accent"
-            onClick={() => router.visit(route('admin.bookings.index', { filter: 'documents' }))}
-          >
-            Resolver pendências
-          </Button>
+          {attention.length > 0 ? (
+            <Button
+              variant="accent"
+              onClick={() => router.visit(route('admin.bookings.index', { filter: 'documents' }))}
+            >
+              Resolver pendências
+            </Button>
+          ) : (
+            canPublish && (
+              <Button variant="accent" onClick={() => router.visit(route('admin.quotas.create'))}>
+                Publicar cotas
+              </Button>
+            )
+          )}
           <Button variant="inverse" onClick={() => router.visit(route('admin.bookings.index'))}>
             Ver agendamentos
           </Button>
-          {canPublish && (
-            <Button variant="inverse" onClick={() => router.visit(route('admin.quotas.create'))}>
-              Publicar cotas
-            </Button>
-          )}
-          <Button variant="inverse" onClick={() => router.visit(route('admin.agenda'))}>Ver operação</Button>
+          <Button variant="inverse" onClick={() => router.visit(route('admin.quotas.index'))}>
+            Ver cotas
+          </Button>
         </div>
       </div>
+    </section>
+  );
+}
+
+function SetupCard({ setup, canPublish }) {
+  const steps = [
+    {
+      key: 'clients',
+      done: setup.has_clients,
+      title: 'Cadastre seus clientes',
+      hint: 'Quem vai reservar as cotas.',
+      href: route('clients.index'),
+      action: 'Cadastrar',
+    },
+    {
+      key: 'quotas',
+      done: setup.has_quotas,
+      title: 'Publique sua primeira cota',
+      hint: canPublish
+        ? 'Defina produto, destino, quantidade e período.'
+        : 'Somente o administrador da empresa publica cotas.',
+      href: canPublish ? route('admin.quotas.create') : null,
+      action: 'Publicar',
+    },
+    {
+      key: 'notified',
+      done: setup.notified,
+      title: 'Avise os clientes pelo WhatsApp',
+      hint: 'Abra a cota e envie o link de agendamento.',
+      href: route('admin.quotas.index'),
+      action: 'Ver cotas',
+    },
+    {
+      key: 'bookings',
+      done: setup.has_bookings,
+      title: 'Acompanhe os agendamentos',
+      hint: 'Documentos, chegada e situação de cada carga.',
+      href: route('admin.bookings.index'),
+      action: 'Ver agendamentos',
+    },
+  ];
+  const doneCount = steps.filter((step) => step.done).length;
+
+  return (
+    <section aria-labelledby="primeiros-passos">
+      <SectionTitle
+        id="primeiros-passos"
+        aside={
+          <span className="text-[13px] font-semibold tabular-nums text-areia-600 dark:text-areia-400">
+            {doneCount} de {steps.length}
+          </span>
+        }
+      >
+        Primeiros passos
+      </SectionTitle>
+      <Panel>
+        <ol className="divide-y divide-areia-200 dark:divide-areia-800">
+          {steps.map((step, index) => (
+            <li key={step.key} className="flex min-h-[72px] items-center gap-4 px-5 py-3.5">
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[15px] font-bold ${
+                  step.done
+                    ? 'bg-pinho-700 text-white'
+                    : 'border border-areia-300 bg-white/60 text-areia-700 dark:border-areia-700 dark:bg-white/5 dark:text-areia-300'
+                }`}
+              >
+                {step.done ? <span className="[&>svg]:h-5 [&>svg]:w-5">{ICONS.check}</span> : index + 1}
+                <span className="sr-only">{step.done ? ' (feito)' : ' (pendente)'}</span>
+              </span>
+              <div className="min-w-0 flex-1">
+                <p
+                  className={`text-base font-semibold leading-snug ${
+                    step.done
+                      ? 'text-areia-500 line-through dark:text-areia-500'
+                      : 'text-areia-900 dark:text-areia-100'
+                  }`}
+                >
+                  {step.title}
+                </p>
+                {!step.done && (
+                  <p className="text-[13px] text-areia-600 dark:text-areia-400">{step.hint}</p>
+                )}
+              </div>
+              {!step.done && step.href && (
+                <Link
+                  href={step.href}
+                  className={`shrink-0 text-[15px] font-semibold text-pinho-700 hover:underline dark:text-pinho-300 ${ROW_FOCUS}`}
+                >
+                  {step.action}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ol>
+      </Panel>
     </section>
   );
 }
@@ -447,6 +547,7 @@ function TodayPanel({ today }) {
 
 export default function Home({
   canPublish = false,
+  setup = null,
   attention = [],
   totals = {},
   today = { total: 0, arrived: 0, completed: 0, bookings: [] },
@@ -474,6 +575,10 @@ export default function Home({
           today={today}
           canPublish={canPublish}
         />
+
+        {setup && !(setup.has_clients && setup.has_quotas && setup.notified && setup.has_bookings) && (
+          <SetupCard setup={setup} canPublish={canPublish} />
+        )}
 
         <section aria-labelledby="atencao">
           <SectionTitle id="atencao">Atenção</SectionTitle>

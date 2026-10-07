@@ -1,93 +1,166 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 /*
- * Pátio 3D da landing page. Cena estilizada (low-poly) nas cores da marca:
- * armazém com docas, portaria com cancela, vagas que acendem como cotas e
- * caminhões. `setProgress(p)` (0–1) é dirigido pela rolagem; animações
- * ambientes (tráfego na rodovia, luzes) rodam no tempo.
+ * Pátio 3D futurista da landing: cena noturna com luzes de neon nas cores
+ * da marca (pinho e ocre), vagas holográficas, rastros de luz na rodovia e
+ * um caminhão aerodinâmico que atravessa a história guiada pela rolagem.
+ * `setProgress(p)` (0–1) dirige a narrativa; luzes e tráfego rodam no tempo.
  */
 
 const C = {
-  ground: '#E6DDCB',
-  asphalt: '#3B3832',
-  asphaltLight: '#4A4539',
-  paint: '#F5F1E8',
-  wall: '#EFE9DD',
-  wallShade: '#D6CEBD',
-  roof: '#214B38',
-  pinho: '#2B5D45',
-  pinhoLight: '#5E9072',
-  ocre: '#DDA530',
-  ocreLight: '#F2D68E',
-  tijolo: '#BF4A35',
-  dark: '#252320',
-  trailer: '#FAF8F3',
-  glass: '#2F414E',
-  tree: '#3D7356',
-  treeDark: '#2B5D45',
-  trunk: '#724634',
+  night: '#06110C',
+  ground: '#0A1912',
+  pad: '#10231A',
+  padEdge: '#3D7356',
+  grid: '#1C3A2B',
+  neonGreen: '#5EE0A0',
+  neonPinho: '#8DB39A',
+  ocre: '#F2B640',
+  ocreSoft: '#F2D68E',
+  red: '#FF5A45',
+  white: '#F4F1EA',
+  pearl: '#E9ECE6',
+  metal: '#9AA59F',
+  dark: '#0E1512',
+  glass: '#0B2018',
+  building: '#13261D',
 };
 
 const clamp = (v, a = 0, b = 1) => Math.min(Math.max(v, a), b);
 const smooth = (t) => t * t * (3 - 2 * t);
-/** Progresso local de um trecho [a, b] da rolagem, suavizado. */
 const span = (p, a, b) => smooth(clamp((p - a) / (b - a)));
 const lerp = (a, b, t) => a + (b - a) * t;
 
-function mat(color, extra = {}) {
-  return new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0.05, ...extra });
+const std = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.25, ...extra });
+const neon = (color, intensity = 2.2, extra = {}) =>
+  new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: intensity, roughness: 0.4, metalness: 0, ...extra });
+
+function mesh(geometry, material, { x = 0, y = 0, z = 0, cast = true, receive = true } = {}) {
+  const m = new THREE.Mesh(geometry, material);
+  m.position.set(x, y, z);
+  m.castShadow = cast;
+  m.receiveShadow = receive;
+  return m;
 }
 
-function box(w, h, d, material, { x = 0, y = 0, z = 0, cast = true, receive = true } = {}) {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
-  mesh.position.set(x, y, z);
-  mesh.castShadow = cast;
-  mesh.receiveShadow = receive;
-  return mesh;
+function rbox(w, h, d, r, material, pos = {}) {
+  return mesh(new RoundedBoxGeometry(w, h, d, 4, r), material, pos);
 }
 
-/** Caminhão com a frente apontando para +x. Comprimento total ≈ 9. */
-function createTruck({ cab = C.pinho, trailer = C.trailer, stripe = C.ocre } = {}) {
+/** Contorno luminoso de um retângulo no chão (marcação holográfica). */
+function groundOutline(w, d, color, opacity = 1) {
+  const shape = new THREE.Shape();
+  const r = Math.min(w, d) * 0.12;
+  const hw = w / 2;
+  const hd = d / 2;
+  shape.moveTo(-hw + r, -hd);
+  shape.lineTo(hw - r, -hd);
+  shape.quadraticCurveTo(hw, -hd, hw, -hd + r);
+  shape.lineTo(hw, hd - r);
+  shape.quadraticCurveTo(hw, hd, hw - r, hd);
+  shape.lineTo(-hw + r, hd);
+  shape.quadraticCurveTo(-hw, hd, -hw, hd - r);
+  shape.lineTo(-hw, -hd + r);
+  shape.quadraticCurveTo(-hw, -hd, -hw + r, -hd);
+  const points = shape.getPoints(40).map((p) => new THREE.Vector3(p.x, 0, p.y));
+  const line = new THREE.LineLoop(
+    new THREE.BufferGeometry().setFromPoints(points),
+    new THREE.LineBasicMaterial({ color, transparent: true, opacity }),
+  );
+  return line;
+}
+
+/*
+ * Caminhão com a frente em +x (comprimento ≈ 9,4). Cabine extrudada a
+ * partir do perfil lateral, com bisel — nada de caixas retas.
+ */
+function createTruck({ body = C.pearl, accent = C.neonGreen, trailer = C.pearl, underglow = C.ocre } = {}) {
   const truck = new THREE.Group();
-  const wheelMat = mat(C.dark, { roughness: 0.6 });
-  const wheelGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.4, 14);
-  wheelGeo.rotateX(Math.PI / 2);
+  const bodyMat = std(body, { roughness: 0.28, metalness: 0.55 });
 
-  const trailerBody = box(6.6, 2.6, 2.4, mat(trailer), { x: -1.2, y: 2.05 });
-  const trailerStripe = box(6.62, 0.22, 2.42, mat(stripe), { x: -1.2, y: 1.05 });
-  const chassis = box(8.4, 0.35, 1.9, mat(C.dark), { x: -0.2, y: 0.75 });
-  const cabBody = box(1.9, 2.2, 2.3, mat(cab), { x: 3.25, y: 1.85 });
-  const cabRoof = box(1.5, 0.45, 2.1, mat(cab), { x: 3.05, y: 3.15 });
-  const windshield = box(0.08, 0.9, 2.0, mat(C.glass, { roughness: 0.2, metalness: 0.4 }), { x: 4.22, y: 2.3, cast: false });
-  const bumper = box(0.2, 0.35, 2.3, mat(C.dark), { x: 4.25, y: 0.95 });
+  // Perfil lateral da cabine (x para a frente, y para cima).
+  const profile = new THREE.Shape();
+  profile.moveTo(0, 0.55);
+  profile.lineTo(2.25, 0.55);
+  profile.quadraticCurveTo(2.62, 0.55, 2.62, 0.95);
+  profile.lineTo(2.6, 1.55);
+  profile.quadraticCurveTo(2.55, 1.8, 2.35, 2.05);
+  profile.lineTo(1.75, 3.0);
+  profile.quadraticCurveTo(1.6, 3.2, 1.3, 3.22);
+  profile.lineTo(0.2, 3.22);
+  profile.quadraticCurveTo(0, 3.2, 0, 2.95);
+  profile.lineTo(0, 0.55);
+  const cabGeo = new THREE.ExtrudeGeometry(profile, {
+    depth: 2.1,
+    bevelEnabled: true,
+    bevelThickness: 0.14,
+    bevelSize: 0.14,
+    bevelSegments: 5,
+    curveSegments: 18,
+  });
+  cabGeo.translate(0, 0, -1.05);
+  const cab = mesh(cabGeo, bodyMat, { x: 1.55 });
+  truck.add(cab);
 
-  truck.add(trailerBody, trailerStripe, chassis, cabBody, cabRoof, windshield, bumper);
+  // Para-brisa escuro acompanhando a inclinação.
+  const shieldShape = new THREE.Shape();
+  shieldShape.moveTo(2.28, 2.12);
+  shieldShape.lineTo(1.74, 2.95);
+  shieldShape.lineTo(1.5, 2.95);
+  shieldShape.lineTo(2.02, 2.12);
+  const shieldGeo = new THREE.ExtrudeGeometry(shieldShape, { depth: 2.18, bevelEnabled: false });
+  shieldGeo.translate(0.12, 0, -1.09);
+  truck.add(mesh(shieldGeo, std(C.glass, { roughness: 0.08, metalness: 0.9 }), { x: 1.55, cast: false }));
 
-  [-3.8, -2.6, 2.9, 0.4].forEach((x) => {
-    [-1.0, 1.0].forEach((z) => {
-      const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-      wheel.position.set(x, 0.55, z);
-      wheel.castShadow = true;
-      truck.add(wheel);
+  // Faixa de luz frontal (faróis) e acento lateral.
+  truck.add(mesh(new RoundedBoxGeometry(0.08, 0.16, 2.0, 2, 0.04), neon(C.white, 3), { x: 4.3, y: 1.35, cast: false }));
+  [-1.2, 1.2].forEach((z) => {
+    truck.add(mesh(new RoundedBoxGeometry(2.3, 0.07, 0.04, 2, 0.02), neon(accent, 2.4), { x: 2.75, y: 1.0, z, cast: false }));
+  });
+
+  // Baú arredondado com filete de luz e lanternas.
+  const trailerMat = std(trailer, { roughness: 0.32, metalness: 0.45 });
+  truck.add(rbox(6.4, 2.75, 2.45, 0.22, trailerMat, { x: -2.15, y: 2.15 }));
+  [-1.24, 1.24].forEach((z) => {
+    truck.add(mesh(new RoundedBoxGeometry(6.0, 0.08, 0.04, 2, 0.02), neon(accent, 2), { x: -2.15, y: 0.98, z, cast: false }));
+  });
+  [-0.85, 0.85].forEach((z) => {
+    truck.add(mesh(new RoundedBoxGeometry(0.06, 0.5, 0.18, 2, 0.03), neon(C.red, 3), { x: -5.38, y: 1.35, z, cast: false }));
+  });
+
+  // Chassi e rodas com aro.
+  truck.add(rbox(8.8, 0.32, 1.7, 0.1, std(C.dark, { metalness: 0.6 }), { x: -0.5, y: 0.72 }));
+  const tireGeo = new THREE.CylinderGeometry(0.52, 0.52, 0.42, 28);
+  tireGeo.rotateX(Math.PI / 2);
+  const rimGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.44, 24);
+  rimGeo.rotateX(Math.PI / 2);
+  const tireMat = std('#111614', { roughness: 0.85, metalness: 0.1 });
+  const rimMat = std(C.metal, { roughness: 0.25, metalness: 0.9 });
+  [-4.1, -3.0, 0.2, 3.1].forEach((x) => {
+    [-1.02, 1.02].forEach((z) => {
+      truck.add(mesh(tireGeo, tireMat, { x, y: 0.52, z }));
+      truck.add(mesh(rimGeo, rimMat, { x, y: 0.52, z: z * 1.01, cast: false }));
     });
   });
+
+  // Luz ambiente sob o caminhão (efeito "hover" futurista).
+  const glow = new THREE.Mesh(
+    new THREE.PlaneGeometry(9.5, 3.2),
+    new THREE.MeshBasicMaterial({ color: underglow, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending }),
+  );
+  glow.rotation.x = -Math.PI / 2;
+  glow.position.set(-0.4, 0.04, 0);
+  truck.add(glow);
+  truck.userData.glow = glow;
 
   return truck;
 }
 
-function createTree(scale = 1) {
-  const tree = new THREE.Group();
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.25, 1.4, 6), mat(C.trunk));
-  trunk.position.y = 0.7;
-  const crown = new THREE.Mesh(new THREE.ConeGeometry(1.3, 3.2, 7), mat(Math.random() > 0.5 ? C.tree : C.treeDark, { flatShading: true }));
-  crown.position.y = 2.9;
-  [trunk, crown].forEach((m) => { m.castShadow = true; m.receiveShadow = true; });
-  tree.add(trunk, crown);
-  tree.scale.setScalar(scale);
-  return tree;
-}
-
-/** Converte um caminho para a orientação do caminhão (frente em +x). */
 function headingFrom(dx, dz) {
   return Math.atan2(-dz, dx);
 }
@@ -98,24 +171,31 @@ export default class YardScene {
     this.reducedMotion = reducedMotion;
     this.progress = 0;
     this.targetProgress = 0;
-    this.enter = 0; // 0 → 1 durante a animação de "Entrar"
+    this.enter = 0;
     this.pointer = new THREE.Vector2();
     this.clock = new THREE.Clock();
     this.running = false;
+    this.lowPower = window.matchMedia?.('(max-width: 768px)').matches ?? false;
 
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.lowPower ? 1.5 : 1.75));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.1;
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.Fog('#F1EBDF', 70, 170);
+    this.scene.background = new THREE.Color(C.night);
+    this.scene.fog = new THREE.FogExp2(C.night, 0.0095);
 
-    this.camera = new THREE.PerspectiveCamera(38, 1, 0.5, 400);
-    this.lookTarget = new THREE.Vector3();
+    this.camera = new THREE.PerspectiveCamera(38, 1, 0.5, 500);
+
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.85, 0.55, 0.62);
+    this.composer.addPass(this.bloom);
+    this.composer.addPass(new OutputPass());
 
     this.buildLights();
     this.buildGround();
@@ -123,106 +203,96 @@ export default class YardScene {
     this.buildGate();
     this.buildSpots();
     this.buildTrucks();
-    this.buildScenery();
+    this.buildTraffic();
+    this.buildParticles();
 
     this.resize = this.resize.bind(this);
     this.tick = this.tick.bind(this);
     window.addEventListener('resize', this.resize);
     this.resize();
-    this.applyProgress(0, 0);
-    this.renderer.render(this.scene, this.camera);
+    this.renderOnce();
   }
 
   buildLights() {
-    this.scene.add(new THREE.HemisphereLight('#FFF8EA', '#B9A98A', 1.15));
-    const sun = new THREE.DirectionalLight('#FFE9C2', 2.1);
-    sun.position.set(-40, 60, 30);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.left = -60;
-    sun.shadow.camera.right = 60;
-    sun.shadow.camera.top = 50;
-    sun.shadow.camera.bottom = -50;
-    sun.shadow.camera.near = 10;
-    sun.shadow.camera.far = 160;
-    sun.shadow.bias = -0.0006;
-    sun.shadow.normalBias = 0.04;
-    this.scene.add(sun);
+    this.scene.add(new THREE.HemisphereLight('#7FA6A0', '#0A1712', 0.8));
+    const moon = new THREE.DirectionalLight('#BFD6FF', 1.1);
+    moon.position.set(-40, 70, 40);
+    moon.castShadow = true;
+    moon.shadow.mapSize.set(this.lowPower ? 1024 : 2048, this.lowPower ? 1024 : 2048);
+    Object.assign(moon.shadow.camera, { left: -60, right: 60, top: 50, bottom: -50, near: 10, far: 180 });
+    moon.shadow.bias = -0.0006;
+    moon.shadow.normalBias = 0.04;
+    this.scene.add(moon);
+
+    // Luz quente vinda das docas.
+    const dockGlow = new THREE.PointLight(C.ocre, 120, 60, 1.8);
+    dockGlow.position.set(-6, 6, -6);
+    this.scene.add(dockGlow);
+    const gateGlow = new THREE.PointLight(C.neonGreen, 60, 30, 1.8);
+    gateGlow.position.set(22, 6, 18);
+    this.scene.add(gateGlow);
   }
 
   buildGround() {
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), mat(C.ground, { roughness: 1 }));
+    const ground = mesh(new THREE.PlaneGeometry(600, 600), std(C.ground, { roughness: 0.95, metalness: 0 }), { cast: false });
     ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
     this.scene.add(ground);
 
-    const yard = new THREE.Mesh(new THREE.PlaneGeometry(76, 38), mat(C.asphalt, { roughness: 0.95 }));
-    yard.rotation.x = -Math.PI / 2;
-    yard.position.set(0, 0.02, 4);
-    yard.receiveShadow = true;
-    this.scene.add(yard);
+    const grid = new THREE.GridHelper(400, 160, C.grid, C.grid);
+    grid.material.transparent = true;
+    grid.material.opacity = 0.45;
+    grid.position.y = 0.01;
+    this.scene.add(grid);
 
-    // Acesso da rodovia até a portaria.
-    const access = new THREE.Mesh(new THREE.PlaneGeometry(40, 7), mat(C.asphaltLight, { roughness: 0.95 }));
+    // Plataforma do pátio com borda luminosa.
+    const pad = rbox(78, 0.3, 40, 1.4, std(C.pad, { roughness: 0.7, metalness: 0.2 }), { x: 0, y: 0.05, z: 4, cast: false });
+    this.scene.add(pad);
+    const padEdge = groundOutline(78.4, 40.4, C.neonPinho, 0.9);
+    padEdge.position.set(0, 0.24, 4);
+    this.scene.add(padEdge);
+
+    // Via de acesso e rodovia.
+    const roadMat = std('#0D1C15', { roughness: 0.9, metalness: 0.1 });
+    const access = mesh(new THREE.PlaneGeometry(44, 7), roadMat, { x: 60, y: 0.03, z: 18, cast: false });
     access.rotation.x = -Math.PI / 2;
-    access.position.set(56, 0.02, 18);
-    access.receiveShadow = true;
     this.scene.add(access);
-
-    // Rodovia ao fundo, com tráfego.
-    const highway = new THREE.Mesh(new THREE.PlaneGeometry(400, 10), mat(C.asphaltLight, { roughness: 0.95 }));
+    const highway = mesh(new THREE.PlaneGeometry(500, 12), roadMat, { x: 0, y: 0.02, z: 33, cast: false });
     highway.rotation.x = -Math.PI / 2;
-    highway.position.set(0, 0.015, 32);
-    highway.receiveShadow = true;
     this.scene.add(highway);
 
-    const paint = mat(C.paint, { roughness: 0.7 });
-    for (let x = -190; x < 190; x += 7) {
-      this.scene.add(box(3.2, 0.02, 0.22, paint, { x, y: 0.03, z: 32, cast: false }));
-    }
-    for (let x = 40; x < 76; x += 5) {
-      this.scene.add(box(2.4, 0.02, 0.18, paint, { x, y: 0.03, z: 18, cast: false }));
-    }
-    // Faixa de circulação dentro do pátio.
-    for (let x = -8; x < 34; x += 5) {
-      this.scene.add(box(2.4, 0.02, 0.18, mat(C.ocreLight), { x, y: 0.035, z: 9, cast: false }));
-    }
-
-    // Cerca do perímetro (postes baixos).
-    const postMat = mat(C.wallShade);
-    for (let x = -38; x <= 38; x += 3) {
-      if (x > 16 && x < 28) continue; // abertura da portaria
-      this.scene.add(box(0.15, 1.6, 0.15, postMat, { x, y: 0.8, z: 23.2 }));
-    }
-    this.scene.add(box(54, 0.08, 0.08, postMat, { x: -11, y: 1.4, z: 23.2, cast: false }));
-    this.scene.add(box(10, 0.08, 0.08, postMat, { x: 33, y: 1.4, z: 23.2, cast: false }));
+    // Faixas luminosas.
+    const laneMat = neon(C.ocreSoft, 1.3);
+    for (let x = -240; x < 240; x += 8) this.scene.add(mesh(new THREE.BoxGeometry(3.6, 0.02, 0.16), laneMat, { x, y: 0.04, z: 33, cast: false }));
+    [27.2, 38.8].forEach((z) => this.scene.add(mesh(new THREE.BoxGeometry(500, 0.02, 0.1), neon(C.neonPinho, 0.9), { y: 0.04, z, cast: false })));
+    const flow = neon(C.neonGreen, 1.6);
+    for (let x = -4; x < 36; x += 4.5) this.scene.add(mesh(new THREE.BoxGeometry(2.2, 0.02, 0.14), flow, { x, y: 0.22, z: 9, cast: false }));
+    for (let x = 40; x < 82; x += 5) this.scene.add(mesh(new THREE.BoxGeometry(2.4, 0.02, 0.14), laneMat, { x, y: 0.04, z: 18, cast: false }));
   }
 
   buildWarehouse() {
     const wh = new THREE.Group();
-    wh.add(box(56, 9, 12, mat(C.wall), { x: -6, y: 4.5, z: -18 }));
-    wh.add(box(57, 0.8, 13, mat(C.roof), { x: -6, y: 9.4, z: -18 }));
-    // Faixa ocre do batente das docas (identidade da marca).
-    wh.add(box(56.2, 0.5, 0.2, mat(C.ocre), { x: -6, y: 0.9, z: -11.9, cast: false }));
-    // Letreiro.
-    wh.add(box(12, 1.6, 0.25, mat(C.roof), { x: -6, y: 7.4, z: -11.85 }));
-    wh.add(box(10.6, 0.3, 0.27, mat(C.ocre), { x: -6, y: 6.85, z: -11.83, cast: false }));
+    wh.add(rbox(58, 10, 13, 1.2, std(C.building, { roughness: 0.35, metalness: 0.6 }), { x: -6, y: 5.2, z: -18.5 }));
+    // Coroa luminosa e faixa de vidro.
+    const crown = groundOutline(58.6, 13.6, C.neonPinho, 0.95);
+    crown.position.set(-6, 10.25, -18.5);
+    wh.add(crown);
+    wh.add(mesh(new RoundedBoxGeometry(46, 1.6, 0.2, 2, 0.1), std(C.glass, { roughness: 0.05, metalness: 0.9, emissive: '#123A2A', emissiveIntensity: 0.6 }), { x: -6, y: 7.6, z: -11.95, cast: false }));
+    wh.add(mesh(new RoundedBoxGeometry(14, 0.18, 0.2, 2, 0.08), neon(C.ocre, 2.4), { x: -6, y: 8.75, z: -11.9, cast: false }));
     this.scene.add(wh);
 
     this.doors = [];
     this.dockLights = [];
     for (let k = 0; k < 7; k += 1) {
       const x = -24 + k * 6;
-      wh.add(box(4.2, 4.6, 0.2, mat(C.dark), { x, y: 2.6, z: -11.95, cast: false }));
-      const door = box(4, 4.4, 0.25, mat(C.wallShade), { x, y: 2.6, z: -11.8 });
-      wh.add(door);
+      const frame = groundOutline(4.6, 5, C.neonPinho, 0.85);
+      frame.rotation.x = Math.PI / 2;
+      frame.position.set(x, 2.8, -11.85);
+      this.scene.add(frame);
+      const door = rbox(4.2, 4.6, 0.2, 0.08, std('#1B3328', { roughness: 0.5, metalness: 0.5 }), { x, y: 2.8, z: -11.9, cast: false });
+      this.scene.add(door);
       this.doors.push(door);
-      const light = new THREE.Mesh(
-        new THREE.BoxGeometry(0.6, 0.35, 0.2),
-        new THREE.MeshStandardMaterial({ color: C.tijolo, emissive: C.tijolo, emissiveIntensity: 0.8 }),
-      );
-      light.position.set(x + 2.6, 5.3, -11.8);
-      wh.add(light);
+      const light = mesh(new RoundedBoxGeometry(3.8, 0.12, 0.12, 2, 0.05), neon(C.red, 2.4), { x, y: 0.55, z: -11.6, cast: false });
+      this.scene.add(light);
       this.dockLights.push(light);
     }
     this.heroDoor = 4; // x = 0
@@ -231,102 +301,129 @@ export default class YardScene {
   buildGate() {
     const gate = new THREE.Group();
     gate.position.set(22, 0, 18);
-    gate.add(box(3.6, 3, 3, mat(C.wall), { x: 0, y: 1.5, z: 4.8 }));
-    gate.add(box(4.2, 0.4, 3.6, mat(C.roof), { x: 0, y: 3.2, z: 4.8 }));
-    gate.add(box(3.62, 1, 0.1, mat(C.glass, { roughness: 0.2, metalness: 0.4 }), { x: 0, y: 2, z: 3.25, cast: false }));
-    gate.add(box(0.5, 1.2, 0.5, mat(C.dark), { x: -1.2, y: 0.6, z: -3.6 }));
+    const pillarMat = std(C.building, { roughness: 0.3, metalness: 0.7 });
+    [-4.3, 4.3].forEach((z) => gate.add(rbox(0.7, 6.2, 0.7, 0.3, pillarMat, { x: -1.8, y: 3.1, z })));
+    // Arco luminoso.
+    const arch = new THREE.Mesh(new THREE.TorusGeometry(4.3, 0.12, 12, 64, Math.PI), neon(C.neonGreen, 2.4));
+    arch.position.set(-1.8, 6.1, 0);
+    arch.rotation.y = Math.PI / 2;
+    gate.add(arch);
+    // Cabine arredondada.
+    gate.add(rbox(3.4, 3, 3, 0.35, std(C.pearl, { roughness: 0.3, metalness: 0.4 }), { x: 0, y: 1.5, z: 6.6 }));
+    gate.add(mesh(new RoundedBoxGeometry(3.42, 0.9, 3.02, 3, 0.2), std(C.glass, { roughness: 0.05, metalness: 0.9, emissive: '#1F5A43', emissiveIntensity: 0.8 }), { x: 0, y: 2.1, z: 6.6, cast: false }));
 
+    // Cancela: barra de luz que sobe.
     this.barrier = new THREE.Group();
-    this.barrier.position.set(-1.2, 1.15, -3.6);
-    const stripes = new THREE.Group();
-    for (let i = 0; i < 6; i += 1) {
-      stripes.add(box(0.22, 0.22, 1.1, mat(i % 2 ? C.paint : C.tijolo), { x: 0, y: 0, z: 0.55 + i * 1.1, cast: true }));
-    }
-    this.barrier.add(stripes);
+    this.barrier.position.set(-1.8, 1.2, -4.0);
+    this.barrierBar = mesh(new RoundedBoxGeometry(0.22, 0.22, 7.6, 3, 0.1), neon(C.ocre, 2.6), { x: 0, y: 0, z: 3.8, cast: false });
+    this.barrier.add(this.barrierBar);
     gate.add(this.barrier);
 
-    // Cobertura da portaria sobre a pista.
-    gate.add(box(0.3, 5, 0.3, mat(C.wallShade), { x: -2.5, y: 2.5, z: -4.2 }));
-    gate.add(box(0.3, 5, 0.3, mat(C.wallShade), { x: -2.5, y: 2.5, z: 3.2 }));
-    gate.add(box(1.2, 0.35, 8, mat(C.roof), { x: -2.5, y: 5.1, z: -0.5 }));
+    // Plano de varredura (scanner) da portaria.
+    this.scanner = new THREE.Mesh(
+      new THREE.PlaneGeometry(8.4, 5.6),
+      new THREE.MeshBasicMaterial({ color: C.neonGreen, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }),
+    );
+    this.scanner.rotation.y = Math.PI / 2;
+    this.scanner.position.set(-1.8, 3, 0);
+    gate.add(this.scanner);
     this.scene.add(gate);
   }
 
   buildSpots() {
     this.spots = [];
-    const lineMat = mat(C.paint, { roughness: 0.6 });
-    const rows = [1, 12];
-    rows.forEach((z) => {
+    [1, 12].forEach((z, row) => {
       for (let i = 0; i < 6; i += 1) {
         const x = -34 + i * 4.4;
-        this.scene.add(box(0.15, 0.03, 9.4, lineMat, { x: x - 2.2, y: 0.04, z, cast: false }));
+        const outline = groundOutline(3.6, 8.8, C.ocre, 0);
+        outline.position.set(x, 0.24, z);
+        this.scene.add(outline);
         const fill = new THREE.Mesh(
-          new THREE.PlaneGeometry(3.9, 9),
-          new THREE.MeshStandardMaterial({ color: C.ocre, emissive: C.ocre, emissiveIntensity: 0.6, transparent: true, opacity: 0, roughness: 0.6 }),
+          new THREE.PlaneGeometry(3.4, 8.6),
+          new THREE.MeshBasicMaterial({ color: C.ocre, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }),
         );
         fill.rotation.x = -Math.PI / 2;
-        fill.position.set(x, 0.05, z);
+        fill.position.set(x, 0.22, z);
         this.scene.add(fill);
-        this.spots.push({ fill, x, z, truck: null });
+        const beam = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.05, 0.6, 9, 16, 1, true),
+          new THREE.MeshBasicMaterial({ color: C.ocre, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }),
+        );
+        beam.position.set(x, 4.6, z);
+        this.scene.add(beam);
+        this.spots.push({ outline, fill, beam, x, z, row, truck: null });
       }
-      this.scene.add(box(0.15, 0.03, 9.4, lineMat, { x: -34 + 6 * 4.4 - 2.2, y: 0.04, z, cast: false }));
     });
   }
 
   buildTrucks() {
     const palettes = [
-      { cab: C.pinho, stripe: C.ocre },
-      { cab: C.ocre, stripe: C.pinho },
-      { cab: '#3E5D72', stripe: C.ocre },
-      { cab: C.tijolo, stripe: C.wallShade },
-      { cab: C.pinhoLight, stripe: C.ocre },
+      { body: C.pearl, accent: C.neonGreen },
+      { body: '#2B5D45', accent: C.ocre, trailer: C.pearl },
+      { body: C.pearl, accent: C.ocre },
+      { body: '#3E5D72', accent: C.neonGreen, trailer: '#DCE3E6' },
     ];
-
-    // Caminhões que ocupam as vagas conforme os clientes agendam.
     this.spots.forEach((spot, index) => {
-      if (index % 3 === 2) return; // algumas vagas continuam livres
+      if (index % 3 === 2) return;
       const truck = createTruck(palettes[index % palettes.length]);
-      truck.position.set(spot.x, 0, spot.z);
-      truck.rotation.y = index < 6 ? Math.PI / 2 : -Math.PI / 2;
+      truck.position.set(spot.x, 0.2, spot.z);
+      truck.rotation.y = spot.row === 0 ? Math.PI / 2 : -Math.PI / 2;
       truck.scale.setScalar(0.001);
       truck.visible = false;
       this.scene.add(truck);
       spot.truck = truck;
     });
 
-    // Caminhão protagonista: rodovia → portaria → doca.
-    this.hero = createTruck({ cab: C.pinho, stripe: C.ocre });
+    this.hero = createTruck({ body: '#2B5D45', accent: C.ocre, trailer: C.pearl, underglow: C.neonGreen });
     this.scene.add(this.hero);
     const doorX = -24 + this.heroDoor * 6;
-    // Rodovia → cancela da portaria.
     this.pathRoad = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(84, 0, 18),
-      new THREE.Vector3(56, 0, 18),
-      new THREE.Vector3(34, 0, 18),
-      new THREE.Vector3(27, 0, 18),
+      new THREE.Vector3(90, 0, 18),
+      new THREE.Vector3(58, 0, 18),
+      new THREE.Vector3(36, 0, 18),
+      new THREE.Vector3(27, 0.2, 18),
     ]);
-    // Portaria → frente das docas.
     this.pathYard = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(27, 0, 18),
-      new THREE.Vector3(14, 0, 16.5),
-      new THREE.Vector3(2, 0, 11),
-      new THREE.Vector3(-6, 0, 5),
-      new THREE.Vector3(-2, 0, 1.5),
-      new THREE.Vector3(10, 0, 1),
+      new THREE.Vector3(27, 0.2, 18),
+      new THREE.Vector3(14, 0.2, 16.5),
+      new THREE.Vector3(2, 0.2, 11),
+      new THREE.Vector3(-6, 0.2, 5),
+      new THREE.Vector3(-2, 0.2, 1.5),
+      new THREE.Vector3(10, 0.2, 1),
     ]);
-    // Manobra de ré até a doca (o caminhão olha para o lado oposto ao movimento).
     this.pathBack = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(10, 0, 1),
-      new THREE.Vector3(5, 0, 0.5),
-      new THREE.Vector3(doorX, 0, -3.5),
-      new THREE.Vector3(doorX, 0, -6.6),
+      new THREE.Vector3(10, 0.2, 1),
+      new THREE.Vector3(5, 0.2, 0.5),
+      new THREE.Vector3(doorX, 0.2, -3.5),
+      new THREE.Vector3(doorX, 0.2, -6.4),
     ]);
 
-    // Tráfego ambiente na rodovia.
+    // Rastro luminoso do trajeto do caminhão.
+    const trail = [...this.pathRoad.getSpacedPoints(60), ...this.pathYard.getSpacedPoints(60)].map((p) => new THREE.Vector3(p.x, 0.26, p.z));
+    this.trail = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(trail),
+      new THREE.LineDashedMaterial({ color: C.neonGreen, dashSize: 1.2, gapSize: 0.8, transparent: true, opacity: 0 }),
+    );
+    this.trail.computeLineDistances();
+    this.scene.add(this.trail);
+  }
+
+  buildTraffic() {
+    // Rastros de luz (faróis brancos indo, lanternas vermelhas voltando).
+    this.streaks = [];
+    const geo = new RoundedBoxGeometry(5, 0.12, 0.22, 2, 0.06);
+    for (let i = 0; i < 18; i += 1) {
+      const outbound = i % 2 === 0;
+      const streak = mesh(geo, neon(outbound ? C.white : C.red, outbound ? 2.6 : 2.2), { cast: false });
+      streak.position.set(0, 0.35, outbound ? 30.5 : 35.5);
+      streak.userData = { dir: outbound ? 1 : -1, speed: 26 + (i % 5) * 6, offset: i * 37 };
+      this.scene.add(streak);
+      this.streaks.push(streak);
+    }
+
     this.traffic = [
-      { truck: createTruck({ cab: C.ocre, stripe: C.pinho }), lane: 30, speed: 9, offset: 0, dir: 1 },
-      { truck: createTruck({ cab: '#3E5D72', stripe: C.ocre }), lane: 34, speed: 7, offset: 120, dir: -1 },
-      { truck: createTruck({ cab: C.tijolo, stripe: C.paint }), lane: 30, speed: 8, offset: 210, dir: 1 },
+      { truck: createTruck({ body: C.pearl, accent: C.ocre }), lane: 30.5, speed: 11, offset: 40, dir: 1 },
+      { truck: createTruck({ body: '#3E5D72', accent: C.neonGreen }), lane: 35.5, speed: 9, offset: 190, dir: -1 },
     ];
     this.traffic.forEach(({ truck, dir }) => {
       truck.rotation.y = dir > 0 ? 0 : Math.PI;
@@ -334,23 +431,39 @@ export default class YardScene {
     });
   }
 
-  buildScenery() {
-    const spots = [
-      [-46, -8], [-48, 4], [-44, 16], [46, -6], [50, 6], [-30, -30], [-12, -32], [8, -30], [28, -28], [44, -22],
-      [-52, -18], [60, -12], [-20, 27], [-4, 27.5], [8, 27], [40, 27], [-40, 27],
-    ];
-    spots.forEach(([x, z], i) => {
-      const tree = createTree(0.8 + ((i * 37) % 10) / 20);
-      tree.position.set(x, 0, z);
-      this.scene.add(tree);
-    });
+  buildParticles() {
+    const count = this.lowPower ? 240 : 520;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i += 1) {
+      positions[i * 3] = (Math.random() - 0.5) * 160;
+      positions[i * 3 + 1] = Math.random() * 26 + 1;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    this.particles = new THREE.Points(
+      geometry,
+      new THREE.PointsMaterial({ color: C.ocreSoft, size: 0.35, map: this.dotTexture(), alphaTest: 0.01, transparent: true, opacity: 0.75, depthWrite: false, blending: THREE.AdditiveBlending }),
+    );
+    this.scene.add(this.particles);
+  }
 
-    // Postes de luz do pátio.
-    const poleMat = mat(C.wallShade);
-    [[-20, 20], [0, 20], [-36, -6], [34, -4]].forEach(([x, z]) => {
-      this.scene.add(box(0.25, 8, 0.25, poleMat, { x, y: 4, z }));
-      this.scene.add(box(1.6, 0.25, 0.5, mat(C.dark), { x: x + 0.6, y: 8, z }));
-    });
+  /** Ponto redondo e suave para as partículas (em vez de quadrados). */
+  dotTexture() {
+    const size = 64;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    gradient.addColorStop(0, 'rgba(255,255,255,1)');
+    gradient.addColorStop(0.35, 'rgba(255,255,255,0.6)');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
   }
 
   /* ---------------- animação ---------------- */
@@ -364,9 +477,8 @@ export default class YardScene {
     this.pointer.set(x, y);
   }
 
-  /** Animação de "Entrar": a cancela sobe e a câmera atravessa a portaria. */
   playEnter(onDone) {
-    const duration = this.reducedMotion ? 150 : 1300;
+    const duration = this.reducedMotion ? 150 : 1400;
     const start = performance.now();
     const step = (now) => {
       this.enter = clamp((now - start) / duration);
@@ -378,14 +490,13 @@ export default class YardScene {
   }
 
   cameraFor(p, time) {
-    // Pontos de câmera por capítulo: [posição, alvo].
     const keys = [
-      [0.0, [62, 46, 70], [0, 0, 0]], // visão geral
-      [0.2, [-6, 20, 36], [-22, 0, 6]], // vagas (cotas publicadas)
-      [0.4, [70, 16, 42], [52, 0, 18]], // caminhão na rodovia
-      [0.6, [38, 9, 32], [24, 1, 17]], // portaria
-      [0.8, [5, 11, 13], [0, 1, -8]], // doca
-      [1.0, [74, 58, 86], [-2, 0, 0]], // tudo registrado
+      [0.0, [64, 40, 70], [0, 0, 2]],
+      [0.2, [-4, 22, 38], [-22, 0, 6]],
+      [0.4, [84, 8, 31], [68, 2, 18]],
+      [0.6, [40, 8, 33], [24, 2, 17]],
+      [0.8, [6, 10, 14], [0, 2, -8]],
+      [1.0, [78, 56, 90], [-2, 0, 0]],
     ];
     let i = 0;
     while (i < keys.length - 2 && p > keys[i + 1][0]) i += 1;
@@ -395,11 +506,9 @@ export default class YardScene {
     const pos = new THREE.Vector3(...pos0.map((v, k) => lerp(v, pos1[k], t)));
     const look = new THREE.Vector3(...look0.map((v, k) => lerp(v, look1[k], t)));
 
-    // Respiração lenta da câmera na abertura.
     if (!this.reducedMotion) {
-      const orbit = (1 - span(p, 0, 0.12)) * 0.12;
-      const angle = Math.sin(time * 0.15) * orbit;
-      pos.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+      const orbit = (1 - span(p, 0, 0.12)) * 0.16;
+      pos.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.sin(time * 0.12) * orbit);
       pos.x += this.pointer.x * 2.5;
       pos.y += this.pointer.y * 1.5;
     }
@@ -407,96 +516,115 @@ export default class YardScene {
   }
 
   applyProgress(p, time) {
-    // Capítulo 1 — cotas publicadas: as vagas acendem uma a uma.
+    // Cotas publicadas: as vagas acendem como hologramas.
     const publish = span(p, 0.08, 0.26);
-    // Capítulo 2 — clientes agendam: caminhões ocupam as vagas.
     const booking = span(p, 0.24, 0.42);
     this.spots.forEach((spot, index) => {
       const order = index / this.spots.length;
       const lit = clamp((publish - order * 0.7) / 0.3);
       const filled = spot.truck ? clamp((booking - order * 0.7) / 0.3) : 0;
-      spot.fill.material.opacity = lit * (0.55 - filled * 0.25);
-      spot.fill.material.color.set(filled > 0.5 ? C.pinhoLight : C.ocre);
-      spot.fill.material.emissive.set(filled > 0.5 ? C.pinhoLight : C.ocre);
+      const color = filled > 0.5 ? C.neonGreen : C.ocre;
+      const pulse = this.reducedMotion ? 1 : 0.8 + Math.sin(time * 2.4 + index) * 0.2;
+      spot.outline.material.opacity = lit;
+      spot.outline.material.color.set(color);
+      spot.fill.material.opacity = lit * 0.16 * pulse;
+      spot.fill.material.color.set(color);
+      spot.beam.material.opacity = lit * (1 - filled) * 0.22 * pulse;
+      spot.beam.material.color.set(color);
       if (spot.truck) {
         const s = smooth(filled);
         spot.truck.visible = s > 0.01;
         spot.truck.scale.setScalar(Math.max(s, 0.001));
-        spot.truck.position.y = (1 - s) * 2;
+        spot.truck.position.y = 0.2 + (1 - s) * 3;
       }
     });
 
-    // Capítulos 2–4 — o caminhão chega pela rodovia, para na cancela,
-    // atravessa o pátio e encosta de ré na doca.
-    const road = span(p, 0.34, 0.57);
+    // O caminhão: rodovia → portaria → pátio → ré até a doca.
+    const road = span(p, 0.3, 0.57);
     const yard = span(p, 0.62, 0.72);
     const back = span(p, 0.72, 0.8);
-    const followPath = (curve, t, reverse = false) => {
-      const tangent = curve.getTangentAt(Math.min(Math.max(t, 0.001), 0.999));
+    const follow = (curve, t, reverse = false) => {
+      const tangent = curve.getTangentAt(clamp(t, 0.001, 0.999));
       return {
         position: curve.getPointAt(t),
         heading: reverse ? headingFrom(-tangent.x, -tangent.z) : headingFrom(tangent.x, tangent.z),
       };
     };
-    const pose = back > 0
-      ? followPath(this.pathBack, back, true)
-      : yard > 0
-        ? followPath(this.pathYard, yard)
-        : followPath(this.pathRoad, road);
+    const pose = back > 0 ? follow(this.pathBack, back, true) : yard > 0 ? follow(this.pathYard, yard) : follow(this.pathRoad, road);
     this.hero.position.copy(pose.position);
     this.hero.rotation.y = pose.heading;
+    this.hero.userData.glow.material.opacity = 0.18 + (this.reducedMotion ? 0 : Math.sin(time * 3) * 0.06);
 
-    // Cancela: sobe enquanto o caminhão está na portaria (ou ao clicar em Entrar).
-    const atGate = span(p, 0.55, 0.6) * (1 - span(p, 0.7, 0.74));
+    this.trail.material.opacity = span(p, 0.3, 0.38) * (1 - span(p, 0.74, 0.8)) * 0.9;
+    this.trail.material.dashOffset = this.reducedMotion ? 0 : -time * 2;
+
+    // Portaria: varredura e cancela.
+    const atGate = span(p, 0.53, 0.58) * (1 - span(p, 0.7, 0.74));
+    const scan = span(p, 0.5, 0.56) * (1 - span(p, 0.6, 0.63));
+    this.scanner.material.opacity = scan * (0.18 + (this.reducedMotion ? 0 : Math.sin(time * 9) * 0.06));
+    this.scanner.position.x = -1.8 + Math.sin(time * 2.2) * 0.6;
     const lift = Math.max(atGate, smooth(this.enter));
     this.barrier.rotation.x = -lift * (Math.PI / 2.2);
 
-    // Doca: porta abre e luz fica verde quando o caminhão encosta.
+    // Doca: porta abre e a luz fica verde.
     const docked = span(p, 0.78, 0.86);
     this.doors.forEach((door, k) => {
       const open = k === this.heroDoor ? docked : (k === 1 || k === 5 ? 1 : 0);
       door.scale.y = 1 - open * 0.85;
-      door.position.y = 2.6 + open * 1.9;
+      door.position.y = 2.8 + open * 2;
       const light = this.dockLights[k];
       const busy = open > 0.5;
-      light.material.color.set(busy ? C.pinhoLight : C.tijolo);
-      light.material.emissive.set(busy ? C.pinhoLight : C.tijolo);
-      light.material.emissiveIntensity = busy ? 1.2 : 0.7 + Math.sin(time * 3 + k) * 0.2;
+      const color = busy ? C.neonGreen : C.red;
+      light.material.color.set(color);
+      light.material.emissive.set(color);
+      light.material.emissiveIntensity = busy ? 2.6 : 1.6 + (this.reducedMotion ? 0 : Math.sin(time * 3 + k) * 0.5);
     });
 
-    // Tráfego ambiente.
-    this.traffic.forEach((car) => {
-      const travel = this.reducedMotion ? car.offset : (car.offset + time * car.speed) % 260;
-      car.truck.position.set(car.dir > 0 ? -130 + travel : 130 - travel, 0, car.lane);
+    // Tráfego e rastros de luz.
+    this.streaks.forEach((s) => {
+      const { dir, speed, offset } = s.userData;
+      const travel = this.reducedMotion ? offset : (offset + time * speed) % 300;
+      s.position.x = dir > 0 ? -150 + travel : 150 - travel;
     });
+    this.traffic.forEach((car) => {
+      const travel = this.reducedMotion ? car.offset : (car.offset + time * car.speed) % 280;
+      car.truck.position.set(car.dir > 0 ? -140 + travel : 140 - travel, 0.2, car.lane);
+    });
+
+    if (this.particles && !this.reducedMotion) {
+      this.particles.rotation.y = time * 0.01;
+      this.particles.position.y = Math.sin(time * 0.3) * 0.6;
+    }
 
     const { pos, look } = this.cameraFor(p, time);
     if (this.enter > 0) {
-      // Mergulho até a portaria.
       const e = smooth(this.enter);
-      pos.lerp(new THREE.Vector3(34, 3.2, 18.5), e);
-      look.lerp(new THREE.Vector3(10, 2.5, 17), e);
+      pos.lerp(new THREE.Vector3(34, 3.4, 18.2), e);
+      look.lerp(new THREE.Vector3(8, 3, 17.5), e);
+      this.bloom.strength = 0.85 + e * 1.4;
     }
     this.camera.position.copy(pos);
-    this.lookTarget.copy(look);
-    this.camera.lookAt(this.lookTarget);
+    this.camera.lookAt(look);
+  }
+
+  render() {
+    this.composer.render();
   }
 
   renderOnce() {
     this.progress = this.targetProgress;
     this.applyProgress(this.progress, this.clock.elapsedTime);
-    this.renderer.render(this.scene, this.camera);
+    this.render();
   }
 
   tick() {
     if (!this.running) return;
     const delta = Math.min(this.clock.getDelta(), 0.1);
     const time = this.clock.elapsedTime;
-    // Suaviza a rolagem (independente da taxa de quadros).
     const ease = this.reducedMotion ? 1 : 1 - Math.exp(-delta * 5);
     this.progress += (this.targetProgress - this.progress) * ease;
     this.applyProgress(this.progress, time);
-    this.renderer.render(this.scene, this.camera);
+    this.render();
     this.frame = requestAnimationFrame(this.tick);
   }
 
@@ -515,8 +643,9 @@ export default class YardScene {
     const { clientWidth: w, clientHeight: h } = this.canvas.parentElement ?? this.canvas;
     if (!w || !h) return;
     this.renderer.setSize(w, h, false);
+    this.composer.setSize(w, h);
+    this.bloom.resolution.set(w / 2, h / 2);
     this.camera.aspect = w / h;
-    // Em telas estreitas (celular) abre o campo de visão para caber o pátio.
     this.camera.fov = w / h < 0.8 ? 58 : 38;
     this.camera.updateProjectionMatrix();
     if (!this.running) this.renderOnce();
@@ -526,11 +655,10 @@ export default class YardScene {
     this.stop();
     window.removeEventListener('resize', this.resize);
     this.scene.traverse((obj) => {
-      if (obj.isMesh) {
-        obj.geometry.dispose();
-        (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach((m) => m.dispose());
-      }
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach((m) => m.dispose());
     });
+    this.composer.dispose?.();
     this.renderer.dispose();
   }
 }

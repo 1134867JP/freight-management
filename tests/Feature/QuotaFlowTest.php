@@ -479,4 +479,19 @@ class QuotaFlowTest extends TestCase
         $this->assertContains('tomorrow_uptake', array_column($insights, 'key'));
         $this->assertStringContainsString('Existem 9 cotas disponíveis para amanhã e apenas 0 foram reservadas.', $insights[0]['title']);
     }
+
+    public function test_dashboard_exposes_setup_progress_for_onboarding(): void
+    {
+        $this->actingAs($this->admin)->get(route('admin.dashboard'))->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Admin/Home')
+                ->where('setup.has_clients', true)
+                ->where('setup.has_quotas', false)
+                ->where('setup.has_bookings', false)
+                ->where('setup.notified', false));
+
+        $this->publish();
+
+        $this->actingAs($this->admin)->get(route('admin.dashboard'))->assertOk()
+            ->assertInertia(fn ($page) => $page->where('setup.has_quotas', true));
+    }
 }

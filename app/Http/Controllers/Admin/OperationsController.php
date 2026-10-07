@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Freight;
 use App\Models\Quota;
 use App\Models\Timeslot;
+use App\Models\User;
 use App\Services\Quota\QuotaInsights;
 use App\Support\BookingPresenter;
 use App\Support\QuotaPresenter;
@@ -100,6 +101,16 @@ class OperationsController extends Controller
 
         return Inertia::render('Admin/Home', [
             'canPublish' => $user->isCompanyAdmin(),
+            'setup' => [
+                // User não usa o escopo global de empresa: filtra explicitamente.
+                'has_clients' => User::query()
+                    ->where('role', User::ROLE_CLIENT)
+                    ->where('company_id', $user->company_id)
+                    ->exists(),
+                'has_quotas' => Quota::query()->exists(),
+                'has_bookings' => Freight::query()->whereNotNull('quota_id')->exists(),
+                'notified' => Quota::query()->whereNotNull('notified_at')->exists(),
+            ],
             'attention' => $attention,
             'totals' => [
                 'published' => (int) $quotas->filter(fn (Quota $q) => $q->status !== Quota::STATUS_CANCELLED)->sum('total_quantity'),
