@@ -27,7 +27,7 @@ export default function AuthenticatedLayout({ header, children }) {
   const isCompanyAdmin = user?.role === 'company_admin';
   const isCompanyEmployee = user?.role === 'company_employee';
   const isAdmin = isCompanyAdmin || isCompanyEmployee;
-  const logoUrl = company?.logo_url || '/storage/logo.png';
+  const logoUrl = company?.logo_url;
   const usesQueues = company?.uses_queues ?? true;
   const usesDocks  = company?.uses_docks  ?? true;
   const pilotMode = company?.pilot_mode ?? false;
@@ -213,7 +213,6 @@ export default function AuthenticatedLayout({ header, children }) {
       section: 'Outros agendamentos',
       items: [
         { label: 'Horários avulsos', href: route('client.available'), active: route().current('client.available'), icon: 'calendar' },
-        { label: 'Reservas avulsas', href: route('client.reservations'), active: route().current('client.reservations'), icon: 'freight' },
       ],
     };
 

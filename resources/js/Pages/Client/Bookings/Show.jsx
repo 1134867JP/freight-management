@@ -10,7 +10,8 @@ import BookingTimeline from '@/Features/Booking/BookingTimeline';
 import DocumentChecklist from '@/Features/Booking/DocumentChecklist';
 import { formatClock, formatSchedule, formatTons } from '@/Features/Quota/format';
 import { formatDate, formatDateTime, formatPhone } from '@/utils/formatters';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import QrCodeDisplay from '@/Components/UI/QrCodeDisplay';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 
 const OTHER = '__other';
 
@@ -158,6 +159,10 @@ export default function Show({ booking, justConfirmed = 0, trucks = [], drivers 
   const docsComplete = booking.documents_required > 0 && booking.documents_received >= booking.documents_required;
   const hasVehicle = Boolean(booking.vehicle?.plate);
   const canEditVehicle = booking.can?.edit_vehicle;
+  const company = usePage().props.auth?.company;
+  // Mesmo critério do WhatsApp: QR de entrada só quando a portaria usa fila e fora do piloto.
+  const showGateCode = Boolean(company?.uses_queues) && !company?.pilot_mode
+    && Boolean(booking.qr_token) && ['reserved', 'arrived'].includes(booking.status) && hasVehicle;
 
   const cancelBooking = async () => {
     const ok = await confirm(
@@ -222,6 +227,16 @@ export default function Show({ booking, justConfirmed = 0, trucks = [], drivers 
                 ))}
               </ul>
             </div>
+          )}
+
+          {showGateCode && (
+            <Section title="Código de entrada na portaria">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <QrCodeDisplay value={booking.qr_token} size={200} />
+                <p className="plate text-lg">{booking.vehicle.plate}</p>
+                <p className="text-sm text-areia-600 dark:text-areia-400">Apresente este código ao porteiro para o check-in rápido.</p>
+              </div>
+            </Section>
           )}
 
           <Section

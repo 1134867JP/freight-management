@@ -444,6 +444,32 @@ class QuotaFlowTest extends TestCase
             ->assertSessionHas('error', 'Não foi possível enviar pelo WhatsApp. Verifique a conexão do WhatsApp da empresa.');
     }
 
+    public function test_operation_is_notified_when_client_sends_invoice(): void
+    {
+        $this->admin->update(['whatsapp_phone' => '5511977776666']);
+        $quota = $this->publish(['slot_capacity' => 5]);
+        $freight = app(BookQuota::class)->execute($this->clientA, $quota, $this->slot($quota), 1)->first();
+
+        $this->actingAs($this->clientA)
+            ->post(route('client.bookings.documents', $freight), [
+                'type' => 'invoice',
+                'file' => UploadedFile::fake()->create('nf.pdf', 50, 'application/pdf'),
+                'invoice_number' => '998877',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $message = WhatsAppOutboxMessage::query()->where('context->event', 'client_invoice_uploaded')->firstOrFail();
+
+        $this->assertSame($this->admin->routeWhatsAppPhone(), $message->phone);
+        $this->assertStringContainsString("Agendamento: {$freight->code} · NF 998877", $message->message);
+        $this->assertStringContainsString('Placa: a informar', $message->message);
+    }
+
+    public function test_old_reservations_address_redirects_to_bookings(): void
+    {
+        $this->actingAs($this->clientA)->get('/client/my-reservations')->assertRedirect('/client/bookings');
+    }
+
     public function test_insight_flags_low_uptake_for_tomorrow(): void
     {
         $this->publish(['total_quantity' => 20, 'slot_capacity' => 3]);

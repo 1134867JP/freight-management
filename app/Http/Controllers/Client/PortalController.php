@@ -14,7 +14,9 @@ use App\Models\FreightAttachment;
 use App\Models\Quota;
 use App\Models\Timeslot;
 use App\Models\User;
+use App\Services\FreightEmailNotifier;
 use App\Services\Quota\QuotaWhatsAppNotifier;
+use App\Services\WhatsApp\FreightWhatsAppNotifier;
 use App\Support\BookingPresenter;
 use App\Support\QuotaPresenter;
 use Illuminate\Http\RedirectResponse;
@@ -219,8 +221,13 @@ class PortalController extends Controller
         return back()->with('success', 'Veículo e motorista atualizados.');
     }
 
-    public function uploadDocument(UploadBookingDocumentRequest $request, Freight $freight, StoreFreightAttachment $store): RedirectResponse
-    {
+    public function uploadDocument(
+        UploadBookingDocumentRequest $request,
+        Freight $freight,
+        StoreFreightAttachment $store,
+        FreightWhatsAppNotifier $whatsAppNotifier,
+        FreightEmailNotifier $emailNotifier,
+    ): RedirectResponse {
         $this->authorizeOwner($request->user(), $freight);
 
         if (in_array($freight->status, [FreightStatus::Cancelled, FreightStatus::NoShow], true)) {
@@ -230,7 +237,7 @@ class PortalController extends Controller
         $data = $request->validated();
 
         try {
-            $store->execute($freight, $request->file('file'), $data['type']);
+            $attachment = $store->execute($freight, $request->file('file'), $data['type']);
         } catch (\Throwable $e) {
             report($e);
 
@@ -249,6 +256,16 @@ class PortalController extends Controller
 
         if ($updates) {
             $freight->update($updates);
+        }
+
+        // A operação é avisada da NF sem precisar procurar em conversas.
+        if ($data['type'] === FreightAttachment::TYPE_INVOICE) {
+            try {
+                $whatsAppNotifier->notifyAdminNotaFiscalUploaded($freight, $request->user(), $attachment->id);
+                $emailNotifier->notifyAdminNotaFiscalUploaded($freight, $request->user());
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
 
         $freight->load(BookingPresenter::RELATIONS);

@@ -91,32 +91,16 @@ class FreightWhatsAppNotifier
         );
     }
 
-    public function notifyAdminReservationReopened(Freight $freight, User $actor): void
-    {
-        $freight->loadMissing(['user', 'timeslot.creator', 'timeslot.dropoffAddress']);
-
-        $this->dispatchToAdmin(
-            $freight,
-            implode("\n", [
-                'Reserva reaberta pelo cliente.',
-                'Cliente: '.$actor->name,
-                'Operação: '.$this->operationLabel($freight->operation_type),
-                'Horário: '.$this->timeslotLabel($freight),
-                'Placa: '.$freight->truck_plate,
-            ]),
-            'client_reservation_reopened',
-        );
-    }
-
     public function notifyAdminNotaFiscalUploaded(Freight $freight, User $actor, ?int $attachmentId = null): void
     {
         $freight->loadMissing(['user', 'timeslot.creator', 'timeslot.dropoffAddress']);
 
         $arrLines = [
             'Nota fiscal enviada pelo cliente.',
+            'Agendamento: '.$freight->code.($freight->invoice_number ? ' · NF '.$freight->invoice_number : ''),
             'Cliente: '.$actor->name,
             'Horário: '.$this->timeslotLabel($freight),
-            'Placa: '.$freight->truck_plate,
+            'Placa: '.($freight->truck_plate ?: 'a informar'),
         ];
 
         if ($freight->gross_weight !== null) {

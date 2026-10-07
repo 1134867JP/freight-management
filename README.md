@@ -58,13 +58,13 @@ Estados da cota: Publicada, Aberta, Esgotada, Encerrada, Expirada e Cancelada.
 
 ### Agendamento e operação
 
-- criação de cotas (`timeslots`) públicas ou restritas a clientes;
+- publicação de cotas (produto, destino, quantidade, período e horários) — ver
+  [Ciclo de cotas](#ciclo-de-cotas);
+- horários avulsos (`timeslots` sem cota), públicos ou restritos a clientes;
 - agenda operacional e controle de capacidade;
-- reservas de carga e descarga;
 - cadastro de caminhões e motoristas pelo cliente;
-- nota fiscal obrigatória para reservas de descarga;
-- cancelamento/rejeição, reabertura, acompanhamento e finalização das reservas;
-- anexos operacionais e exportações;
+- cancelamento/rejeição, não comparecimento, acompanhamento e finalização;
+- documentos por agendamento (NF, comprovante de peso, comprovantes) e exportações;
 - fechamento automático de horários expirados.
 
 ### Pátio
@@ -93,7 +93,7 @@ Estados da cota: Publicada, Aberta, Esgotada, Encerrada, Expirada e Cancelada.
 | Administrador da plataforma | `platform_admin`   | Gerencia empresas, administradores principais e instâncias de WhatsApp.        |
 | Administrador da empresa    | `company_admin`    | Possui acesso administrativo e operacional completo dentro da própria empresa. |
 | Funcionário                 | `company_employee` | Opera o YMS e recebe somente as permissões administrativas delegadas.          |
-| Cliente                     | `client`           | Mantém motoristas e caminhões, reserva horários e acompanha suas operações.    |
+| Cliente                     | `client`           | Agenda cotas, envia documentos, mantém motoristas e caminhões e acompanha.     |
 
 As permissões delegáveis a funcionários são: visualizar auditoria, gerenciar
 administradores, gerenciar funcionários, gerenciar WhatsApp, criar cotas pelo
@@ -102,10 +102,10 @@ permissões nem delegar uma permissão que não possua.
 
 ## Fluxo operacional
 
-1. O administrador cria uma cota, pela interface ou pelo WhatsApp.
-2. O cliente escolhe um horário e cria a reserva com caminhão, motorista e operação.
-3. Em uma descarga, a nota fiscal é enviada junto com a reserva.
-4. A portaria faz o check-in e o veículo entra no pátio.
+1. O administrador publica uma cota (ou um horário avulso, pela interface ou WhatsApp).
+2. O cliente agenda pelo portal: dia, horário, quantidade e, se já souber, o veículo.
+3. O cliente envia NF, comprovante de peso e comprovantes no próprio agendamento.
+4. A portaria registra a chegada (informando a placa, se ainda faltar).
 5. O operador atribui vaga ou doca e, quando necessário, cria uma ordem de movimentação.
 6. A carga ou descarga é iniciada e finalizada.
 7. A portaria registra o check-out e libera os recursos associados.
@@ -116,7 +116,8 @@ O fluxo principal de status é:
 reserved -> arrived -> loading|unloading -> completed
 ```
 
-Uma reserva ainda ativa pode ser alterada para `cancelled`. No modo piloto, ou
+Um agendamento que aguarda chegada pode ir para `cancelled` ou, depois do horário,
+para `no_show` (a unidade volta ao saldo da cota). No modo piloto, ou
 quando a empresa não utiliza fila, a operação pode avançar de `reserved` para
 `loading` ou `unloading` sem uma etapa manual de check-in.
 

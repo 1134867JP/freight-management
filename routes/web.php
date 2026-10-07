@@ -199,13 +199,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/bookings/{freight}/documents', [PortalController::class, 'uploadDocument'])->name('client.bookings.documents');
 
         Route::get('/available-slots', [TimeslotController::class, 'available'])->name('client.available');
-        Route::get('/my-reservations', [FreightController::class, 'myReservations'])->name('client.reservations');
+        // Endereço antigo (links já enviados por e-mail/WhatsApp) → Meus agendamentos.
+        Route::redirect('/my-reservations', '/client/bookings')->name('client.reservations');
         Route::post('/reserve/{timeslot}', [FreightController::class, 'store'])->name('client.reserve');
         Route::delete('/my-reservations/{freight}', [FreightController::class, 'cancelMyReservation'])->name('client.reservations.cancel');
-        Route::patch('/my-reservations/{freight}/reopen', [FreightController::class, 'reopenMyReservation'])->name('client.reservations.reopen');
 
-        // Upload e download de nota fiscal
-        Route::post('/my-reservations/{freight}/upload-invoice', [FreightController::class, 'uploadInvoice'])->name('client.upload-invoice');
+        // Download de nota fiscal e documentos
         Route::get('/freights/{freight}/nota-fiscal', [FreightController::class, 'downloadInvoiceClient'])->name('client.download-invoice');
         Route::get('/my-reservations/{freight}/attachments/{attachment}', [FreightController::class, 'downloadAttachmentClient'])->name('client.download-attachment');
 

@@ -52,7 +52,7 @@ class WhatsAppNotificationDispatchTest extends TestCase
             'weight' => '1500',
         ]);
 
-        $response->assertRedirect(route('client.reservations'));
+        $response->assertRedirect(route('client.bookings.show', Freight::query()->latest('id')->firstOrFail()));
 
         Queue::assertPushed(SendWhatsAppMessageJob::class, function (SendWhatsAppMessageJob $job) use ($admin) {
             $outbox = WhatsAppOutboxMessage::query()->findOrFail($job->outboxMessageId);
