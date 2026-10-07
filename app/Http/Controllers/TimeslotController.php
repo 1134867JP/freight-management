@@ -12,6 +12,7 @@ use App\Models\Produto;
 use App\Models\Timeslot;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -19,15 +20,35 @@ use Inertia\Response;
 
 class TimeslotController extends Controller
 {
-    public function agenda(): Response
+    /**
+     * Agenda de um mês (as 6 semanas da grade), só com os campos exibidos.
+     * Carregar o histórico inteiro deixava a tela mais lenta a cada dia de uso.
+     */
+    public function agenda(Request $request): Response
     {
-        $arrTimeslots = Timeslot::with(['freights.user'])
+        $month = preg_match('/^\d{4}-\d{2}$/', (string) $request->query('month'))
+            ? Carbon::createFromFormat('Y-m-d', $request->query('month').'-01')->startOfDay()
+            : now()->startOfMonth();
+
+        // Grade começa no domingo; 1 dia de folga cobre fuso e horários que atravessam a meia-noite.
+        $from = $month->copy()->startOfWeek(Carbon::SUNDAY)->subDay();
+        $to = $month->copy()->startOfWeek(Carbon::SUNDAY)->addDays(43);
+
+        $arrTimeslots = Timeslot::query()
+            ->select(['id', 'start_time', 'end_time', 'capacity', 'status', 'description'])
+            ->where('start_time', '<', $to)
+            ->where('end_time', '>', $from)
+            ->with([
+                'freights' => fn ($q) => $q->select(['id', 'timeslot_id', 'user_id', 'status', 'driver_name', 'truck_plate']),
+                'freights.user:id,name',
+            ])
             ->withCount(['freights as current_reservations' => fn ($q) => $q->occupying()])
             ->orderBy('start_time', 'asc')
             ->get();
 
         return Inertia::render('Admin/Agenda', [
             'timeslots' => $arrTimeslots,
+            'month' => $month->format('Y-m'),
         ]);
     }
 

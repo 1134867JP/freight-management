@@ -43,8 +43,10 @@ class GateController extends Controller
         $completedToday = Freight::with(['user', 'timeslot', 'doca'])
             ->where('status', FreightStatus::Completed)
             ->where(function ($query) use ($today) {
+                // Sem saída registrada (comum no piloto, sem portaria), só os concluídos
+                // nas últimas 24h; senão a lista acumula todo o histórico.
                 $query
-                    ->whereNull('departed_at')
+                    ->where(fn ($q) => $q->whereNull('departed_at')->where('completed_at', '>=', now()->subDay()))
                     ->orWhereDate('departed_at', $today);
             })
             ->orderBy('updated_at', 'desc')

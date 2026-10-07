@@ -31,8 +31,14 @@ const expandSlotDays = (startValue, endValue) => {
   return keys;
 };
 
-export default function Agenda({ timeslots }) {
-  const [monthCursor, setMonthCursor] = useState(() => new Date());
+function monthParam(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+export default function Agenda({ timeslots, month }) {
+  const [monthCursor, setMonthCursor] = useState(() =>
+    month ? new Date(`${month}-01T00:00:00`) : new Date(),
+  );
   const [selectedDayKey, setSelectedDayKey] = useState(null);
 
 
@@ -133,19 +139,20 @@ export default function Agenda({ timeslots }) {
     router.get(route('timeslots.create'), { date: dayKey });
   };
 
-  const prevMonth = () => {
-    const d = new Date(monthCursor);
-    d.setMonth(d.getMonth() - 1);
+  // O servidor envia só o mês exibido; trocar de mês busca o novo período.
+  const goToMonth = (offset) => {
+    const d = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + offset, 1);
     setMonthCursor(d);
     setSelectedDayKey(null);
+    router.get(
+      route('admin.agenda'),
+      { month: monthParam(d) },
+      { only: ['timeslots', 'month'], preserveState: true, preserveScroll: true, replace: true },
+    );
   };
 
-  const nextMonth = () => {
-    const d = new Date(monthCursor);
-    d.setMonth(d.getMonth() + 1);
-    setMonthCursor(d);
-    setSelectedDayKey(null);
-  };
+  const prevMonth = () => goToMonth(-1);
+  const nextMonth = () => goToMonth(1);
 
   // Exibe intervalo com indicação quando atravessa dia
   const formatRange = (slot) => {
