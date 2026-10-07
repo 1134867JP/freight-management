@@ -146,7 +146,7 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
           </div>
 
           {/* (a) Resumo */}
-          <header className="rounded-3xl bg-[#10241B] p-5 text-white shadow-[0_12px_32px_-18px_rgba(16,36,27,0.6)] sm:p-6 dark:bg-[#0D1A14] dark:ring-1 dark:ring-white/10">
+          <header className="glass-dark rounded-3xl p-5 text-white sm:p-6">
             <p className="font-display text-[22px] font-bold leading-snug sm:text-[26px]">
               Você possui <span className="text-ocre-300">{plural(available, 'cota disponível', 'cotas disponíveis')}</span>
             </p>
@@ -191,7 +191,7 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
                           ? 'border-pinho-700 bg-pinho-700 text-white shadow-md dark:border-pinho-400 dark:bg-pinho-400 dark:text-areia-950'
                           : disabled
                             ? 'cursor-not-allowed border-areia-200 bg-areia-100 text-areia-400 dark:border-areia-800 dark:bg-areia-900 dark:text-areia-600'
-                            : 'border-areia-200 bg-white text-areia-900 hover:border-pinho-400 hover:bg-pinho-50 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-100 dark:hover:bg-areia-800',
+                            : 'border-white/80 bg-white/60 text-areia-900 backdrop-blur hover:border-pinho-400 hover:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:text-areia-100 dark:hover:bg-areia-800',
                       ].join(' ')}
                     >
                       <span className="text-[12px] font-bold uppercase tracking-wide opacity-80">{weekday.replace('.', '')}</span>
@@ -229,7 +229,7 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
                           ? 'border-pinho-700 bg-pinho-50 ring-2 ring-pinho-700 dark:border-pinho-400 dark:bg-pinho-950/50 dark:ring-pinho-400'
                           : full
                             ? 'cursor-not-allowed border-areia-200 bg-areia-100/70 text-areia-400 dark:border-areia-800 dark:bg-areia-900 dark:text-areia-600'
-                            : 'border-areia-200 bg-white hover:border-pinho-400 hover:bg-pinho-50/60 dark:border-areia-700 dark:bg-areia-900 dark:hover:bg-areia-800',
+                            : 'border-white/80 bg-white/60 backdrop-blur hover:border-pinho-400 hover:bg-white dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-areia-800',
                       ].join(' ')}
                     >
                       <span className={`font-display text-[22px] font-bold leading-none tabular-nums ${full ? '' : 'text-areia-900 dark:text-white'}`}>{item.time}</span>
@@ -252,7 +252,7 @@ export default function Book({ quota, days = [], trucks = [], drivers = [] }) {
             <section>
               <StepTitle n={3}>Quantidade</StepTitle>
               <div className="flex items-center gap-4">
-                <div className="inline-flex items-center overflow-hidden rounded-2xl border border-areia-200 bg-white shadow-sm dark:border-areia-700 dark:bg-areia-900">
+                <div className="glass inline-flex items-center overflow-hidden rounded-2xl">
                   <button
                     type="button"
                     onClick={() => changeQuantity(quantity - 1)}

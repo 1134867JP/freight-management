@@ -66,7 +66,7 @@ function QuotaRow({ quota }) {
       onKeyDown={(event) => {
         if (event.key === 'Enter' && event.target === event.currentTarget) open();
       }}
-      className="group cursor-pointer px-4 py-4 transition hover:bg-areia-50 focus:outline-none focus-visible:bg-areia-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocre-400 dark:hover:bg-areia-800/50 dark:focus-visible:bg-areia-800/50 sm:px-6"
+      className="group cursor-pointer px-4 py-4 transition hover:bg-white/50 focus:outline-none focus-visible:bg-areia-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocre-400 dark:hover:bg-areia-800/50 dark:focus-visible:bg-areia-800/50 sm:px-6"
     >
       <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 md:grid-cols-[auto_minmax(0,2.2fr)_auto_minmax(0,1.6fr)_auto] md:items-center md:gap-x-5">
         <IconTile tone={rowTone(quota)} size="md">
@@ -215,7 +215,7 @@ export default function Index({ quotas = [], totals = {}, filter = 'active' }) {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-areia-200 bg-white shadow-[0_1px_2px_rgba(37,35,32,0.04),0_8px_24px_-16px_rgba(37,35,32,0.12)] dark:border-areia-800 dark:bg-areia-900">
+          <div className="glass overflow-hidden rounded-2xl">
             {quotas.length === 0 ? (
               <EmptyState
                 icon={

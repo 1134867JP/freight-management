@@ -80,7 +80,7 @@ function BookingRow({ booking }) {
     <li>
       <Link
         href={route('client.bookings.show', booking.id)}
-        className="flex min-h-[64px] items-center gap-3.5 px-4 py-3 transition hover:bg-areia-50 focus:outline-none focus-visible:bg-areia-50 dark:hover:bg-areia-800/60 dark:focus-visible:bg-areia-800/60"
+        className="flex min-h-[64px] items-center gap-3.5 px-4 py-3 transition hover:bg-white/50 focus:outline-none focus-visible:bg-areia-50 dark:hover:bg-areia-800/60 dark:focus-visible:bg-areia-800/60"
       >
         <IconTile tone="brand">
           {parts ? (
@@ -182,7 +182,7 @@ export default function Home({
       <div className="mx-auto max-w-4xl space-y-8 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
         <FlashMessages />
 
-        <section aria-label="Resumo" className="rounded-3xl bg-[#10241B] p-5 text-white shadow-[0_12px_32px_-18px_rgba(16,36,27,0.6)] sm:p-8 dark:bg-[#0D1A14] dark:ring-1 dark:ring-white/10">
+        <section aria-label="Resumo" className="glass-dark rounded-3xl p-5 text-white sm:p-8">
           <h1 className="font-display text-[28px] font-bold leading-tight tracking-[-0.01em] sm:text-[34px]">
             {greeting()}{name ? `, ${name}` : ''}
           </h1>

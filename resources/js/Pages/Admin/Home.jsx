@@ -110,7 +110,7 @@ function Chevron() {
 function Panel({ children, className = '' }) {
   return (
     <div
-      className={`overflow-hidden rounded-2xl border border-areia-200 bg-white shadow-[0_1px_2px_rgba(37,35,32,0.04),0_8px_24px_-16px_rgba(37,35,32,0.12)] dark:border-areia-800 dark:bg-areia-900 ${className}`}
+      className={`glass overflow-hidden rounded-2xl ${className}`}
     >
       {children}
     </div>
@@ -136,7 +136,7 @@ function statusSentence(attention, today) {
 
 function Hero({ companyName, dateLabel, attention, today, canPublish }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-[#10241B] p-6 text-white shadow-[0_12px_32px_-16px_rgba(16,36,27,0.6)] sm:p-8 dark:bg-[#0D1A14] dark:ring-1 dark:ring-white/5">
+    <section className="glass-dark relative overflow-hidden rounded-3xl p-6 text-white sm:p-8">
       <div
         className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-pinho-700/30 blur-3xl"
         aria-hidden="true"
@@ -206,7 +206,7 @@ function AttentionPanel({ attention }) {
             <li key={item.key}>
               <Link
                 href={item.href}
-                className={`group flex min-h-[72px] items-center gap-4 px-5 py-3.5 transition hover:bg-areia-50 dark:hover:bg-areia-800/60 ${ROW_FOCUS}`}
+                className={`group flex min-h-[72px] items-center gap-4 px-5 py-3.5 transition hover:bg-white/50 dark:hover:bg-areia-800/60 ${ROW_FOCUS}`}
               >
                 <IconTile tone={tone} size="md">
                   {ICONS[ATTENTION_ICON[item.key]] ?? ICONS.question}
@@ -264,7 +264,7 @@ function QuotasPanel({ totals, activeQuotas }) {
                 <li key={quota.id}>
                   <Link
                     href={route('admin.quotas.show', quota.id)}
-                    className={`group grid min-h-[72px] grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 px-5 py-3.5 transition hover:bg-areia-50 dark:hover:bg-areia-800/60 md:grid-cols-[auto_minmax(0,1.4fr)_minmax(0,1fr)_auto] ${ROW_FOCUS}`}
+                    className={`group grid min-h-[72px] grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 px-5 py-3.5 transition hover:bg-white/50 dark:hover:bg-areia-800/60 md:grid-cols-[auto_minmax(0,1.4fr)_minmax(0,1fr)_auto] ${ROW_FOCUS}`}
                   >
                     <IconTile tone="brand" size="md">
                       {(quota.product_name ?? '?').charAt(0).toUpperCase()}
@@ -402,7 +402,7 @@ function TodayPanel({ today }) {
                 <li key={booking.id}>
                   <Link
                     href={route('admin.bookings.show', booking.id)}
-                    className={`group flex min-h-[72px] items-center gap-4 px-5 py-3 transition hover:bg-areia-50 dark:hover:bg-areia-800/60 ${ROW_FOCUS}`}
+                    className={`group flex min-h-[72px] items-center gap-4 px-5 py-3 transition hover:bg-white/50 dark:hover:bg-areia-800/60 ${ROW_FOCUS}`}
                   >
                     <span className="w-14 shrink-0 font-mono text-lg font-semibold tabular-nums text-pinho-800 dark:text-pinho-200">
                       {formatClock(booking.scheduled_at)}

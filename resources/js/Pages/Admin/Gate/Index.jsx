@@ -318,7 +318,7 @@ export default function GateIndex({ expected, waiting, inProgress, completedToda
           </PipelineColumn>
         </div>
 
-        <section className="mt-4 shrink-0 rounded-xl border border-areia-200 bg-white shadow-sm dark:border-areia-800 dark:bg-areia-900">
+        <section className="glass mt-4 shrink-0 rounded-xl">
           <button
             type="button"
             onClick={() => setShowCompleted((v) => !v)}

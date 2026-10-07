@@ -39,7 +39,7 @@ export default function ModalShell({
     >
       <div
         ref={panelRef}
-        className={`flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-areia-200 bg-white shadow-2xl dark:border-areia-700 dark:bg-areia-900 ${maxWidthClass}`}
+        className={`glass-strong flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl ${maxWidthClass}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

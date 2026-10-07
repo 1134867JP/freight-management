@@ -65,7 +65,7 @@ function SectionHeading({ title, aside = null }) {
 function Panel({ children, className = '' }) {
   return (
     <div
-      className={`overflow-hidden rounded-2xl border border-areia-200 bg-white shadow-[0_1px_2px_rgba(37,35,32,0.04),0_8px_24px_-16px_rgba(37,35,32,0.12)] dark:border-areia-800 dark:bg-areia-900 ${className}`}
+      className={`glass overflow-hidden rounded-2xl ${className}`}
     >
       {children}
     </div>
@@ -219,7 +219,7 @@ function BookingRow({ booking }) {
     <li>
       <Link
         href={route('admin.bookings.show', booking.id)}
-        className="block px-4 py-4 transition hover:bg-areia-50 focus:outline-none focus-visible:bg-areia-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocre-400 dark:hover:bg-areia-800/50 sm:px-6"
+        className="block px-4 py-4 transition hover:bg-white/50 focus:outline-none focus-visible:bg-areia-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ocre-400 dark:hover:bg-areia-800/50 sm:px-6"
       >
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 md:grid md:grid-cols-[110px_130px_minmax(0,1.6fr)_minmax(0,1.2fr)_90px_70px_70px_auto] md:gap-x-5">
           <span className="order-1 font-mono text-[15px] font-semibold text-pinho-800 dark:text-pinho-300 md:order-none">

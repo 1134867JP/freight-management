@@ -26,7 +26,7 @@ const VARIANT_CLASSES = {
   primary:
     'border-pinho-700 bg-pinho-700 text-white shadow-sm hover:border-pinho-800 hover:bg-pinho-800 focus-visible:ring-ocre-400 dark:border-pinho-400 dark:bg-pinho-400 dark:text-areia-950 dark:hover:bg-pinho-300',
   secondary:
-    'border-areia-300 bg-white text-areia-800 shadow-sm hover:border-areia-400 hover:bg-areia-50 focus-visible:ring-ocre-400 dark:border-areia-700 dark:bg-areia-800 dark:text-areia-100 dark:hover:bg-areia-700',
+    'border-white/80 bg-white/70 text-areia-800 shadow-sm backdrop-blur hover:bg-white focus-visible:ring-ocre-400 dark:border-white/10 dark:bg-white/[0.06] dark:text-areia-100 dark:hover:bg-white/10',
   danger:
     'border-tijolo-600 bg-tijolo-600 text-white shadow-sm hover:border-tijolo-700 hover:bg-tijolo-700 focus-visible:ring-tijolo-300',
   // Para ações destrutivas repetidas em listas: visível, mas sem competir com a ação principal.

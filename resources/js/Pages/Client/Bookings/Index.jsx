@@ -50,7 +50,7 @@ function BookingItem({ booking }) {
     <li>
       <Link
         href={route('client.bookings.show', booking.id)}
-        className="group flex items-start gap-3.5 px-4 py-4 transition hover:bg-areia-50 focus:outline-none focus-visible:bg-areia-50 sm:items-center sm:px-5 dark:hover:bg-areia-800/60 dark:focus-visible:bg-areia-800/60"
+        className="group flex items-start gap-3.5 px-4 py-4 transition hover:bg-white/50 focus:outline-none focus-visible:bg-areia-50 sm:items-center sm:px-5 dark:hover:bg-areia-800/60 dark:focus-visible:bg-areia-800/60"
       >
         <IconTile tone="brand" size="lg">
           {parts ? (

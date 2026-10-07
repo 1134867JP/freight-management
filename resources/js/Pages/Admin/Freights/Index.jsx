@@ -253,7 +253,7 @@ export default function Index({ freights, docasDisponiveis, filters = {}, status
                   </Button>
                   <a
                     href={exportCsvUrl()}
-                    className="flex min-h-11 items-center gap-1.5 rounded-lg border border-areia-300 bg-white px-3 py-2 text-[15px] font-semibold text-areia-800 hover:bg-areia-50 dark:border-areia-700 dark:bg-areia-800 dark:text-areia-100"
+                    className="flex min-h-11 items-center gap-1.5 rounded-lg border border-areia-300 bg-white px-3 py-2 text-[15px] font-semibold text-areia-800 hover:bg-white/50 dark:border-areia-700 dark:bg-areia-800 dark:text-areia-100"
                   >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
                       <path

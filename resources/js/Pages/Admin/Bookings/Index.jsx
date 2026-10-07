@@ -279,7 +279,7 @@ export default function BookingsIndex({
         )}
 
         {bookings.length === 0 ? (
-          <div className="rounded-2xl border border-areia-200 bg-white dark:border-areia-800 dark:bg-areia-900">
+          <div className="glass rounded-2xl">
             <EmptyState
               icon={
                 <svg
@@ -307,7 +307,7 @@ export default function BookingsIndex({
         ) : (
           <>
             {/* Desktop */}
-            <div className="hidden overflow-x-auto rounded-2xl border border-areia-200 bg-white shadow-[0_1px_2px_rgba(37,35,32,0.04),0_8px_24px_-16px_rgba(37,35,32,0.12)] dark:border-areia-800 dark:bg-areia-900 md:block">
+            <div className="glass hidden overflow-x-auto rounded-2xl md:block">
               <table className="min-w-full text-left text-[15px]">
                 <thead className="border-b border-areia-200 bg-areia-50 text-[13px] font-semibold uppercase tracking-wide text-areia-600 dark:border-areia-800 dark:bg-areia-950/40 dark:text-areia-400">
                   <tr>
@@ -338,7 +338,7 @@ export default function BookingsIndex({
                     <tr
                       key={booking.id}
                       onClick={() => router.visit(route('admin.bookings.show', booking.id))}
-                      className="cursor-pointer align-top transition hover:bg-areia-50 dark:hover:bg-areia-800/60"
+                      className="cursor-pointer align-top transition hover:bg-white/50 dark:hover:bg-areia-800/60"
                     >
                       {canSelect && (
                         <td className="px-4 py-3.5" onClick={(event) => event.stopPropagation()}>
@@ -391,7 +391,7 @@ export default function BookingsIndex({
             </div>
 
             {/* Mobile */}
-            <ul className="divide-y divide-areia-200 overflow-hidden rounded-2xl border border-areia-200 bg-white shadow-[0_1px_2px_rgba(37,35,32,0.04)] dark:divide-areia-800 dark:border-areia-800 dark:bg-areia-900 md:hidden">
+            <ul className="glass divide-y divide-areia-200 overflow-hidden rounded-2xl dark:divide-areia-800 md:hidden">
               {bookings.map((booking) => (
                 <li key={booking.id}>
                   <div className="flex items-start">
@@ -408,7 +408,7 @@ export default function BookingsIndex({
                     )}
                     <Link
                       href={route('admin.bookings.show', booking.id)}
-                      className="flex min-w-0 flex-1 items-start gap-3 p-4 transition hover:bg-areia-50 dark:hover:bg-areia-800/50"
+                      className="flex min-w-0 flex-1 items-start gap-3 p-4 transition hover:bg-white/50 dark:hover:bg-areia-800/50"
                     >
                       <IconTile
                         tone={

@@ -90,7 +90,7 @@ function Chip({ active, onClick, children, className = '' }) {
         'min-h-12 rounded-lg border px-3 text-base font-semibold tabular-nums transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ocre-400',
         active
           ? 'border-pinho-700 bg-pinho-700 text-white shadow-sm ring-1 ring-pinho-800/20 dark:border-pinho-400 dark:bg-pinho-400 dark:text-areia-950'
-          : 'border-areia-300 bg-white text-areia-700 hover:border-areia-400 hover:bg-areia-50 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-200 dark:hover:bg-areia-800',
+          : 'border-areia-300 bg-white text-areia-700 hover:border-areia-400 hover:bg-white/50 dark:border-areia-700 dark:bg-areia-900 dark:text-areia-200 dark:hover:bg-areia-800',
         className,
       ].join(' ')}
     >
@@ -255,7 +255,7 @@ export default function Form({ quota = null, clients = [], products = [], destin
               }
             />
 
-            <div className="divide-y divide-areia-200 rounded-2xl border border-areia-200 bg-white shadow-[0_1px_2px_rgba(37,35,32,0.04),0_8px_24px_-16px_rgba(37,35,32,0.12)] dark:divide-areia-800 dark:border-areia-800 dark:bg-areia-900">
+            <div className="glass divide-y divide-areia-200 rounded-2xl dark:divide-areia-800">
               {/* 1. O quê */}
               <section className="p-5 sm:p-7" aria-label="O quê">
                 <StepTitle number="1">O quê</StepTitle>

@@ -348,7 +348,7 @@ export default function Show({ booking, justConfirmed = 0, trucks = [], drivers 
           </Section>
 
           {booking.quota_rules && (
-            <details className="rounded-2xl border border-areia-200 bg-white px-5 py-3.5 shadow-[0_1px_2px_rgba(37,35,32,0.04)] dark:border-areia-800 dark:bg-areia-900">
+            <details className="glass rounded-2xl px-5 py-3.5">
               <summary className="cursor-pointer text-[15px] font-semibold text-areia-800 dark:text-areia-200">Regras da cota</summary>
               <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-areia-700 dark:text-areia-300">{booking.quota_rules}</p>
             </details>
